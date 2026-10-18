@@ -3154,7 +3154,7 @@
                     swRefreshing = true;
                     window.location.reload();
                 });
-                navigator.serviceWorker.register("sw.js?v=1.5.9", { updateViaCache: "none" }).then((reg) => {
+                navigator.serviceWorker.register("sw.js?v=1.6.0", { updateViaCache: "none" }).then((reg) => {
                     try { reg.update(); } catch (e) {}
                 }).catch(() => {});
             }
