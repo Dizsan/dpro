@@ -1,0 +1,4596 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<script id="dpro-omer-exclusive-guard">
+(function(){
+  try {
+    var u = (localStorage.getItem("dizsan_dpro_active_session_v1") || sessionStorage.getItem("dizsan_dpro_active_session_v1") || "").toLowerCase();
+    var zRaw = localStorage.getItem("dizsan_ziyaret_session_v2") || sessionStorage.getItem("dizsan_ziyaret_session_v2") || "";
+    var isOmer = (u === "ömer" || u === "omer" || zRaw.toLowerCase().indexOf("ömer") !== -1 || zRaw.toLowerCase().indexOf("omer") !== -1);
+    if (!isOmer && window.self === window.top) {
+      window.location.replace("../../index.html");
+    }
+  } catch(e) {}
+})();
+</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>VDF Ödeme // Dizsan Faktoring &amp; Vade Takip Sistemi</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#060913">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="VDF Ödeme">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+:root {
+  --bg-main: #060913;
+  --bg-sidebar: #0b1021;
+  --bg-card: rgba(15, 23, 42, 0.85);
+  --bg-card-hover: rgba(24, 35, 64, 0.95);
+  --bg-surface: rgba(30, 41, 59, 0.65);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(56, 189, 248, 0.35);
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --vdf-blue: #0284c7;
+  --vdf-cyan: #38bdf8;
+  --accent-indigo: #6366f1;
+  --accent-emerald: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-rose: #f43f5e;
+  --accent-purple: #8b5cf6;
+  --sidebar-width: 280px;
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --shadow-lg: 0 20px 45px rgba(0, 0, 0, 0.45);
+}
+
+body.light-theme {
+  --bg-main: #f1f5f9;
+  --bg-sidebar: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f8fafc;
+  --bg-surface: #e2e8f0;
+  --border-color: rgba(15, 23, 42, 0.1);
+  --border-strong: rgba(2, 132, 199, 0.35);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --shadow-lg: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(circle at 12% 15%, rgba(2, 132, 199, 0.14) 0%, transparent 40%),
+    radial-gradient(circle at 88% 85%, rgba(16, 185, 129, 0.10) 0%, transparent 40%);
+}
+
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ==================== SIDEBAR ==================== */
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  padding: 1.35rem 1.1rem;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.4rem 0.5rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1.25rem;
+}
+
+.brand-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #0284c7, #38bdf8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(2, 132, 199, 0.35);
+  flex-shrink: 0;
+}
+
+.brand-text h2 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.28rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.brand-text h2 span {
+  color: var(--vdf-cyan);
+}
+
+.brand-text p {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.nav-section {
+  margin-bottom: 1.3rem;
+}
+
+.section-title {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-bottom: 0.55rem;
+  padding-left: 0.5rem;
+}
+
+.nav-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.72rem 0.85rem;
+  border-radius: 11px;
+  cursor: pointer;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.nav-item:hover {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.nav-item.active {
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.22), rgba(56, 189, 248, 0.08));
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+  font-weight: 600;
+}
+
+.nav-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.nav-badge {
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--vdf-cyan);
+}
+
+.sync-status-card {
+  background: linear-gradient(145deg, rgba(2, 132, 199, 0.14), rgba(16, 185, 129, 0.08));
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  padding: 0.9rem;
+  margin-bottom: 1.1rem;
+}
+
+.sync-status-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--vdf-cyan);
+  margin-bottom: 0.45rem;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 10px #10b981;
+  display: inline-block;
+}
+
+.sync-status-meta {
+  font-size: 0.73rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+/* ==================== MAIN CONTENT ==================== */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 1.4rem 1.8rem 2.5rem;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.35rem;
+  margin-bottom: 1.4rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.debtor-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  background: rgba(2, 132, 199, 0.16);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: var(--vdf-cyan);
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.topbar-title h1 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+/* ==================== BUTTONS ==================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.62rem 1.05rem;
+  border-radius: 10px;
+  font-size: 0.83rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #0284c7, #0ea5e9);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.35);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(2, 132, 199, 0.5);
+}
+
+.btn-emerald {
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3);
+}
+
+.btn-amber {
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+  color: #fff;
+}
+
+.btn-glass {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.btn-glass:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-card-hover);
+}
+
+.btn-sm {
+  padding: 0.4rem 0.72rem;
+  font-size: 0.76rem;
+  border-radius: 8px;
+}
+
+/* ==================== KPI GRID ==================== */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(225px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.4rem;
+}
+
+.kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.15rem 1.25rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--kpi-accent, var(--vdf-cyan));
+}
+
+.kpi-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.kpi-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.kpi-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  background: rgba(56, 189, 248, 0.12);
+  color: var(--kpi-accent, var(--vdf-cyan));
+}
+
+.kpi-value {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.48rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.3rem;
+}
+
+.kpi-sub {
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* ==================== CARDS & PANELS ==================== */
+.panel-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.3rem 1.4rem;
+  margin-bottom: 1.4rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.08rem;
+  font-weight: 700;
+}
+
+.panel-title i {
+  color: var(--vdf-cyan);
+}
+
+/* ==================== TIMELINE BARS (7 BUSINESS DAYS) ==================== */
+.timeline-strip {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(115px, 1fr));
+  gap: 0.7rem;
+  overflow-x: auto;
+  padding-bottom: 0.35rem;
+}
+
+.day-pill {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 13px;
+  padding: 0.85rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.day-pill:hover, .day-pill.selected {
+  border-color: var(--vdf-cyan);
+  background: rgba(2, 132, 199, 0.16);
+  transform: translateY(-2px);
+}
+
+.day-pill.has-debt {
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+.day-pill.overdue {
+  border-color: rgba(244, 63, 94, 0.5);
+  background: rgba(244, 63, 94, 0.1);
+}
+
+.day-pill.credit-balance {
+  border-color: rgba(16, 185, 129, 0.45);
+}
+
+.day-pill-header {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.day-pill-name {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.day-pill-amount {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.98rem;
+  font-weight: 800;
+  margin-top: 0.2rem;
+}
+
+/* ==================== VDF TABLE ==================== */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.vdf-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.81rem;
+  white-space: nowrap;
+}
+
+.vdf-table thead th {
+  background: rgba(2, 132, 199, 0.18);
+  color: var(--text-primary);
+  font-weight: 700;
+  text-align: right;
+  padding: 0.85rem 0.75rem;
+  border-bottom: 1px solid var(--border-strong);
+  font-size: 0.75rem;
+}
+
+.vdf-table thead th:first-child {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  background: #0d1b35;
+  z-index: 2;
+}
+
+body.light-theme .vdf-table thead th:first-child {
+  background: #e0f2fe;
+}
+
+.vdf-table tbody td {
+  padding: 0.85rem 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.vdf-table tbody td:first-child {
+  text-align: left;
+  font-weight: 700;
+  color: var(--vdf-cyan);
+  cursor: pointer;
+  position: sticky;
+  left: 0;
+  background: var(--bg-card);
+  z-index: 1;
+}
+
+.vdf-table tbody tr:hover td {
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.vdf-table tfoot td {
+  padding: 0.9rem 0.75rem;
+  font-weight: 800;
+  text-align: right;
+  background: rgba(16, 185, 129, 0.12);
+  border-top: 2px solid var(--border-strong);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.86rem;
+}
+
+.vdf-table tfoot td:first-child {
+  text-align: left;
+}
+
+.amount-cell {
+  cursor: pointer;
+  padding: 4px 7px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.amount-cell:hover {
+  background: rgba(56, 189, 248, 0.2);
+}
+
+.amount-positive {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.amount-overdue {
+  color: #fb7185;
+  font-weight: 700;
+}
+
+.amount-negative {
+  color: #34d399;
+  font-weight: 700;
+}
+
+.amount-zero {
+  color: var(--text-muted);
+  opacity: 0.65;
+}
+
+/* ==================== MATURITY SCHEDULE CARDS ==================== */
+.schedule-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 1rem;
+}
+
+.maturity-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 15px;
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.maturity-card:hover {
+  border-color: var(--border-strong);
+}
+
+.maturity-card.status-paid {
+  border-left: 4px solid #10b981;
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.maturity-card.status-partial {
+  border-left: 4px solid #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.maturity-card.status-unpaid {
+  border-left: 4px solid #f43f5e;
+}
+
+/* ==================== STATUS BADGES ==================== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.badge-paid {
+  background: rgba(16, 185, 129, 0.18);
+  color: #34d399;
+}
+
+.badge-partial {
+  background: rgba(245, 158, 11, 0.18);
+  color: #fbbf24;
+}
+
+.badge-unpaid {
+  background: rgba(244, 63, 94, 0.18);
+  color: #fb7185;
+}
+
+.badge-info {
+  background: rgba(56, 189, 248, 0.18);
+  color: #38bdf8;
+}
+
+/* ==================== MODALS & FORMS ==================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 7, 18, 0.78);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 1.2rem;
+}
+
+.modal-overlay.open {
+  display: flex;
+}
+
+.modal-box {
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 580px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 1.5rem;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65);
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.4rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  font-family: inherit;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--vdf-cyan);
+}
+
+.view-section {
+  display: none;
+}
+
+.view-section.active {
+  display: block;
+}
+
+/* ==================== PRINT REPORT BANNER ==================== */
+.report-print-banner {
+  display: none;
+}
+
+@media print {
+  .sidebar, .topbar-actions, .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .main-content {
+    padding: 0 !important;
+  }
+  .panel-card, .kpi-card {
+    box-shadow: none !important;
+    border: 1px solid #cbd5e1 !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .report-print-banner {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #0284c7;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 960px) {
+  .app-container {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+  .main-content {
+    padding: 1rem;
+  }
+}
+
+/* ==================== IPHONE STYLE COLLAPSIBLE PAYMENT CALENDAR (SAYFA ALTI) ==================== */
+.ios-cal-wrapper {
+  background: linear-gradient(165deg, rgba(19, 25, 46, 0.92), rgba(11, 15, 29, 0.96));
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  padding: 1.35rem 1.4rem;
+  margin-bottom: 1.4rem;
+  box-shadow: var(--shadow-lg);
+  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.light-theme .ios-cal-wrapper {
+  background: #ffffff;
+}
+
+.ios-cal-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.ios-cal-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ios-cal-month-label {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.32rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.ios-cal-month-label span.yr {
+  color: #f43f5e;
+  font-weight: 800;
+}
+
+.ios-cal-summary-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ios-cal-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.ios-cal-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ios-cal-nav-btn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.ios-cal-nav-btn:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-card-hover);
+}
+
+.ios-cal-collapse-btn {
+  background: rgba(245, 158, 11, 0.16);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  color: #fbbf24;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.ios-cal-collapse-btn:hover {
+  background: rgba(245, 158, 11, 0.28);
+}
+
+/* Küçültülmüş Şerit Görünümü (Kompakt Mod) */
+.ios-cal-compact-strip {
+  display: none;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 6px 2px 10px 2px;
+}
+
+.ios-cal-wrapper.collapsed .ios-cal-compact-strip {
+  display: flex;
+}
+
+.ios-cal-wrapper.collapsed .ios-cal-full-grid-wrap {
+  display: none;
+}
+
+.ios-compact-day-chip {
+  min-width: 185px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 11px 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.ios-compact-day-chip:hover,
+.ios-compact-day-chip.selected {
+  background: rgba(2, 132, 199, 0.16);
+  border-color: var(--vdf-cyan);
+  transform: translateY(-2px);
+}
+
+.ios-cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 8px;
+}
+
+.ios-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.ios-cal-cell {
+  min-height: 92px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 6px 7px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+body.light-theme .ios-cal-cell {
+  background: #f8fafc;
+}
+
+.ios-cal-cell:hover {
+  background: rgba(56, 189, 248, 0.08);
+  border-color: var(--border-strong);
+}
+
+.ios-cal-cell.empty-cell {
+  background: transparent;
+  border-color: transparent;
+  cursor: default;
+  min-height: 40px;
+}
+
+.ios-cal-cell.has-payment {
+  background: rgba(245, 158, 11, 0.07);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.ios-cal-cell.has-payment.all-paid {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.ios-cal-cell.selected-day {
+  border: 2px solid var(--vdf-cyan) !important;
+  background: rgba(2, 132, 199, 0.16) !important;
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.25);
+}
+
+.ios-cal-day-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.ios-cal-day-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.ios-cal-cell.is-today .ios-cal-day-num {
+  background: #f43f5e;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.45);
+}
+
+.ios-cal-cell.selected-day .ios-cal-day-num {
+  background: var(--vdf-cyan);
+  color: #060913;
+  font-weight: 800;
+}
+
+.ios-cal-dots {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.ios-cal-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.ios-cal-events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+}
+
+.ios-cal-event-pill {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 3px 6px;
+  border-radius: 6px;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  flex-direction: column;
+  background: rgba(2, 132, 199, 0.22);
+  color: #bae6fd;
+  border-left: 2.5px solid #38bdf8;
+}
+
+.ios-cal-event-pill.creditor-bilgi {
+  background: rgba(245, 158, 11, 0.22);
+  color: #fde68a;
+  border-left-color: #f59e0b;
+}
+
+.ios-cal-event-pill.is-paid-pill {
+  opacity: 0.65;
+  text-decoration: line-through;
+  background: rgba(16, 185, 129, 0.2);
+  border-left-color: #10b981;
+}
+
+.ios-cal-day-drawer {
+  margin-top: 14px;
+  background: rgba(9, 13, 25, 0.9);
+  border: 1.5px solid var(--border-strong);
+  border-radius: 16px;
+  padding: 16px;
+  display: none;
+}
+
+body.light-theme .ios-cal-day-drawer {
+  background: #f8fafc;
+}
+
+.ios-cal-day-drawer.open {
+  display: block;
+}
+
+.ios-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 12px;
+}
+
+.ios-drawer-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  margin-bottom: 8px;
+}
+
+.ios-drawer-item:last-child {
+  margin-bottom: 0;
+}
+
+
+</style>
+  <script>
+/**
+ * DİZSAN KURUMSAL SIFIR TEMAS OTOMATİK GÜNCELLEME MOTORU (dizsan-auto-updater.js)
+ * Tüm web uygulamalarında (Ziyaret, Toplantı, DizGün, CardFlow, Ödeme Takvimi vb.)
+ * ve tüm cihazlarda (iPhone, iPad, Android, Windows, Mac) sıfır temasla çalışır.
+ * 
+ * - 30 saniyede bir arka plan sürüm kontrolü (version.json?t=...)
+ * - Sekmeye/uygulamaya dönüşte anında kontrol (visibilitychange & focus)
+ * - Service Worker & Browser Cache otomatik temizliği
+ * - 2.5 saniyede otomatik yenileme (Kullanıcının hiçbir şey yapmasına gerek kalmaz)
+ * - Modern sürüm modalı ve yönetici sürüm paneli
+ */
+
+(function () {
+    'use strict';
+
+    // Script etiketinden veya ortamdan parametreleri al
+    const currentScript = document.currentScript || document.querySelector('script[src*="dizsan-auto-updater.js"]');
+    const APP_ID = (currentScript && currentScript.getAttribute('data-app-id')) || 'dizsan-app';
+    const APP_NAME = (currentScript && currentScript.getAttribute('data-app-name')) || document.title || 'Dizsan Uygulaması';
+    const DEFAULT_VERSION = (currentScript && currentScript.getAttribute('data-version')) || window.CURRENT_APP_VERSION || '1.0.0';
+    const STORAGE_KEY_VER = `dizsan_app_version_${APP_ID}`;
+
+    let runningVersion = localStorage.getItem(STORAGE_KEY_VER) || DEFAULT_VERSION;
+    let hasTriggeredUpdate = false;
+    let cachedVersionData = null;
+
+    function cleanVer(v) {
+        return String(v || '').replace(/^[vV]/, '').trim();
+    }
+
+    function compareVersions(v1, v2) {
+        if (!v1 || !v2) return 0;
+        const p1 = cleanVer(v1).split('.').map(p => parseInt(p, 10) || 0);
+        const p2 = cleanVer(v2).split('.').map(p => parseInt(p, 10) || 0);
+        const len = Math.max(p1.length, p2.length);
+        for (let i = 0; i < len; i++) {
+            const num1 = p1[i] || 0;
+            const num2 = p2[i] || 0;
+            if (num1 > num2) return 1;
+            if (num1 < num2) return -1;
+        }
+        return 0;
+    }
+
+    function injectStyles() {
+        if (document.getElementById('dizsan-updater-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'dizsan-updater-styles';
+        style.textContent = `
+            .dizsan-update-banner {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 999999;
+                background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+                color: #ffffff;
+                padding: 0.75rem 1.25rem;
+                box-shadow: 0 4px 25px rgba(2, 132, 199, 0.45);
+                border-bottom: 2px solid #38bdf8;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                animation: dizsanSlideDown 0.35s ease-out;
+            }
+            @keyframes dizsanSlideDown {
+                from { transform: translateY(-100%); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            .dizsan-version-pill-floating {
+                position: fixed;
+                bottom: 12px;
+                right: 12px;
+                z-index: 9999;
+                background: rgba(15, 23, 42, 0.85);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                color: #38bdf8;
+                font-size: 0.75rem;
+                font-weight: 700;
+                padding: 4px 10px;
+                border-radius: 999px;
+                cursor: pointer;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                transition: all 0.2s ease;
+                user-select: none;
+                font-family: inherit;
+            }
+            .dizsan-version-pill-floating:hover {
+                background: #0284c7;
+                color: #ffffff;
+                transform: scale(1.05);
+            }
+            .dizsan-updater-modal {
+                position: fixed;
+                inset: 0;
+                z-index: 9999999;
+                background: rgba(0, 0, 0, 0.75);
+                backdrop-filter: blur(6px);
+                -webkit-backdrop-filter: blur(6px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 1rem;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            }
+            .dizsan-updater-box {
+                background: #0f172a;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                border-radius: 16px;
+                width: 100%;
+                max-width: 460px;
+                color: #f8fafc;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+                overflow: hidden;
+                animation: dizsanPopIn 0.25s ease-out;
+            }
+            @keyframes dizsanPopIn {
+                from { transform: scale(0.92); opacity: 0; }
+                to { transform: scale(1); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    async function fetchVersionInfo() {
+        try {
+            const res = await fetch(`version.json?t=${Date.now()}`, {
+                cache: 'no-store',
+                headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache' }
+            });
+            if (res.ok) {
+                return await res.json();
+            }
+        } catch (e) {}
+        return null;
+    }
+
+    async function checkForUpdates(isManual = false) {
+        const data = await fetchVersionInfo();
+        if (!data) {
+            if (isManual) alert('Sunucu bağlantısı kurulamadı. İnternet bağlantınızı kontrol ediniz.');
+            return false;
+        }
+
+        cachedVersionData = data;
+        const cloudVer = cleanVer(data.version);
+        const curVer = cleanVer(runningVersion);
+
+        // İlk defa kaydediliyorsa yerel hafızaya yaz
+        if (!localStorage.getItem(STORAGE_KEY_VER)) {
+            localStorage.setItem(STORAGE_KEY_VER, cloudVer || curVer);
+            runningVersion = cloudVer || curVer;
+            updateUIBadges();
+            return false;
+        }
+
+        if (compareVersions(cloudVer, curVer) > 0) {
+            triggerZeroTouchUpdate(data);
+            if (isManual) alert(`🎉 Yeni sürüm bulundu: v${cloudVer}! Uygulama otomatik güncelleniyor...`);
+            return true;
+        } else {
+            if (isManual) {
+                alert(`✅ ${APP_NAME} en güncel sürümde (v${curVer}).\n\nTüm cihazlarınız senkronize ve hazır.`);
+            }
+        }
+        return false;
+    }
+
+    function triggerZeroTouchUpdate(data) {
+        if (hasTriggeredUpdate) return;
+        hasTriggeredUpdate = true;
+
+        const newVer = cleanVer(data.version);
+        const notes = data.releaseNotes || 'Performans iyileştirmeleri ve yeni özellikler yayınlandı.';
+        localStorage.setItem(STORAGE_KEY_VER, newVer);
+
+        // Bildirim Bannerı Göster
+        const banner = document.createElement('div');
+        banner.className = 'dizsan-update-banner';
+        banner.innerHTML = `
+            <div style="display:flex; align-items:center; justify-content:space-between; max-width:1100px; margin:0 auto; gap:1rem; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:1.4rem;">🚀</span>
+                    <div>
+                        <strong style="font-size:0.95rem;">${APP_NAME} v${newVer} Yayında!</strong>
+                        <div style="font-size:0.8rem; color:#bae6fd; margin-top:2px;">${notes} — <strong>Cihazınız otomatik güncelleniyor...</strong></div>
+                    </div>
+                </div>
+                <button type="button" id="dizsan-update-now-btn" style="background:#f59e0b; color:#0f172a; border:none; padding:6px 14px; border-radius:8px; font-weight:700; font-size:0.85rem; cursor:pointer;">
+                    ⚡ Şimdi Uygula
+                </button>
+            </div>
+        `;
+        document.body.appendChild(banner);
+
+        const btn = document.getElementById('dizsan-update-now-btn');
+        if (btn) {
+            btn.onclick = () => applyUpdateImmediately();
+        }
+
+        // 2.5 saniye sonra sıfır temasla otomatik yenile
+        setTimeout(() => {
+            applyUpdateImmediately();
+        }, 2500);
+    }
+
+    function applyUpdateImmediately() {
+        if ('caches' in window) {
+            caches.keys().then((names) => {
+                return Promise.all(names.map(name => caches.delete(name)));
+            }).then(() => {
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(regs => {
+                        regs.forEach(r => r.update());
+                    }).catch(() => {});
+                }
+                window.location.reload(true);
+            }).catch(() => {
+                window.location.reload(true);
+            });
+        } else {
+            window.location.reload(true);
+        }
+    }
+
+    function updateUIBadges() {
+        // Mevcut DOM'da sürüm etiketlerini güncelle
+        const targets = document.querySelectorAll('.dynamic-version-text, #app-current-version-text, #sidebar-app-version, .app-version-badge');
+        targets.forEach(el => {
+            el.textContent = `v${cleanVer(runningVersion)}`;
+        });
+
+        // Floating rozet varsa güncelle
+        const floatPill = document.getElementById('dizsan-floating-version-pill');
+        if (floatPill) {
+            floatPill.innerHTML = `⚡ v${cleanVer(runningVersion)}`;
+        }
+    }
+
+    function injectFloatingPillIfNeeded() {
+        // Eğer sayfada belirgin bir sürüm butonu yoksa sağ alta şık bir rozet ekle
+        const existingBadge = document.querySelector('#app-version-badge, #sidebar-app-version, .version-pill, .app-version-chip');
+        if (!existingBadge && !document.getElementById('dizsan-floating-version-pill')) {
+            const pill = document.createElement('div');
+            pill.id = 'dizsan-floating-version-pill';
+            pill.className = 'dizsan-version-pill-floating';
+            pill.title = `${APP_NAME} Sürüm & Güncelleme Bilgisi`;
+            pill.innerHTML = `⚡ v${cleanVer(runningVersion)}`;
+            pill.onclick = () => openUpdaterModal();
+            document.body.appendChild(pill);
+        }
+    }
+
+    function openUpdaterModal() {
+        if (document.getElementById('dizsan-updater-modal')) return;
+
+        const cloudVer = cachedVersionData ? cleanVer(cachedVersionData.version) : cleanVer(runningVersion);
+        const relDate = cachedVersionData ? (cachedVersionData.releasedAt || '-') : '-';
+        const notes = cachedVersionData ? (cachedVersionData.releaseNotes || 'Sistem aktif ve güncel.') : 'Sistem aktif ve güncel.';
+
+        const modal = document.createElement('div');
+        modal.id = 'dizsan-updater-modal';
+        modal.className = 'dizsan-updater-modal';
+        modal.innerHTML = `
+            <div class="dizsan-updater-box">
+                <div style="padding:1.1rem 1.25rem; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-weight:700; font-size:1.05rem; display:flex; align-items:center; gap:0.5rem;">
+                        <span>🚀</span>
+                        <span>${APP_NAME} Sürüm Merkezi</span>
+                    </div>
+                    <button type="button" id="dizsan-modal-close-btn" style="background:transparent; border:none; color:#94a3b8; font-size:1.4rem; cursor:pointer; line-height:1;">&times;</button>
+                </div>
+                <div style="padding:1.25rem;">
+                    <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:0.9rem; margin-bottom:1rem;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.85rem;">
+                            <span style="color:#94a3b8;">Cihazdaki Sürüm:</span>
+                            <span style="font-weight:700; color:#34d399;">v${cleanVer(runningVersion)}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.85rem;">
+                            <span style="color:#94a3b8;">Buluttaki Sürüm:</span>
+                            <span style="font-weight:700; color:#38bdf8;">v${cloudVer}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:0.82rem;">
+                            <span style="color:#94a3b8;">Yayınlanma Tarihi:</span>
+                            <span style="color:#fde68a;">${relDate}</span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:1rem;">
+                        <span style="display:block; font-size:0.8rem; color:#94a3b8; margin-bottom:0.35rem; font-weight:600;">Sürüm Notları:</span>
+                        <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.65rem 0.85rem; font-size:0.82rem; color:#e2e8f0; line-height:1.45;">
+                            ${notes}
+                        </div>
+                    </div>
+                    <div style="background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.25); border-radius:8px; padding:0.65rem 0.85rem; font-size:0.78rem; color:#cbd5e1; line-height:1.4;">
+                        ✅ <strong>Sıfır Temas Motoru Aktif:</strong> Yeni bir sürüm çıktığında tüm telefon, tablet ve bilgisayarlarınız otomatik olarak güncellenir.
+                    </div>
+                </div>
+                <div style="padding:0.9rem 1.25rem; border-top:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; gap:0.5rem;">
+                    <button type="button" id="dizsan-modal-check-btn" style="background:#0284c7; color:#fff; border:none; padding:7px 14px; border-radius:8px; font-size:0.85rem; font-weight:600; cursor:pointer;">
+                        🔄 Güncellemeleri Denetle
+                    </button>
+                    <button type="button" id="dizsan-modal-ok-btn" style="background:rgba(255,255,255,0.1); color:#fff; border:none; padding:7px 16px; border-radius:8px; font-size:0.85rem; cursor:pointer;">
+                        Kapat
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        const closeBtn = document.getElementById('dizsan-modal-close-btn');
+        const okBtn = document.getElementById('dizsan-modal-ok-btn');
+        const checkBtn = document.getElementById('dizsan-modal-check-btn');
+
+        const closeModal = () => modal.remove();
+        if (closeBtn) closeBtn.onclick = closeModal;
+        if (okBtn) okBtn.onclick = closeModal;
+        modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+
+        if (checkBtn) {
+            checkBtn.onclick = async () => {
+                checkBtn.textContent = '⏳ Kontrol Ediliyor...';
+                await checkForUpdates(true);
+                checkBtn.textContent = '🔄 Güncellemeleri Denetle';
+            };
+        }
+    }
+
+    // Başlatma ve Dinleyiciler
+    function init() {
+        injectStyles();
+        injectFloatingPillIfNeeded();
+        updateUIBadges();
+
+        // İlk açılışta kontrol et
+        checkForUpdates(false);
+
+        // Her 30 saniyede bir arka planda kontrol et
+        setInterval(() => {
+            checkForUpdates(false);
+        }, 30000);
+
+        // Sekmeye geri dönüldüğünde veya telefon açıldığında anında kontrol et
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                checkForUpdates(false);
+            }
+        });
+        window.addEventListener('focus', () => {
+            checkForUpdates(false);
+        });
+
+        // Service Worker güncelleme yakalayıcısı
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data && (event.data.type === 'SW_UPDATED' || event.data.type === 'NEW_VERSION_AVAILABLE')) {
+                    checkForUpdates(false);
+                }
+            });
+        }
+
+        // Global köprü
+        window.DizsanAutoUpdater = {
+            check: (isManual) => checkForUpdates(isManual),
+            openModal: () => openUpdaterModal(),
+            getVersion: () => runningVersion,
+            applyUpdate: () => applyUpdateImmediately()
+        };
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+
+</script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- ==================== SOL MENÜ (SIDEBAR) ==================== -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">
+          <i class="fa-solid fa-building-columns"></i>
+        </div>
+        <div class="brand-text">
+          <h2>VDF<span>Ödeme</span></h2>
+          <p>Faktoring &amp; Vade Kokpiti</p>
+        </div>
+      </div>
+
+      <!-- Canlı Senkronizasyon Durum Kartı -->
+      <div class="sync-status-card">
+        <div class="sync-status-header">
+          <span><span class="pulse-dot"></span> VDF CANLI BAĞLANTI</span>
+          <span id="sidebar-sync-badge">AKTİF</span>
+        </div>
+        <div class="sync-status-meta">
+          <div><strong>Son Çekim:</strong> <span id="sidebar-last-sync">17.10.2026 19:12</span></div>
+          <div><strong>Oto. Saatler:</strong> <span id="sidebar-schedule-times">09:00, 14:00</span></div>
+          <div style="margin-top:4px; color:var(--vdf-cyan); font-weight:600;" id="sidebar-source-text">fsis.vdf.com.tr/Debtor/Debt</div>
+        </div>
+      </div>
+
+      <!-- Görünüm Modülleri -->
+      <div class="nav-section">
+        <div class="section-title">Modüller &amp; Görünümler</div>
+        <ul class="nav-list" id="main-nav">
+          <li class="nav-item active" data-view="cockpit" onclick="switchView('cockpit')">
+            <span class="nav-dot" style="background:#38bdf8; box-shadow:0 0 8px #38bdf8;"></span>
+            <span>📊 Özet Kokpit &amp; KPI</span>
+          </li>
+          <li class="nav-item" data-view="table" onclick="switchView('table')">
+            <span class="nav-dot" style="background:#10b981; box-shadow:0 0 8px #10b981;"></span>
+            <span>📋 VDF Canlı Borç Tablosu</span>
+            <span class="nav-badge" id="badge-row-count">2</span>
+          </li>
+          <li class="nav-item" data-view="calendar" onclick="switchView('calendar')">
+            <span class="nav-dot" style="background:#f59e0b; box-shadow:0 0 8px #f59e0b;"></span>
+            <span>📅 Günlük Vade &amp; Takvim</span>
+            <span class="nav-badge" id="badge-due-count">9</span>
+          </li>
+          <li class="nav-item" data-view="payments" onclick="switchView('payments')">
+            <span class="nav-dot" style="background:#6366f1; box-shadow:0 0 8px #6366f1;"></span>
+            <span>✅ Ödeme Durumu &amp; Notlar</span>
+          </li>
+          <li class="nav-item" data-view="limits" onclick="switchView('limits')">
+            <span class="nav-dot" style="background:#a855f7; box-shadow:0 0 8px #a855f7;"></span>
+            <span>🛡️ Limit, Risk &amp; Detaylar</span>
+          </li>
+          <li class="nav-item" data-view="settings" onclick="switchView('settings')">
+            <span class="nav-dot" style="background:#f43f5e; box-shadow:0 0 8px #f43f5e;"></span>
+            <span>⚙️ VDF Bot &amp; Saat Ayarları</span>
+          </li>
+          <li class="nav-item" data-view="mobile" onclick="switchView('mobile')">
+            <span class="nav-dot" style="background:#ec4899; box-shadow:0 0 8px #ec4899;"></span>
+            <span>📱 Mobil PWA &amp; D-Pro</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Müşteri / Alacaklı Filtresi -->
+      <div class="nav-section">
+        <div class="section-title">Alacaklı Kurum Filtresi (TDR)</div>
+        <ul class="nav-list" id="creditor-filter-list">
+          <li class="nav-item active" data-creditor="ALL" onclick="setCreditorFilter('ALL')">
+            <i class="fa-solid fa-layer-group" style="color:#38bdf8;"></i>
+            <span>Tüm Alacaklılar</span>
+          </li>
+          <li class="nav-item" data-creditor="DOGUS_OTOMOTIV" onclick="setCreditorFilter('DOGUS_OTOMOTIV')">
+            <i class="fa-solid fa-truck-fast" style="color:#10b981;"></i>
+            <span>Doğuş Otomotiv A.Ş.</span>
+          </li>
+          <li class="nav-item" data-creditor="DOGUS_BILGI_ISLEM" onclick="setCreditorFilter('DOGUS_BILGI_ISLEM')">
+            <i class="fa-solid fa-microchip" style="color:#f59e0b;"></i>
+            <span>Doğuş Bilgi İşlem A.Ş.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="triggerLiveVdfSync()">
+          <i class="fa-solid fa-rotate" id="sidebar-sync-icon"></i> VDF'den Şimdi Güncelle
+        </button>
+        <a href="../../index.html" class="btn btn-glass" style="width:100%; justify-content:center;">
+          <i class="fa-solid fa-cubes" style="color:#38bdf8;"></i> D-Pro Platformuna Geç
+        </a>
+        <button class="btn btn-glass" style="width:100%; justify-content:center;" onclick="toggleTheme()" id="theme-toggle-btn">
+          <i class="fa-solid fa-sun"></i> Aydınlık / Karanlık Mod
+        </button>
+      </div>
+    </aside>
+
+    <!-- ==================== ANA İÇERİK (MAIN CONTENT) ==================== -->
+    <main class="main-content">
+      <!-- Yazdırma / Rapor Kurumsal Başlığı -->
+      <div class="report-print-banner">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCADwAQ8DASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD3UUtIKWkAUUUUwCiiorm5hs7d555BHEgyzHpQlfYTaSu9EiWiuO8O+LJdf8VXttGoWzhgVo1I5Y5IJPtXYjoKucJU3ysmnUjUjzR2YUtJS1mWFFFFMAorjvG3jSPw/ZSw2ZWS+2/UR/X3rqbGR5dPt5JDl3iVmPqSOaqVOUYptbmcasZScYvYsUUUVJoLRRRSAKKKKYBRRRQAUUUUAApaKKQBRRRTAKKKKACiiigApaSlpAR0UUUAFFFRXNzDZ27z3EgjiQZZieKaV9hNpK70SC5uYbO3kuJ3EcSDJY15D4r8Vza5cmKEmOyQ/Kmcbv8AaNN8V+LJtcuDDEWSyQ/Kn9//AGjXMZ9a+gwOB9mvaVFqfMZlmLqv2VL4fzO0+F//ACMuoZ/59U/9CNesV5N8LTnxLqH/AF6p/wChGvWa8zH/AO8SPZyz/dohS0UVwo7w61yXi/xfHosJtLQh75x1ByIx6n3o8X+MItFha0tGV75+PUR+5968jmnkuZnlldnkY5Zj1NetgcD7T95UXunjZlmXsr0qW/XyK+qzyXFtcyyuXkcEsx6mvofTP+QVaf8AXFP5CvnW/wACxm7/AC19FaZ/yCrT/rin8hVZskpRS7GeSNuM2+5yvi3xlfaBqKWtrZwTKUDFpZCvX6CueHxQ1j/oF2X/AH+b/Ck+I3/IfT/rkv8AWuPFdOGwFCdKMpI5MVmWIp1pRjLRM7L/AIWfrP8A0C7L/v8AN/hS/wDCz9Z/6Bdl/wB/m/wrjaK1/s7D9jD+1cV/N+B2f/CztZ/6Bdl/3+b/AAo/4WbrP/QLsv8Av83+FccKX/PFH9nYfsP+1MV3Ox/4WbrX/QLsf+/zf4Uf8LM1r/oF2P8A3+b/AArkP50opf2fh+w/7UxXc6//AIWXrX/QLsf+/wA3+FH/AAsrWv8AoF2P/f5v8K5Glo/s/D9h/wBqYrudd/wsrWv+gXY/9/m/wpf+Fla3/wBAux/7/N/hXJUopf2fh+w/7TxXc7BPiZqijMmj2r47JckH/wBBNXrX4o2pIF9pF5b56tGVlA/I5/SuDHTimTTR28JllYLGoySe1Zzy6hbsaU81xHNbc9k0rxTouskCyv4nkP8Ayzb5X/75NbNfLzyS6zdrPhorWM/IV+VnPrnqK7XQ/HutaI6R3DtqNkODHIf3i/7rd/ofzrhnl00nKGqPSp5pT5lCpoz2yisrQvEOneIrL7Vp9wHA4dCMPGfQjsa1hXntNaM9SLUldBRRRUjI6KKiubqGzt3uLiQJFGMsxOAKa12E2krsS5uobO3kuLhwkSDJY14/4t8WS67cmGEmOyjPypnG7/aNJ4t8XTa7cGCElLJD8qdN/wDtGuX+tfQYHA+zXtKm581mOYOq/Z0/h/MWjNJmkr1TxrHbfCz/AJGXUP8Ar1T/ANCNetjpXkfws/5GXUf+vVP/AEI163/h2r5bHf7xI+wy3TDR/rqLXIeMPGMeiwm0tGD3zjrnIjHqfel8YeMI9Eha0s2V75xj1EY9T715FNNJcTNLM7PI5yWPU10YHA+0/eVF7py5jmCpJ06b94WWaS4meaZy7ucszdTTAfSk5PWlr6FJJWR8y7t3ZDfDFjN/u19E6Z/yCrT/AK4p/IV863//AB4Tf7pr6J0z/kFWn/XFP5CvCzf4on0eRr3JHmnxG/5Dyf8AXJf61x4rsfiN/wAh5P8Arkv9a46vTwj/AHEPQ8fGx/2ifqKKXFJThXRc5+UBTqbTsce1K4coopRSCnClcfKL9aUcUgpRSuPlF6GnCm/Wo7m6hs4GmmYKq/malysrsuMLuyHXFxFawNNO4VFGa5x3m1yYSzZjs1PyR939zTWM2tTie5BS1U5ji/ve5rRGAoAGAPSojF1Xd/CaTmqS5Y/F+QoAUBVGABgCikorqSONk1le3mk6hHqGmTGG6j6/3XH91h6GvbPCXiy08UacZIwIrqE7biAnlD/h6GvDqn03U7vQdVh1Wx/1kXyyIP8AlpGeqn+npXmY7BqqnOC95HrZdjnSkoT+Fn0Z2oqlpGqW2taVbajaPuguEDAjt6g++au187ax9QnfVEdeffFGeRLOyiDkRszFlHfGK9Brzr4qH9zYfV/6V14Bfv0cWZO2Gl/XU8zzRmmZozX1R8jYfmjNMzS0gsdv8K/+Rl1H/r1T/wBCNesSkrA5BwQpI+uK8n+FX/Iy6j/16p/6Ea9Yn/49pP8AcP8AKvmMb/vLPrcB/usfRnz1dyvLdyySOXdmJLMck1EP1p8//Hw/+9TR1r6aOiSPk5Jt3YopaSlFO4cpBf8A/HhP/umvojTP+QVaf9cU/kK+dr//AI8Zv92vonTP+QTaf9cU/kK8LNviifQ5Mvdkea/Eb/kPJ/1yX+tcdXY/Eb/kPJ/1xX+tcd6Zr0sI/wBxH0PKxi/2ifqLTqbThW9zmsFOFIKcKLj5RaWkHtThSuNRCnUgqve30NhAZpmAA5AHUn0FS2krstQbdkOvLyCxgae4bCqMgdz7Vzo8/V7gXV2CkCn91D6+5pFSfVbgXd6CIgf3UPYD1NaAIAwMY9qmEXUfM9uxU5KkuWPxDhwMClzTM0ZrpOSw/NGaZmjNMLD80mf0NNzRmkOx3Xwr1v7Dq0+gysRBcDzrYHorj7yj6g5/OvXuvevmiK9k0u/s9UiyHtJlk+q5+Yfka+lIZVnhjlQgq6hgR3Br5rMaPs6111PqcsrupRs90JXnPxVP7jT/AKv/AEr0avOPit/qdP8Aq/8ASoy/+OjTMf8AdmeY5ozTc0o5+lfUM+VsL1pwGKQfpThRcLHbfCr/AJGXUf8Ar1T/ANCNesT/APHvJ/uH+VeUfCr/AJGXUf8Ar1T/ANCNerz/APHtL/un+VfMY3/eWfVYL/dV6HzxP/r3+tNp8/8Ar3+tMHWvpE9D5ZrUUUtGKUUXHyla/wD+PGb/AHf8K+idM/5BNp/1xT+Qr531D/kHz/7tfRGmf8gq0/64p/IV4ma/FE97KFaMjzX4i/8AIfT/AK4r/WuOFdl8Rf8AkPL/ANcl/rXHDpXo4R/uI+h5mLX7+XqL1pe/FIKUV0XOflFFOHvTR0p1K47C0tGOKqahqEOnW5klOWP3EHVj6VLkktSoxcnZD76/h0+3aWZuf4VHUn0rn0jm1G4F5e5wP9VF2Ue9JFDLe3IvL45b/lnF2UVfzUwg5vmlsVOaprljuOz6UZpuaM10nLYdmjNNzRmgLDs0ZpuaM0BYdmjNNzRmgLDZlEkLoRwylT+Ne9eAbw33gbSJW+8IFRs/7PH9K8HJr2n4XMzeBLTcOjuB/wB9GvHzZaRZ7WTt80kddXm/xW/1On/V/wClekV5v8V/9Tp/1f8ApXBl/wDHR6OYfwGeXjinCkFOr6ds+WSFp1NpwpXHynbfCr/kZdR/69U/9CNesz/8e0v+6f5V5N8Kv+Rm1H/r1T/0I16xP/x7S/7h/lXzWM/3ln0+C/3Zeh88z/69/rTBT5/9e/1ptfRJ6HzjWoo6cUo6UnWnUXCxWv8A/kHz/wC7X0Rpn/IJtP8Arin8hXzxqH/IPm/3a+h9M/5BNn/1xT+Qrxc0+KJ7eVK0ZHm3xF/5Dy/9cV/rXHDkjNdj8Rf+Q8n/AFxX+tcdXo4R/uYnm4tfvpeo7qaUDPWkpRzWyZjYUc9acKQVR1PVItOhBPzytxHH/eNTKSW5UYNuyH6jqcOnQ73O5z9yMdWNYUME11cfbL75pD9yPsgpIIJZ5zeXrF5z91T0QVdpQg5vmkOc1Bcsdx2aM03NGa6TlsOzRmm5ozQOw7NGabmjNAWHZozTc0ZoCw7NGabmjNAWFdtqEnHAzXuvw5t3t/AelBxh5I/MI9NxJ/rXgssclz5dpCN01zIsKAdyxA/+vX01p9pHp+nW1pEMJBEsaj2AxXi5rPWMT2spp2Upkteb/Fb/AFWn/V/6V6RXnHxW/wBVp31f+lcWX/x0d2P1oM8vFOFIKUCvpmz5pRHUopBSjrSuVynbfCr/AJGbUf8Ar1T/ANCNesT/APHtL/uGvJ/hX/yM+o/9eqf+hGvWJ/8Aj2l/3DXzeM/3hn0eD/3dHz1cf69/rTKfP/x8P9aaB619EmfPNagOetO69aQcDmnY9aVw5StqH/IPm/3a+h9M/wCQTaf9cU/kK+eNQP8AxL5v92vofTP+QTaf9cU/kK8bMviiezlqtGR5t8Rf+Q8v/XFf61x9dh8RR/xPl/64r/WuPFehhX+6iefil+9kL1paAMnis3VdWSxQRxgSXD8Ig5x9a1c+VXZnGDkx+qatFp8WF+edvuIO596xba3keY3l22+dvXog9KS2tX803V03mXDc5/u+1XaIU+b3phUmorlgLn/61GaTNGa6Dm5Rc0ZpM0ZoCwuaM0maM0BYXNGaTNGaAsLmjNJmjNAWFzRmkzQkc9zPFa2sbS3MzbIkUdW9/bvmplNQi5McYOclFHX/AA00RtW8Wi+dc22mjfnsZT0H4DJ/Kvch0rC8H+HIfC/h63sEIab/AFk8vd5D1P8AT6Ct769a+XxFb2tRyZ9Th6PsqaiiOvOPit/qdP8Aq/8ASvR684+K3+r0/wD4H/StMB/HiZ41Xos8xHSlFIKUV9Jc+esLSj260D0pRSuVY7X4V/8AIz6j/wBeqf8AoRr1if8A49pf9w15P8K/+Rm1D/r1T/0I16xP/wAe0v8AuGvnMX/vDPfwv8BHz1PxO/1pop8/+vf60wV9AmeFyi9eTThz1pBz16Uo60XDlK2of8g+c/7NfQ+mf8gm0/64p/IV886j/wAg+b/d/wAK+htL/wCQTZ/9cU/kK8fMviievl3ws83+In/IeX/riv8AWuPHTp7V2HxE/wCQ6vvEv9a841fWBZgW9sBJdPwoHO36120JctCLZw1oOVZ2H6tq62SiGH95cvwqjnH1rKtbUo5uLhvMuH6k9qba2hiZppm8y4f7zGreeK6KdO755mFSaXuwHZ5ozTc0ZroMLDs0ZpuaM0BYdmjNNzRmgLDs0ZpuaM0BYdmjNNzRmgLDs0ZpuR+PpV3SNH1LX7sW2lWrTsDh5MERp/vMeP61FSpCmryZcKUpu0UUizbkSNGkldtscaDLMx6ACvZfh54FbQ4/7V1VVbVJVwqdfs6n+Ef7Xqau+D/h9Y+HAt5ckXep/wDPZh8sfsg7fU8102qaraaPYvd3kqxxIO56+wrwsVjJVpckNj2cLhI0Y889y20iI6qzAM/CjuafXCeC9RvfFesXviC4Ux2MJ+zWUWOn95vc9B+dd32x6cVwSjyuzO+EuZXI683+K3+q0/8A4H/SvSK84+K3+q0//gf9K6cB/HRz4xXos8xAyBTgKQdKXHYV9Hc8LlHCjpR0pwGKVx8p2nwr/wCRn1D/AK9U/wDQjXq9x/x6y/7h/lXlHws/5GfUf+vVP/QjXq8//HtL/uH+VfPYv/eGe5hv4KPnuYfv3+tNHJ9qfP8A69/rTev0r37niWDGacKToOKd0pXHYraj/wAg+b/dr6F0v/kE2f8A1xT+Qr561HjTpv8Ad/wr6F0v/kE2f/XFP5CvIzH4onqZerJnnfxJ0jXr6/EmjadJclogu8EALj6mvPLTwB4ot8ySaJdPO/LOSn+NfSdFc8MZOCSXQ3lhYTvfqfO3/CF+J/8AoBXX5p/jR/whfij/AKAV1+af419E0Vt/aVby+4y/s6kfO3/CF+KP+gFdfmn+NH/CF+KP+gFdfmn+NfRNFH9p1vL7g/s6kfO3/CF+KP8AoBXX5p/jR/whfij/AKAV1+af419E0Uf2lW8vuD+zqR87f8IV4o/6Ad1/30n+NH/CFeKP+gFdf99J/jX0VRR/aVby+4P7OpHzt/whfij/AKAV1+af40f8IV4o/wCgHc/99J/jX0TRR/aVby+4P7OpHzyngTxXIPk0Obd2Dyoo/wDQq1bL4U+Jroj7S9jZoepaQyN+AAA/WvcaQsB1I/OplmFeWg44GjHU890j4R6TakSancTahIDnafkT8h1/Gu9tLS2sbdbe1gjhiXhUjUACsTVvG3h7RgwudSiaUf8ALKI72+mB/WvPde+LV7dqYNFg+yxnjz5RufHsOg/GojTr4h9zR1KNBHo/iLxXpnhu2L3coacjKW6HLt+HYe9eKavrOr+O9ftrNCVedtkMIztjB+834DvWBd3kszvc3UzzSnJLuSxJ/n+Fey/DHwa2jWL6vqEO3UbtcKh6wx9QPqe9dU6UMJT11kzlhUnip9oo7LRNJt9C0a00y2UCK2j2A+p7n8Tk1oUUV5bbbuz0krLQjrzn4qf6vT/+B/0r0avOfir/AKvT/wDgf9K6cD/Gic+L/gs8xFOFNB9KcBivoLni2FApwpB604DnNK4+U7P4Wf8AIz6j/wBeqf8AoRr1ef8A49pP9w/yryj4Wf8AIz6j/wBeqf8AoRr1if8A49pP9w/yrwMV/HZ7OH/gnz5cf69/rTB6U+f/AF7/AFpo9a9655DWoo4FKMnrSdfSsLVtYdn+xWBDSH78g/gFRKfKOML+gusatvY2FmBJM2A56hRXYW/xU8Q29tFAsVkVjQICUboBj1rgra2S3TjLO3LMepqbip+rRnrUK+sShpTO8/4W14j/AOeNj/37b/Gl/wCFteI/+eNj/wB+2/xrgs0Zp/UaH8ofW63c73/hbXiP/njY/wDftv8AGj/hbXiP/njY/wDftv8AGuCzRml9Rofyh9bq9zvf+FteI/8AnjY/9+2/xo/4W14j/wCeNj/37b/GuCzRmj6jQ/lD63V7ne/8La8R/wDPGx/79t/jR/wtrxH/AM8bH/v23+NcFmjNH1Gh/KH1ur3O9/4W14i/542P/ftv8aP+FteI/wDnjY/9+2/xrgqKPqND+UPrdXudy3xY8THoLIf9sj/jUL/FLxXIeLi0Re+2Dn9TXG5ozTWCoL7Iniqr6nSS+PvFU5OdYkRT1Ecaj+lY15qeo6iCL3Uru4UnO2SZtv5VT/CjNaRw1KO0URKtUluxVRE+6APoKGdUUsx+UDJpCwVSx6DrXoPgL4eSaxLHq+twsmnqQ0Fu4wZj2ZvRfQVNevChHXcdGjKrLyJ/ht4FbULiDxBqsJFvG260hcYLkHiQj0z0r2YetNRFRFRVCqowABjAp1fO1azqz5pHuU6apx5YhRRRWZoR15z8VP8AV6f/AMD/AKV6NXnPxU/1en/8D/pXVgv4yOfFfwmeZAYFOA70gpfavfueRyjhzS9OKB0pQO9K47HZ/Cz/AJGfUP8Ar1T/ANCNerT/APHtL/uH+VeU/C3/AJGjUP8Ar1T/ANCNerT/APHtL/uH+VeDiv4zPXofwj5+nH+kP9aZ7Zx7ntUk+BM59/XFcvqmryXUpsrBuP8AlrL6fSvalLl06nlqF9STVdYeZ2sbA/N/y0l7L9KrWtultHheWPLMeppLe3S2i2p1PU9zUtXTp21luRUn9mOw7NGabmjNbGVh2aM03NGaAsOzRmm5ozQFh2aM03NGaAsOzRmm5ozQFh2aM03NGaAsOzRmm5ozjnNGyuFmOzQoaSRIoo2klc4SNBlnPoBWx4d8J6z4ok/0C3KW2drXcwxGv0/vH2Fe2eFPAek+FkEsam5vyMPcy4J/4D/dHtXDiMdCmuWOrOujhJT1lojk/BHwvMMkOq+IkVplIaKzzlU7gv6nvivVhwOOKKK8SpUlUleR6tOEacbIKWkqG8vLewtZLm6kWOGNcszHAH/16z1eltStErsmyAQOMngDPWlrh/Cuu3PjDxFeakimPSbL9xbL/fkPLMfoMfnXcdqqScXYE76kdec/FP8A1en/APA/6V6NXnXxT+5p/wDwP+lb4P8AjIxxK/dM8yHSnD1pFHFOxyBXvXPLsKOtOpOlOHrSuFjsPhb/AMjRqH/Xqn/oRr1e4/49Zf8AcNeU/C7/AJGjUP8Ar1T/ANCNesOokQoc4Ixx714WKf75nq0F+7R8s67qkl5ezWNkdqKSJZemPaqdvClvGFQfU+te3H4LeHDI7/a9UDOxZsTKMk9f4aP+FLeHf+f3Vf8Av+v/AMTXbTx1KOr3OWWFm9EzxbNGa9p/4Ut4d/5/dV/7/r/8TR/wpbw7/wA/uq/9/wBf/ia2/tOn5mf1Kfc8WzRmvaf+FLeHf+f3Vf8Av+v/AMTR/wAKW8O/8/uq/wDf9f8A4mj+0qXmH1Kfc8WzRmvaf+FLeHf+f3Vf+/6//E0v/ClvDv8Az+6r/wB/1/8AiaX9p0vMPqU+54rmjNe1f8KW8O/8/uq/9/1/+Jo/4Ut4d/5/dV/7/r/8TR/aVLzD6lPueK5ozXtX/ClvDv8Az+6r/wB/1/8AiaP+FLeHf+f3Vf8Av+v/AMTT/tKl5h9Sn3PFc0Zr2r/hS3h3/n91X/v+v/xNKvwX8OA83eqN7Gdf6LR/aVLzD6lPueKZHrSBwzBVyzk4CqMk175a/CjwnbMHezluCO887EflkD9K6TT/AA/o+kjFhptrb57pGAaynmi+yi44F9WeCaP4C8S64VaCwNtAf+W938g+oXG4/l+Nel+H/hNpOnFZtVf+0pxztcYiB/3e/wCNehjjtiiuKrjKtTc6oYeEBkUccMaxxIqIowqqMAD0FPoo9q5TcKKoalrWm6PCZdQvoLZR/wA9XAJ+g71534g+MNvErQ6Db+fJ0E86kIPovU/jWtOjUqO0UZzqRj8TPQda17TtAsmu9QuVijUcDqWPoB614b4q8Xap421SHT7JWSGWQJb247kn7zevHPtXOaprN/rF011qN288h7ueFHoB2Fep/CfwabWP/hItRhK3My4tY2H+rjPVserfoB713SpRwkOaWsjlVSdeVlsd94Z0OHw54etNMhwfKT5m/vMTlifqa16KK81u7udqSSsiOvOvil9zT/8Agf8ASvRa87+KP3NP/wCB/wBK6MH/ABkZYj+GzzMcCnCkxzTq9y551he9KWVFLMQoA5J6Cms6RoXdgqgck9q5bUdTl1eU29uSlqpwz9C30qHK2iGo316HT+F/H39ga7d3NtY/akeIR5L7Rwc12H/C6p8Y/sWP/wACD/8AE15PHGsUYRBhRT81DwVOWtTcr6xKOkT1X/hdc/8A0BI//Ag//E0f8Lrn/wCgJH/4EH/4mvKs0Zo+o0R/Wah6r/wuqf8A6Akf/gQf/iaP+F1T/wDQEj/8CD/8TXlWaM0fUaIfWah6r/wuqf8A6Akf/gQf/iaP+F1T/wDQEj/8CD/8TXlWaM0fUaIfWah6r/wuuf8A6Akf/gQf/iaX/hddx/0BI/8AwIP/AMTXlOaM0fUKIfWah6t/wuu4/wCgHH/4EH/4mj/hddx/0A4//Ag//E15TmjNH1GiH1moerf8LruP+gHH/wCBB/8AiaP+F13H/QDj/wDAg/8AxNeU5ozR9Roh9ZqHq3/C67j/AKAcf/gQf/iaP+F13H/QDj/8CD/8TXlOaM0fUaIfWah6t/wuu4/6Acf/AIEH/wCJo/4XZcYwNEj/APAg/wDxNeU5ozR9Roh9ZqHqTfGu9/h0WD8Zz/8AE1DJ8adYP+r0mzQepkZv6CvM80ZoWBo9hPE1DvJ/i54nkOIlsogfSIkj8zWJe+OvE+oArNrNwin+GHEf8ua57NGa1jhKUdokOtUfUc7NLKZZWeSQ9XkYsT+JpCQOvQfpSZ967PwH4An8V3C3t8rw6PG3phrgj+Ef7PqadWrChC4QpyqMs/DnwI3iK8i1fUoiNJgfciOMfaGH/so/U170oCgADGOw7VHbW8NpbR29vGscMahURRgAdqlr5+tWlVnzM9OnTUFZC0UUVkaEded/FH7lh/wP+leiV538Uf8AV2H/AAP+ldOE/jIyrL3DzRelLLJHEheRgqrySTTZJI4IjJIwVF6k1yd9fy6zKVQlLRTg+r167l0W5wxjfVj7/UJdYlMURKWank/36WNFjQKgwB2pEVY0CqMAdBS5ranT5dXuRJ32HZozTc0ZrUnlHZozTc0ZoCw7NGabmjNAWHZozTc0ZoCw7NGabmjNAWHZozTc0ZoCw7NGabmjNAWHZozTc0ZoCw7NGabmjNAWHZozTc0ZpNhyjs0Z+pPoBkn6e9XtG0TU/EN59l0q0ed8/M/RE/3m7f54r2zwd8L9O8Psl7qBF9qQ5Bcfu4j/ALK+vua5K+MhTVlqzanQlPfY4/wP8Lp9Rki1PxAhisx80doThpPQv6L7dTXtcMMUEKQwxqkaKFVFGAoHYCpKK8WrWnVd5M74U1BWQUUUVkWLRSUtICIV5z8V547e2spZWCoockn8K9J8t/SuN+IHgWXxnZW8C3bW/ksSQqBt+cep9q2oT5JpkzXMrHzje3s2sy4OUtFPC9N1PUBFCqMAdBXqS/A29UADVnGOmIU/+Kpf+FH33/QWk/78p/8AFV6dPF0Y6vc5ZUZs8tzRmvUv+FH33/QWk/78p/8AFUf8KPvv+gtJ/wB+U/8Aiq1+v0u5H1eR5bmjNepf8KPvv+gtJ/35T/4qj/hR99/0FpP+/Kf/ABVH1+l3D6vI8tzRmvUv+FH33/QWk/78p/8AFUf8KPvv+gs//flP/iqPr9LuH1eR5bmjNepf8KPvv+gs/wD35T/4qj/hR99/0Fn/AO/Kf/FUfX6XcPq8jy3NGa9S/wCFH33/AEFn/wC/Kf8AxVH/AAo++/6Cz/8AflP/AIqj6/S7h9XkeW5ozXqX/Cj77/oLP/35T/4qj/hR99/0Fn/78p/8VR9fpdw+ryPLc0Zr1P8A4Ufe/wDQXf8A78p/8VR/wo69/wCgu/8A35T/AOKo+v0u4fV5HlmaM16n/wAKOvf+gu//AH5T/wCKo/4Ude/9Bd/+/Kf/ABVH1+l3D6vI8szRmvU/+FHXv/QXf/vyn/xVKvwPvAfm1aUj2hQf+zUfX6QfV5HleaQuF6kV7NafBWxjcNey39zj+FJkjB/IZ/Wut0j4eeG9LIeLRELg/enYSEfmTWc8xivhRSwz6ngOkeG9b16QLpmmzzg/8tCNsY+rNgfln6V6d4d+DCKVn8QXXmnr9mtyQv4t1P4V61HAsSBI4wijoq4AFO2H0rhq42pU06G8aEYlSw02z0q0S0sbaK3gTokahR/+urVO2N6UbG9K5GbLTYbRTtjelGxvSgBtFO2N6UbG9KAG0tLsb0o2n0pAf//Z" alt="Dizsan" style="height:48px; border-radius:8px;">
+          <div>
+            <h2 style="font-size:18px; margin:0;">DİZSAN OTOMOTİV SAN. VE TİC. A.Ş.</h2>
+            <p style="font-size:12px; margin:2px 0 0; color:#475569;">VDF Faktoring Canlı Borç Bilgileri &amp; Vade Ödeme Raporu</p>
+          </div>
+        </div>
+        <div style="text-align:right; font-size:12px;">
+          <div><strong>Rapor Tarihi:</strong> <span id="print-date-label">17.10.2026</span></div>
+          <div><strong>Kaynak:</strong> fsis.vdf.com.tr</div>
+        </div>
+      </div>
+
+      <!-- Üst Bar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <img src="data:image/jpeg;base64,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" alt="Dizsan Logo" style="width:46px; height:46px; border-radius:11px; object-fit:cover; border:1px solid var(--border-strong);">
+          <div class="topbar-title">
+            <h1>
+              <span>VDF Faktoring Borç &amp; Ödeme Yönetimi</span>
+              <span class="badge badge-info" id="live-status-pill"><i class="fa-solid fa-bolt"></i> Canlı Senkron</span>
+            </h1>
+            <div class="debtor-badge">
+              <i class="fa-solid fa-building-shield"></i>
+              <span>Borçlu Unvanı: <strong id="header-debtor-title">DİZSAN OTOMOTİV SAN.VE TİC.</strong></span>
+              <span style="opacity:0.6;">|</span>
+              <span>Yetkili: <strong id="header-portal-user">Ömer Eren</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <button class="btn btn-primary" onclick="triggerLiveVdfSync()" id="top-sync-btn">
+            <i class="fa-solid fa-cloud-arrow-down" id="top-sync-icon"></i>
+            <span>Şimdi Güncelle</span>
+          </button>
+          <button class="btn btn-emerald" onclick="exportVdfExcel()">
+            <i class="fa-solid fa-file-excel"></i>
+            <span>Excel İndir (.csv/.xls)</span>
+          </button>
+          <button class="btn btn-glass" onclick="window.print()">
+            <i class="fa-solid fa-print"></i>
+            <span>Yazdır / PDF</span>
+          </button>
+          <button class="btn btn-glass" onclick="switchView('settings')" title="VDF Giriş ve Otomatik Çekim Saatleri">
+            <i class="fa-solid fa-gear"></i>
+            <span>Oto. Bot Ayarları</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Bildirim Bandı -->
+      <div id="sync-toast" style="display:none; margin-bottom:1.1rem; padding:0.9rem 1.2rem; border-radius:12px; border:1px solid var(--border-strong); background:rgba(2,132,199,0.18); font-size:0.85rem; font-weight:600; align-items:center; justify-content:space-between; gap:1rem;">
+        <span id="sync-toast-text"></span>
+        <button class="btn btn-sm btn-glass" onclick="document.getElementById('sync-toast').style.display='none'">Kapat</button>
+      </div>
+
+      <!-- ==================== 1. GÖRÜNÜM: ÖZET KOKPİT ==================== -->
+      <section class="view-section active" id="view-cockpit">
+        <!-- 6 KPI Kartı -->
+        <div class="kpi-grid">
+          <div class="kpi-card" style="--kpi-accent:#f43f5e;">
+            <div class="kpi-top">
+              <span class="kpi-label">Öncesi (Açık / Vadesi Gelen)</span>
+              <div class="kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            </div>
+            <div class="kpi-value" id="kpi-go-amount">3.892.934,36 ₺</div>
+            <div class="kpi-sub">
+              <span>Net Kalan: <strong id="kpi-go-remaining">3.892.934,36 ₺</strong></span>
+            </div>
+          </div>
+
+          <div class="kpi-card" style="--kpi-accent:#f59e0b;">
+            <div class="kpi-top">
+              <span class="kpi-label">7 İş Günü Vadeli Toplam</span>
+              <div class="kpi-icon"><i class="fa-solid fa-calendar-Week"></i></div>
+            </div>
+            <div class="kpi-value" id="kpi-week-total">1.781.631,01 ₺</div>
+            <div class="kpi-sub" id="kpi-week-sub">
+              <span>19.10.2026 - 27.10.2026 arası</span>
+            </div>
+          </div>
+
+          <div class="kpi-card" style="--kpi-accent:#38bdf8;">
+            <div class="kpi-top">
+              <span class="kpi-label">En Yakın Günlük Vade</span>
+              <div class="kpi-icon"><i class="fa-solid fa-clock"></i></div>
+            </div>
+            <div class="kpi-value" id="kpi-next-day-amount">207.258,14 ₺</div>
+            <div class="kpi-sub" id="kpi-next-day-label">
+              <span>19.10.2026 Pazartesi (Yarın/İlk İş Günü)</span>
+            </div>
+          </div>
+
+          <div class="kpi-card" style="--kpi-accent:#6366f1;">
+            <div class="kpi-top">
+              <span class="kpi-label">Sonrası (İleri Vadeli)</span>
+              <div class="kpi-icon"><i class="fa-solid fa-calendar-plus"></i></div>
+            </div>
+            <div class="kpi-value" id="kpi-after-amount">3.520.517,41 ₺</div>
+            <div class="kpi-sub">
+              <span>27.10.2026 sonrası vadeler</span>
+            </div>
+          </div>
+
+          <div class="kpi-card" style="--kpi-accent:#10b981;">
+            <div class="kpi-top">
+              <span class="kpi-label">Toplam Faturalanmış Borç</span>
+              <div class="kpi-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+            </div>
+            <div class="kpi-value" id="kpi-total-invoiced">9.217.477,08 ₺</div>
+            <div class="kpi-sub">
+              <span>2 Alacaklı Kurum (Doğuş Grubu)</span>
+            </div>
+          </div>
+
+          <div class="kpi-card" style="--kpi-accent:#a855f7;">
+            <div class="kpi-top">
+              <span class="kpi-label">Toplam Faturalanmamış</span>
+              <div class="kpi-icon"><i class="fa-solid fa-receipt"></i></div>
+            </div>
+            <div class="kpi-value" id="kpi-total-uninvoiced">709.218,08 ₺</div>
+            <div class="kpi-sub">
+              <span>Genel Yükümlülük: <strong id="kpi-grand-total">9.926.695,16 ₺</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Günlük Vade Akış Şeridi (Öncesi + 7 İş Günü + Sonrası) -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">
+              <i class="fa-solid fa-chart-column"></i>
+              <span>VDF Günlük Vade Dağılım Şeridi (Tıklayarak Detay / Ödeme İşaretleyin)</span>
+            </div>
+            <span class="badge badge-info" id="timeline-range-badge">19.10.2026 — 27.10.2026</span>
+          </div>
+          <div class="timeline-strip" id="cockpit-timeline-strip"></div>
+        </div>
+
+        <!-- Özet Tablo + Hızlı Alacaklı Kartları -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">
+              <i class="fa-solid fa-table-list"></i>
+              <span>Borç Bilgileri Listesi (Canlı VDF Görünümü)</span>
+            </div>
+            <div style="display:flex; gap:0.5rem;">
+              <button class="btn btn-sm btn-glass" onclick="switchView('table')">
+                <i class="fa-solid fa-expand"></i> Tam Ekran Tablo
+              </button>
+              <button class="btn btn-sm btn-emerald" onclick="exportVdfExcel()">
+                <i class="fa-solid fa-file-excel"></i> Excel'e Aktar
+              </button>
+            </div>
+          </div>
+          <div class="table-responsive" id="cockpit-table-container"></div>
+        </div>
+
+        <!-- ==================== SAYFA ALTI: KÜÇÜLTÜLEBİLİR AYLIK VDF ÖDEME TAKVİMİ (DİĞER UYGULAMALARDAKİ GİBİ) ==================== -->
+        <div class="ios-cal-wrapper" id="ios-payment-calendar">
+          <div class="ios-cal-top">
+            <div class="ios-cal-title-group">
+              <div class="ios-cal-month-label" onclick="toggleIosCalendarCollapse()" title="Küçültmek / Büyütmek için dokunun">
+                <span>📅</span>
+                <span id="ios-cal-month-text">Ekim</span>
+                <span class="yr" id="ios-cal-year-text">2026</span>
+                <span style="font-size:0.78rem; font-weight:600; color:var(--vdf-cyan); margin-left:4px;">// VDF Ödeme Takvimi</span>
+              </div>
+              <div class="ios-cal-summary-pills" id="ios-cal-month-pills"></div>
+            </div>
+            <div class="ios-cal-controls">
+              <button type="button" class="ios-cal-nav-btn" onclick="changeIosCalendarMonth(-1)" title="Önceki Ay">◀ Önceki</button>
+              <button type="button" class="ios-cal-nav-btn" onclick="goToIosCalendarToday()" style="color: #fb7185;">Bugün</button>
+              <button type="button" class="ios-cal-nav-btn" onclick="changeIosCalendarMonth(1)" title="Sonraki Ay">Sonraki ▶</button>
+              <button type="button" class="ios-cal-collapse-btn" id="ios-cal-toggle-btn" onclick="toggleIosCalendarCollapse()">
+                🔼 Küçült
+              </button>
+            </div>
+          </div>
+
+          <!-- Küçültülmüş Şerit Görünümü (Kompakt Mod) -->
+          <div class="ios-cal-compact-strip" id="ios-cal-compact-strip"></div>
+
+          <!-- Tam Aylık Takvim Grid Görünümü -->
+          <div class="ios-cal-full-grid-wrap" id="ios-cal-full-grid-wrap">
+            <div class="ios-cal-weekdays">
+              <div>Pzt</div>
+              <div>Sal</div>
+              <div>Çar</div>
+              <div>Per</div>
+              <div>Cum</div>
+              <div>Cmt</div>
+              <div>Paz</div>
+            </div>
+            <div class="ios-cal-grid" id="ios-cal-days-grid"></div>
+          </div>
+
+          <!-- Tarihe Dokununca Açılan Günlük Ödeme Detay Çekmecesi -->
+          <div class="ios-cal-day-drawer" id="ios-cal-day-drawer"></div>
+        </div>
+
+        <!-- ==================== SAYFA ALTI: KÜÇÜLTÜLEBİLİR GÜNLÜK VADE & ÖDEME KARTLARI ==================== -->
+        <div class="panel-card" id="bottom-maturity-panel">
+          <div class="panel-header" style="margin-bottom:0.85rem;">
+            <div class="panel-title" style="cursor:pointer;" onclick="toggleBottomMaturityCollapse()">
+              <i class="fa-solid fa-calendar-check"></i>
+              <span>Günlük Vade &amp; Ödeme Takvimi (Öncesi, 7 İş Günü ve Sonrası)</span>
+            </div>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+              <button class="btn btn-sm btn-glass" onclick="filterMaturityCards('ALL')">Tümü</button>
+              <button class="btn btn-sm btn-glass" onclick="filterMaturityCards('NONZERO')">Sadece Bakiyesi Olan Günler</button>
+              <button class="btn btn-sm btn-glass" onclick="filterMaturityCards('UNPAID')">Bekleyen Ödemeler</button>
+              <button type="button" class="ios-cal-collapse-btn" id="bottom-maturity-toggle-btn" onclick="toggleBottomMaturityCollapse()">
+                🔼 Küçült
+              </button>
+            </div>
+          </div>
+          <div id="bottom-maturity-body">
+            <div class="schedule-grid" id="cockpit-maturity-cards-container"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 2. GÖRÜNÜM: VDF CANLI BORÇ TABLOSU ==================== -->
+      <section class="view-section" id="view-table">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">
+              <i class="fa-solid fa-table"></i>
+              <span>VDF Faktoring — Borç Bilgileri Listesi (Birebir Canlı Tablo)</span>
+            </div>
+            <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+              <a href="https://fsis.vdf.com.tr/Debtor/Debt" target="_blank" class="btn btn-sm btn-glass">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> VDF Portalını Aç
+              </a>
+              <button class="btn btn-sm btn-emerald" onclick="exportVdfExcel()">
+                <i class="fa-solid fa-file-excel"></i> Excel İndir
+              </button>
+            </div>
+          </div>
+          <div class="table-responsive" id="full-table-container"></div>
+        </div>
+
+        <!-- Seçili Müşteri Alt Detay Tablosu (VDF Fatura Tipi Kırılımı) -->
+        <div class="panel-card" id="creditor-detail-panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <i class="fa-solid fa-magnifying-glass-dollar"></i>
+              <span>Borçlu - Müşteri Borç Bilgileri Detayı (<span id="selected-creditor-label">Tüm Müşteriler</span>)</span>
+            </div>
+          </div>
+          <div class="table-responsive" id="detail-table-container"></div>
+        </div>
+      </section>
+
+      <!-- ==================== 3. GÖRÜNÜM: GÜNLÜK VADE & ÖDEME TAKVİMİ ==================== -->
+      <section class="view-section" id="view-calendar">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">
+              <i class="fa-solid fa-calendar-check"></i>
+              <span>Günlük Vade &amp; Ödeme Takvimi (Öncesi, 7 İş Günü ve Sonrası)</span>
+            </div>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+              <button class="btn btn-sm btn-glass" onclick="filterMaturityCards('ALL')">Tümü</button>
+              <button class="btn btn-sm btn-glass" onclick="filterMaturityCards('NONZERO')">Sadece Bakiyesi Olan Günler</button>
+              <button class="btn btn-sm btn-glass" onclick="filterMaturityCards('UNPAID')">Bekleyen Ödemeler</button>
+            </div>
+          </div>
+          <div class="schedule-grid" id="maturity-cards-container"></div>
+        </div>
+      </section>
+
+      <!-- ==================== 4. GÖRÜNÜM: ÖDEME DURUMU & NOTLAR ==================== -->
+      <section class="view-section" id="view-payments">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">
+              <i class="fa-solid fa-clipboard-check"></i>
+              <span>Ödeme Durumu Takibi, Dekont &amp; Mutabakat Notları</span>
+            </div>
+            <button class="btn btn-sm btn-primary" onclick="openPaymentModal('DOGUS_OTOMOTIV', 'GoAmount', 'Öncesi (Vadesi Gelen)', 3847747.77)">
+              <i class="fa-solid fa-plus"></i> Yeni Ödeme / Not İşle
+            </button>
+          </div>
+          <div class="table-responsive" id="payments-tracking-container"></div>
+        </div>
+      </section>
+
+      <!-- ==================== 5. GÖRÜNÜM: LİMİT, RİSK & DETAYLAR ==================== -->
+      <section class="view-section" id="view-limits">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">
+              <i class="fa-solid fa-shield-halved"></i>
+              <span>VDF Limit, Bloke, Risk ve OYSF Kullanılabilir Limit Detayı</span>
+            </div>
+          </div>
+          <div class="table-responsive" id="limits-table-container"></div>
+        </div>
+      </section>
+
+      <!-- ==================== 6. GÖRÜNÜM: VDF BOT & SAAT AYARLARI ==================== -->
+      <section class="view-section" id="view-settings">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap:1.3rem;">
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-title">
+                <i class="fa-solid fa-robot"></i>
+                <span>VDF Faktoring Otomatik Giriş &amp; Captcha Çözücü</span>
+              </div>
+              <span class="badge badge-paid"><i class="fa-solid fa-check"></i> SMS Yok (Tam Otomatik)</span>
+            </div>
+            <p style="font-size:0.83rem; color:var(--text-secondary); margin-bottom:1rem; line-height:1.5;">
+              VDF Faktoring (<strong>fsis.vdf.com.tr</strong>) kullanıcı adı ve şifrenizi kaydettiğinizde, arka plan botu güvenlik sorusunu (örn. <code>43 + 2 = 45</code>) yerel <strong>macOS Vision OCR</strong> motoruyla otomatik çözerek giriş yapar ve güncel tabloyu çeker.
+            </p>
+            <div class="form-group">
+              <label>VDF Kullanıcı Adı</label>
+              <input type="text" id="cfg-username" class="form-control" placeholder="VDF Faktoring Kullanıcı Adınız">
+            </div>
+            <div class="form-group">
+              <label>VDF Şifre</label>
+              <input type="password" id="cfg-password" class="form-control" placeholder="••••••••">
+            </div>
+            <div style="display:flex; gap:0.65rem; flex-wrap:wrap; margin-top:1rem;">
+              <button class="btn btn-primary" onclick="saveSettingsAndSync(true)">
+                <i class="fa-solid fa-bolt"></i> Bilgileri Kaydet &amp; Şimdi Canlı Çek
+              </button>
+              <button class="btn btn-glass" onclick="saveSettingsAndSync(false)">
+                <i class="fa-solid fa-floppy-disk"></i> Sadece Kaydet
+              </button>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <div class="panel-header">
+              <div class="panel-title">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>Günlük Otomatik Çekim Saatleri</span>
+              </div>
+            </div>
+            <p style="font-size:0.83rem; color:var(--text-secondary); margin-bottom:1rem; line-height:1.5;">
+              Belirlediğiniz saatlerde (varsayılan <strong>09:00</strong> ve <strong>14:00</strong>) sistem otomatik olarak VDF Faktoring'e bağlanır ve güncel borç tablosunu yeniler.
+            </p>
+            <div class="form-group">
+              <label>1. Otomatik Çekim Saati (Sabah)</label>
+              <input type="time" id="cfg-time-1" class="form-control" value="09:00">
+            </div>
+            <div class="form-group">
+              <label>2. Otomatik Çekim Saati (Öğleden Sonra)</label>
+              <input type="time" id="cfg-time-2" class="form-control" value="14:00">
+            </div>
+            <div class="form-group">
+              <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                <input type="checkbox" id="cfg-sched-enabled" checked style="width:18px; height:18px;">
+                <span>Günlük Otomatik Zamanlayıcı Aktif</span>
+              </label>
+            </div>
+            <button class="btn btn-emerald" onclick="saveScheduleSettings()">
+              <i class="fa-solid fa-check"></i> Zamanlayıcı Ayarlarını Kaydet
+            </button>
+          </div>
+        </div>
+
+        <!-- Senkronizasyon Geçmişi Logları -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">
+              <i class="fa-solid fa-list-check"></i>
+              <span>VDF Veri Çekme &amp; Senkronizasyon Geçmişi</span>
+            </div>
+          </div>
+          <div class="table-responsive" id="sync-history-container"></div>
+        </div>
+      </section>
+
+      <!-- ==================== 7. GÖRÜNÜM: MOBİL PWA & D-PRO ENTEGRASYON ==================== -->
+      <section class="view-section" id="view-mobile">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">
+              <i class="fa-solid fa-mobile-screen-button"></i>
+              <span>Mobil PWA Kurulumu &amp; D-Pro Entegrasyon Merkezi</span>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:1.5rem; align-items:center;">
+            <div>
+              <h3 style="font-family:'Outfit',sans-serif; font-size:1.2rem; margin-bottom:0.65rem;">VDF Ödeme // D-Pro &amp; Mobil Uyumlu Yapı</h3>
+              <p style="font-size:0.86rem; color:var(--text-secondary); line-height:1.6; margin-bottom:1rem;">
+                Bu uygulama hem bağımsız <strong>VDF Ödeme</strong> modülü olarak çalışır hem de ortak veri katmanı (<code>/api/vdf-state</code> ve <code>vdf_shared_state.json</code>) sayesinde <strong>D-Pro Kurumsal Yönetim &amp; Operasyon Platformu</strong> ve <strong>Aylık Ödeme Takvimi</strong> ile doğrudan konuşur.
+              </p>
+              <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                <a href="../../index.html" class="btn btn-primary">
+                  <i class="fa-solid fa-cubes"></i> D-Pro İçinde Aç
+                </a>
+                <a href="../odeme-takvimi/index.html" class="btn btn-glass">
+                  <i class="fa-solid fa-calendar-days"></i> Aylık Ödeme Takvimine Git
+                </a>
+              </div>
+            </div>
+            <div style="text-align:center; background:var(--bg-surface); padding:1.25rem; border-radius:16px; border:1px solid var(--border-color);">
+              <img id="mobile-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://dizsan.github.io/dpro/apps/vdf-odeme/index.html" alt="QR Kod" style="width:160px; height:160px; border-radius:12px; background:#fff; padding:8px;">
+              <p style="font-size:0.78rem; color:var(--text-secondary); margin-top:0.65rem;">Telefon veya Tabletten Hızlı Erişim QR Kodu</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ==================== ÖDEME / DURUM İŞARETLEME MODALI ==================== -->
+  <div class="modal-overlay" id="payment-modal">
+    <div class="modal-box">
+      <div class="panel-header">
+        <div class="panel-title">
+          <i class="fa-solid fa-money-check-dollar"></i>
+          <span id="modal-title-text">Vade Ödeme Durumu Güncelle</span>
+        </div>
+        <button class="btn btn-sm btn-glass" onclick="closePaymentModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <input type="hidden" id="pay-creditor-id">
+      <input type="hidden" id="pay-col-key">
+      <div class="form-group">
+        <label>Alacaklı Kurum &amp; Vade Günü</label>
+        <input type="text" id="pay-summary-label" class="form-control" readonly>
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.85rem;">
+        <div class="form-group">
+          <label>VDF Tablo Tutarı (₺)</label>
+          <input type="text" id="pay-original-amount" class="form-control" readonly>
+        </div>
+        <div class="form-group">
+          <label>Ödeme Durumu</label>
+          <select id="pay-status" class="form-control" onchange="onPayStatusChange()">
+            <option value="unpaid">⏳ Bekliyor (Ödenmedi)</option>
+            <option value="partial">🌗 Kısmi Ödendi</option>
+            <option value="paid">✅ Tamamı Ödendi</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.85rem;">
+        <div class="form-group">
+          <label>Ödenen Tutar (₺)</label>
+          <input type="number" step="0.01" id="pay-paid-amount" class="form-control" placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label>Ödeme Tarihi (GG.AA.YYYY)</label>
+          <input type="date" id="pay-date" class="form-control">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Banka / Dekont No / Açıklama Notu</label>
+        <input type="text" id="pay-note" class="form-control" placeholder="Örn: Garanti BBVA EFT / Havale dekontu işlendi">
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:0.65rem; margin-top:1.1rem;">
+        <button class="btn btn-glass" onclick="closePaymentModal()">İptal</button>
+        <button class="btn btn-primary" onclick="savePaymentStatus()">
+          <i class="fa-solid fa-check"></i> Kaydet &amp; Güncelle
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+(function() {
+    // Add CSS dynamically
+    const style = document.createElement('style');
+    style.textContent = `
+        .auto-date-container {
+            display: inline-flex !important;
+            align-items: center !important;
+            box-sizing: border-box !important;
+            cursor: text !important;
+            position: relative;
+        }
+        .auto-date-subinput {
+            border: none !important;
+            background: transparent !important;
+            color: inherit !important;
+            font-size: inherit !important;
+            font-family: inherit !important;
+            outline: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            text-align: center !important;
+            height: 100% !important;
+        }
+        .auto-date-subinput::placeholder {
+            color: rgba(255, 255, 255, 0.25) !important;
+        }
+        .auto-date-subinput-day, .auto-date-subinput-month {
+            width: 22px !important;
+        }
+        .auto-date-subinput-year {
+            width: 42px !important;
+        }
+        .auto-date-separator {
+            opacity: 0.4 !important;
+            margin: 0 1px !important;
+            user-select: none !important;
+        }
+        .auto-date-icon {
+            margin-left: auto !important;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.2s, transform 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z' /%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+        .auto-date-icon:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        .auto-calendar-popup {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 100000;
+            margin-top: 0.5rem;
+            padding: 1.2rem;
+            background: rgba(20, 20, 25, 0.95);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            color: #f3f4f6;
+            font-family: inherit;
+            width: 280px;
+            user-select: none;
+            box-sizing: border-box;
+            animation: autoCalendarFade 0.2s ease-out;
+        }
+        @keyframes autoCalendarFade {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .auto-calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .auto-calendar-nav-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .auto-calendar-nav-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .auto-calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-size: 0.72rem;
+            color: #9ca3af;
+            margin-bottom: 0.6rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .auto-calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        .auto-calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.82rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #e5e7eb;
+        }
+        .auto-calendar-day:hover:not(.empty) {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+        }
+        .auto-calendar-day.active {
+            background: #3b82f6 !important;
+            color: #ffffff !important;
+            font-weight: 700;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+        .auto-calendar-day.today {
+            border: 1px solid #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .auto-calendar-day.empty {
+            cursor: default;
+        }
+        .auto-calendar-selectors {
+            display: flex;
+            gap: 0.3rem;
+        }
+        .auto-calendar-select {
+            background: #1f2937;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            padding: 0.1rem 0.3rem;
+            outline: none;
+            cursor: pointer;
+        }
+    `;
+    document.head.appendChild(style);
+
+    const monthNames = [
+        "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", 
+        "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"
+    ];
+
+    const weekdayNames = ["Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pz"];
+
+    // Traverses prototype chain to safely find a property descriptor
+    function getPropDescriptor(obj, prop) {
+        let proto = obj;
+        while (proto) {
+            const desc = Object.getOwnPropertyDescriptor(proto, prop);
+            if (desc && (desc.get || desc.set)) return desc;
+            proto = Object.getPrototypeOf(proto);
+        }
+        return null;
+    }
+
+    function setupAutoDateInput(originalInput) {
+        if (originalInput.dataset.autoDateSetup) return;
+        
+        // Safety check: parentNode must exist to perform replacement
+        if (!originalInput.parentNode) return;
+        
+        originalInput.dataset.autoDateSetup = 'true';
+
+        // Hide original input
+        originalInput.style.display = 'none';
+
+        // Create container wrapper
+        const container = document.createElement('div');
+        container.className = 'auto-date-container ' + (originalInput.className || '');
+        container.setAttribute('style', originalInput.getAttribute('style') || '');
+        container.style.display = 'inline-flex';
+        container.style.alignItems = 'center';
+        container.style.gap = '2px';
+        container.style.cursor = 'text';
+
+        // Insert container right after the hidden original input
+        originalInput.parentNode.insertBefore(container, originalInput.nextSibling);
+
+        // Day Input
+        const dayInput = document.createElement('input');
+        dayInput.type = 'text';
+        dayInput.maxLength = 2;
+        dayInput.placeholder = 'GG';
+        dayInput.inputMode = 'numeric';
+        dayInput.className = 'auto-date-subinput auto-date-subinput-day';
+
+        // Month Input
+        const monthInput = document.createElement('input');
+        monthInput.type = 'text';
+        monthInput.maxLength = 2;
+        monthInput.placeholder = 'AA';
+        monthInput.inputMode = 'numeric';
+        monthInput.className = 'auto-date-subinput auto-date-subinput-month';
+
+        // Year Input
+        const yearInput = document.createElement('input');
+        yearInput.type = 'text';
+        yearInput.maxLength = 4;
+        yearInput.placeholder = 'YYYY';
+        yearInput.inputMode = 'numeric';
+        yearInput.className = 'auto-date-subinput auto-date-subinput-year';
+
+        // Add separators
+        const sep1 = document.createElement('span');
+        sep1.className = 'auto-date-separator';
+        sep1.textContent = '.';
+
+        const sep2 = document.createElement('span');
+        sep2.className = 'auto-date-separator';
+        sep2.textContent = '.';
+
+        // Add calendar icon
+        const icon = document.createElement('span');
+        icon.className = 'auto-date-icon';
+
+        // Append child elements
+        container.appendChild(dayInput);
+        container.appendChild(sep1);
+        container.appendChild(monthInput);
+        container.appendChild(sep2);
+        container.appendChild(yearInput);
+        container.appendChild(icon);
+
+        // Focus styling
+        const originalBorderColor = container.style.borderColor || 'rgba(255, 255, 255, 0.1)';
+        const originalBoxShadow = container.style.boxShadow || 'none';
+
+        function onFocus() {
+            container.style.borderColor = '#3b82f6';
+            container.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.25)';
+        }
+
+        function onBlur() {
+            setTimeout(() => {
+                if (!container.contains(document.activeElement)) {
+                    container.style.borderColor = originalBorderColor;
+                    container.style.boxShadow = originalBoxShadow;
+                }
+            }, 10);
+        }
+
+        [dayInput, monthInput, yearInput].forEach(inp => {
+            inp.addEventListener('focus', onFocus);
+            inp.addEventListener('blur', onBlur);
+            
+            // Restrict input to digits
+            inp.addEventListener('keydown', (e) => {
+                if (e.key === 'Tab' || e.key === 'Enter' || e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'Backspace' || e.key === 'Delete' || e.metaKey || e.ctrlKey) {
+                    return;
+                }
+                if (!/^\d$/.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        container.addEventListener('click', (e) => {
+            if (e.target === container || e.target.classList.contains('auto-date-separator')) {
+                dayInput.focus();
+            }
+        });
+
+        // Sync value from display inputs to hidden original input
+        const desc = getPropDescriptor(HTMLInputElement.prototype, 'value');
+
+        function updateHiddenValue() {
+            const d = dayInput.value.padStart(2, '0');
+            const m = monthInput.value.padStart(2, '0');
+            const y = yearInput.value;
+
+            if (dayInput.value && monthInput.value && y && y.length === 4) {
+                const val = `${y}-${m}-${d}`;
+                try {
+                    if (desc && desc.get && desc.get.call(originalInput) !== val) {
+                        if (desc.set) {
+                            desc.set.call(originalInput, val);
+                        } else {
+                            originalInput.value = val;
+                        }
+                        originalInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        originalInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                } catch (err) {
+                    console.warn('Could not set hidden input value:', err);
+                }
+            } else {
+                try {
+                    if (desc && desc.get && desc.get.call(originalInput) !== '') {
+                        if (desc.set) {
+                            desc.set.call(originalInput, '');
+                        } else {
+                            originalInput.value = '';
+                        }
+                        originalInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        originalInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                } catch (err) {
+                    console.warn('Could not clear hidden input value:', err);
+                }
+            }
+        }
+
+        // Sync value from hidden input back to display fields
+        function updateCustomFieldsFromHidden(val) {
+            if (val && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+                const parts = val.split('-');
+                dayInput.value = parts[2];
+                monthInput.value = parts[1];
+                yearInput.value = parts[0];
+            } else {
+                dayInput.value = '';
+                monthInput.value = '';
+                yearInput.value = '';
+            }
+        }
+
+        // Hijack getter/setter of the original hidden input
+        if (desc && typeof desc.set === 'function') {
+            try {
+                Object.defineProperty(originalInput, 'value', {
+                    get: function() {
+                        return desc.get.call(this);
+                    },
+                    set: function(val) {
+                        desc.set.call(this, val);
+                        updateCustomFieldsFromHidden(val);
+                    },
+                    configurable: true
+                });
+                // Initialize display values if original has a value
+                updateCustomFieldsFromHidden(desc.get.call(originalInput));
+            } catch (err) {
+                console.warn('Error hijacking input value descriptor:', err);
+            }
+        }
+
+        // Also add change and input event listeners on original input as a fallback sync mechanism
+        originalInput.addEventListener('change', () => {
+            updateCustomFieldsFromHidden(originalInput.value);
+        });
+        originalInput.addEventListener('input', () => {
+            updateCustomFieldsFromHidden(originalInput.value);
+        });
+
+        // Keyboard flow logic with automatic smart jumping
+        dayInput.addEventListener('input', () => {
+            const val = dayInput.value;
+            // Smart auto-advance: if first digit is 4, 5, 6, 7, 8, 9, it's a single digit day
+            if (val.length === 1 && /^[4-9]$/.test(val)) {
+                dayInput.value = '0' + val;
+                setTimeout(() => {
+                    monthInput.focus();
+                    monthInput.select();
+                }, 10);
+            } else if (val.length === 2) {
+                setTimeout(() => {
+                    monthInput.focus();
+                    monthInput.select();
+                }, 10);
+            }
+            updateHiddenValue();
+        });
+
+        dayInput.addEventListener('keydown', (e) => {
+            if (e.key === '.' || e.key === '/' || e.key === '-') {
+                e.preventDefault();
+                if (dayInput.value.length > 0) {
+                    if (dayInput.value.length === 1) {
+                        dayInput.value = '0' + dayInput.value;
+                    }
+                    setTimeout(() => {
+                        monthInput.focus();
+                        monthInput.select();
+                    }, 10);
+                }
+            }
+        });
+
+        monthInput.addEventListener('input', () => {
+            const val = monthInput.value;
+            // Smart auto-advance: if first digit is 2, 3, 4, 5, 6, 7, 8, 9, it's a single digit month
+            if (val.length === 1 && /^[2-9]$/.test(val)) {
+                monthInput.value = '0' + val;
+                setTimeout(() => {
+                    yearInput.focus();
+                    yearInput.select();
+                }, 10);
+            } else if (val.length === 2) {
+                setTimeout(() => {
+                    yearInput.focus();
+                    yearInput.select();
+                }, 10);
+            }
+            updateHiddenValue();
+        });
+
+        monthInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && monthInput.value.length === 0) {
+                setTimeout(() => {
+                    dayInput.focus();
+                }, 10);
+            }
+            if (e.key === '.' || e.key === '/' || e.key === '-') {
+                e.preventDefault();
+                if (monthInput.value.length > 0) {
+                    if (monthInput.value.length === 1) {
+                        monthInput.value = '0' + monthInput.value;
+                    }
+                    setTimeout(() => {
+                        yearInput.focus();
+                        yearInput.select();
+                    }, 10);
+                }
+            }
+        });
+
+        yearInput.addEventListener('input', () => {
+            updateHiddenValue();
+            if (yearInput.value.length === 4) {
+                setTimeout(() => {
+                    // Auto advance to next focusable element on the page
+                    const focusables = Array.from(document.querySelectorAll('input:not([style*="display: none"]):not([type="hidden"]), select, textarea, button'));
+                    const index = focusables.indexOf(yearInput);
+                    if (index > -1 && index < focusables.length - 1) {
+                        let nextIdx = index + 1;
+                        while (nextIdx < focusables.length) {
+                            const nextEl = focusables[nextIdx];
+                            const style = window.getComputedStyle(nextEl);
+                            if (nextEl.tabIndex !== -1 && !nextEl.disabled && style.display !== 'none' && style.visibility !== 'hidden') {
+                                nextEl.focus();
+                                if (typeof nextEl.select === 'function') {
+                                    nextEl.select();
+                                }
+                                break;
+                            }
+                            nextIdx++;
+                        }
+                    }
+                }, 10);
+            }
+        });
+
+        yearInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && yearInput.value.length === 0) {
+                setTimeout(() => {
+                    monthInput.focus();
+                }, 10);
+            }
+        });
+
+        // Setup custom calendar dropdown
+        icon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeAllCalendars();
+            openCalendar(originalInput, container, updateCustomFieldsFromHidden);
+        });
+    }
+
+    let activePopup = null;
+
+    function closeAllCalendars() {
+        if (activePopup) {
+            activePopup.remove();
+            activePopup = null;
+        }
+    }
+
+    document.addEventListener('click', closeAllCalendars);
+
+    function openCalendar(originalInput, container, updateCallback) {
+        let currentYear = new Date().getFullYear();
+        let currentMonth = new Date().getMonth();
+        let currentDay = new Date().getDate();
+
+        const desc = getPropDescriptor(HTMLInputElement.prototype, 'value');
+        let val = '';
+        try {
+            val = desc && desc.get ? desc.get.call(originalInput) : originalInput.value;
+        } catch (err) {
+            val = originalInput.value;
+        }
+        
+        if (val && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+            const parts = val.split('-');
+            currentYear = parseInt(parts[0]);
+            currentMonth = parseInt(parts[1]) - 1;
+            currentDay = parseInt(parts[2]);
+        }
+
+        let selectMonth = currentMonth;
+        let selectYear = currentYear;
+
+        const popup = document.createElement('div');
+        popup.className = 'auto-calendar-popup';
+        popup.addEventListener('click', e => e.stopPropagation());
+
+        function renderMonth() {
+            popup.innerHTML = '';
+
+            const header = document.createElement('div');
+            header.className = 'auto-calendar-header';
+
+            const navPrev = document.createElement('button');
+            navPrev.className = 'auto-calendar-nav-btn';
+            navPrev.innerHTML = '&#9664;';
+            navPrev.addEventListener('click', () => {
+                selectMonth--;
+                if (selectMonth < 0) {
+                    selectMonth = 11;
+                    selectYear--;
+                }
+                renderMonth();
+            });
+
+            const selectors = document.createElement('div');
+            selectors.className = 'auto-calendar-selectors';
+
+            const monthSel = document.createElement('select');
+            monthSel.className = 'auto-calendar-select';
+            monthNames.forEach((name, i) => {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = name;
+                if (i === selectMonth) opt.selected = true;
+                monthSel.appendChild(opt);
+            });
+            monthSel.addEventListener('change', (e) => {
+                selectMonth = parseInt(e.target.value);
+                renderMonth();
+            });
+
+            const yearSel = document.createElement('select');
+            yearSel.className = 'auto-calendar-select';
+            for (let y = selectYear - 15; y <= selectYear + 15; y++) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = y;
+                if (y === selectYear) opt.selected = true;
+                yearSel.appendChild(opt);
+            }
+            yearSel.addEventListener('change', (e) => {
+                selectYear = parseInt(e.target.value);
+                renderMonth();
+            });
+
+            selectors.appendChild(monthSel);
+            selectors.appendChild(yearSel);
+
+            const navNext = document.createElement('button');
+            navNext.className = 'auto-calendar-nav-btn';
+            navNext.innerHTML = '&#9654;';
+            navNext.addEventListener('click', () => {
+                selectMonth++;
+                if (selectMonth > 11) {
+                    selectMonth = 0;
+                    selectYear++;
+                }
+                renderMonth();
+            });
+
+            header.appendChild(navPrev);
+            header.appendChild(selectors);
+            header.appendChild(navNext);
+            popup.appendChild(header);
+
+            const gridWeekdays = document.createElement('div');
+            gridWeekdays.className = 'auto-calendar-weekdays';
+            weekdayNames.forEach(w => {
+                const wd = document.createElement('div');
+                wd.textContent = w;
+                gridWeekdays.appendChild(wd);
+            });
+            popup.appendChild(gridWeekdays);
+
+            const gridDays = document.createElement('div');
+            gridDays.className = 'auto-calendar-days';
+
+            const firstDayIndex = (new Date(selectYear, selectMonth, 1).getDay() + 6) % 7; // Monday-based index
+            const daysInMonth = new Date(selectYear, selectMonth + 1, 0).getDate();
+
+            for (let i = 0; i < firstDayIndex; i++) {
+                const empty = document.createElement('div');
+                empty.className = 'auto-calendar-day empty';
+                gridDays.appendChild(empty);
+            }
+
+            const today = new Date();
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'auto-calendar-day';
+                dayEl.textContent = d;
+
+                if (d === currentDay && selectMonth === currentMonth && selectYear === currentYear) {
+                    dayEl.classList.add('active');
+                }
+
+                if (d === today.getDate() && selectMonth === today.getMonth() && selectYear === today.getFullYear()) {
+                    dayEl.classList.add('today');
+                }
+
+                dayEl.addEventListener('click', () => {
+                    const dd = String(d).padStart(2, '0');
+                    const mm = String(selectMonth + 1).padStart(2, '0');
+                    const yyyy = selectYear;
+                    
+                    try {
+                        if (desc && desc.set) {
+                            originalInput.value = `${yyyy}-${mm}-${dd}`;
+                        } else {
+                            originalInput.value = `${yyyy}-${mm}-${dd}`;
+                            updateCallback(`${yyyy}-${mm}-${dd}`);
+                        }
+                        originalInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        originalInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    } catch (err) {
+                        console.warn('Error setting date from calendar picker:', err);
+                        // Fallback manual sync
+                        updateCallback(`${yyyy}-${mm}-${dd}`);
+                    }
+                    closeAllCalendars();
+                });
+
+                gridDays.appendChild(dayEl);
+            }
+
+            popup.appendChild(gridDays);
+        }
+
+        renderMonth();
+        container.appendChild(popup);
+        activePopup = popup;
+    }
+
+    function initializeAllAutoDateInputs() {
+        document.querySelectorAll('input[type="date"]').forEach(setupAutoDateInput);
+
+        const observer = new MutationObserver(mutations => {
+            mutations.forEach(mutation => {
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        if (node.matches && node.matches('input[type="date"]')) {
+                            setupAutoDateInput(node);
+                        }
+                        if (node.querySelectorAll) {
+                            node.querySelectorAll('input[type="date"]').forEach(setupAutoDateInput);
+                        }
+                    }
+                });
+            });
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeAllAutoDateInputs);
+    } else {
+        initializeAllAutoDateInputs();
+    }
+})();
+
+</script>
+  <script>
+/**
+ * ============================================================================
+ * DİZSAN EVRENSEL GERİ TUŞU & ÇIKIŞ ÖNLEME MOTORU (dizsan-back-navigation.js)
+ * Antigravity AI - Dizsan Ekosistemi v2.0.0
+ * 
+ * Özellikler:
+ * 1. Telefon donanım / kaydırma geri tuşu (Android Back / iOS swipe) basıldığında
+ *    uygulamadan komple çıkmayı %100 engeller.
+ * 2. Gerçek LIFO Navigasyon Yığını (Tab History Stack):
+ *    Sayfalar arası gezinti geçmişini hatırlar ve her geri basışta bir önceki sayfaya döner.
+ * 3. Açık modal (ziyaret, toplantı, aksiyon, müşteri detayı vb.) varsa önce modalı kapatır.
+ * 4. Açık mobil yan menü/sidebar varsa önce menüyü kapatır.
+ * 5. Ana ekrandayken (Kokpit) geri tuşuna basıldığında uygulamadan atmaz;
+ *    "DİZSAN Ana Sayfasındasınız" uyarısı verir ve ekranda kalır.
+ * 6. Tüm uygulamaların üst çubuğuna (navbar) ve tüm modal başlıklarına şık, 
+ *    dokunmatik dostu "← Geri" butonu ekler.
+ * ============================================================================
+ */
+
+(function () {
+    'use strict';
+
+    if (window.DizsanBackNav && window.DizsanBackNav.version === '2.0.0') {
+        return;
+    }
+
+    const tabHistoryStack = [];
+    let isInternalTabSwitch = false;
+    let visibilityCheckTimer = null;
+    let toastTimer = null;
+
+    // 1. Gerekli CSS Stilleri
+    function injectStyles() {
+        if (document.getElementById('dizsan-back-nav-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'dizsan-back-nav-styles';
+        style.textContent = `
+            /* Üst Çubuk Evrensel Geri Tuşu */
+            .dizsan-global-back-btn {
+                display: none;
+                align-items: center;
+                gap: 6px;
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.16);
+                color: #ffffff;
+                padding: 0.38rem 0.72rem;
+                border-radius: 9px;
+                font-size: 0.82rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition: background 0.15s ease, transform 0.1s ease;
+                margin-right: 0.45rem;
+                flex-shrink: 0;
+                -webkit-tap-highlight-color: transparent;
+                user-select: none;
+                -webkit-user-select: none;
+            }
+            .dizsan-global-back-btn:active {
+                transform: scale(0.92);
+                background: rgba(56, 189, 248, 0.25);
+            }
+            .dizsan-global-back-btn.visible {
+                display: inline-flex !important;
+            }
+
+            /* Modal Başlığı İçi Geri Tuşu */
+            .dizsan-modal-back-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.18);
+                color: #e2e8f0;
+                padding: 0.32rem 0.65rem;
+                border-radius: 8px;
+                font-size: 0.78rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background 0.15s ease;
+                margin-right: 0.65rem;
+                flex-shrink: 0;
+                -webkit-tap-highlight-color: transparent;
+                user-select: none;
+            }
+            .dizsan-modal-back-btn:active {
+                transform: scale(0.92);
+            }
+
+            /* Bilgilendirme Toastı */
+            #dizsan-back-toast {
+                position: fixed;
+                bottom: 85px;
+                left: 50%;
+                transform: translateX(-50%) translateY(30px);
+                background: rgba(15, 23, 42, 0.96);
+                border: 1px solid rgba(56, 189, 248, 0.45);
+                color: #f8fafc;
+                padding: 0.65rem 1.25rem;
+                border-radius: 25px;
+                font-size: 0.82rem;
+                font-weight: 600;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75);
+                z-index: 100000;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.2s ease, transform 0.2s ease;
+                white-space: nowrap;
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+            }
+            #dizsan-back-toast.show {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // 2. Toast Bildirimi
+    function showBackToast(text) {
+        let toast = document.getElementById('dizsan-back-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'dizsan-back-toast';
+            document.body.appendChild(toast);
+        }
+        toast.innerHTML = `<i class="fa-solid fa-arrow-left" style="color:#38bdf8; margin-right:6px;"></i> ${text}`;
+        toast.classList.add('show');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+            toast.classList.remove('show');
+            toastTimer = null;
+        }, 1800);
+    }
+
+    // 3. Açık Modal Tespiti
+    function isModalElementOpen(el) {
+        if (!el) return false;
+        if (el.classList.contains('open') || el.classList.contains('active')) return true;
+        if (el.style.display && el.style.display !== 'none') return true;
+        return false;
+    }
+
+    function getActiveModal() {
+        const modalOrder = [
+            'mobile-pwa-prompt-modal',
+            'approval-request-modal',
+            'task-action-modal',
+            'manager-approval-modal',
+            'urgent-departure-modal',
+            'attachment-preview-modal',
+            'meeting-modal',
+            'action-modal',
+            'announcement-modal',
+            'visit-modal',
+            'customer-detail-modal',
+            'customer-modal',
+            'task-modal',
+            'user-modal',
+            'version-modal',
+            'push-test-modal',
+            'install-guide-modal',
+            'change-password-modal',
+            'forgot-password-modal',
+            'new-card-modal',
+            'new-payment-modal'
+        ];
+
+        for (const id of modalOrder) {
+            const el = document.getElementById(id);
+            if (el && isModalElementOpen(el)) return el;
+        }
+
+        const openBackdrops = document.querySelectorAll('.modal-backdrop.open, .modal-backdrop.active, .modal.open, .modal.active');
+        if (openBackdrops.length > 0) {
+            return openBackdrops[openBackdrops.length - 1];
+        }
+
+        return null;
+    }
+
+    // 4. Modalı Kapatma
+    function closeModal(modalEl) {
+        if (!modalEl) return false;
+        const id = modalEl.id;
+
+        const closeFnMap = {
+            'mobile-pwa-prompt-modal': 'closePwaPromptModal',
+            'approval-request-modal': 'closeApprovalRequestModal',
+            'task-action-modal': 'closeTaskActionModal',
+            'manager-approval-modal': 'closeApprovalCenterModal',
+            'urgent-departure-modal': 'closeUrgentDepartureModal',
+            'attachment-preview-modal': 'closeAttachmentPreviewModal',
+            'meeting-modal': 'closeMeetingModal',
+            'action-modal': 'closeActionModal',
+            'announcement-modal': 'closeAnnouncementModal',
+            'visit-modal': 'closeVisitModal',
+            'customer-detail-modal': 'closeCustomerDetailModal',
+            'customer-modal': 'closeCustomerModal',
+            'task-modal': 'closeTaskModal',
+            'user-modal': 'closeUserModal',
+            'version-modal': 'closeVersionModal',
+            'push-test-modal': 'closePushTestCenterModal',
+            'install-guide-modal': 'closeInstallGuideModal',
+            'change-password-modal': 'closeChangePasswordModal',
+            'forgot-password-modal': 'closeForgotPasswordModal'
+        };
+
+        const fnName = closeFnMap[id];
+        if (fnName && typeof window[fnName] === 'function') {
+            window[fnName]();
+            return true;
+        }
+
+        const closeBtn = modalEl.querySelector('.modal-close, .close, [data-dismiss="modal"], button.btn-secondary');
+        if (closeBtn && typeof closeBtn.click === 'function') {
+            closeBtn.click();
+            return true;
+        }
+
+        modalEl.classList.remove('open', 'active');
+        modalEl.style.display = 'none';
+        return true;
+    }
+
+    // 5. Mobil Yan Menü Kontrolü
+    function getActiveSidebar() {
+        const sidebar = document.querySelector('.sidebar.mobile-open, .sidebar.active, .mobile-sidebar.open');
+        return (sidebar && (sidebar.classList.contains('mobile-open') || sidebar.classList.contains('active') || sidebar.classList.contains('open'))) ? sidebar : null;
+    }
+
+    function closeSidebar(sidebarEl) {
+        if (!sidebarEl) return false;
+        if (typeof window.toggleMobileSidebar === 'function') {
+            window.toggleMobileSidebar();
+            return true;
+        }
+        if (typeof window.toggleSidebar === 'function') {
+            window.toggleSidebar();
+            return true;
+        }
+        sidebarEl.classList.remove('mobile-open', 'active', 'open');
+        return true;
+    }
+
+    // 6. Mevcut Sekme Kontrolü
+    function getActiveTabId() {
+        const activeSection = document.querySelector('.tab-section.active, .tab-pane.active, .page-section.active');
+        return activeSection ? activeSection.id : '';
+    }
+
+    function isHomeTab(tabId) {
+        if (!tabId) return true;
+        const homeIds = ['dashboard-tab', 'tab-dashboard', 'kokpit-tab', 'home-tab', 'main-tab', 'summary-tab'];
+        return homeIds.includes(tabId);
+    }
+
+    // 7. Geri Tuşu Karar Motoru (Hierarchical Navigation)
+    function handleBackNavigation() {
+        // 1. Aşama: Açık modal var mı?
+        const modal = getActiveModal();
+        if (modal) {
+            closeModal(modal);
+            scheduleVisibilityCheck();
+            return true;
+        }
+
+        // 2. Aşama: Açık yan menü var mı?
+        const sidebar = getActiveSidebar();
+        if (sidebar) {
+            closeSidebar(sidebar);
+            scheduleVisibilityCheck();
+            return true;
+        }
+
+        // 3. Aşama: Sekme geçmişinde bir önceki sayfa var mı?
+        while (tabHistoryStack.length > 0) {
+            const prevTab = tabHistoryStack.pop();
+            const curTab = getActiveTabId();
+            if (prevTab && prevTab !== curTab && document.getElementById(prevTab)) {
+                isInternalTabSwitch = true;
+                if (typeof window.switchTab === 'function') {
+                    window.switchTab(prevTab);
+                } else {
+                    const btn = document.querySelector(`[data-tab="${prevTab}"], [onclick*="${prevTab}"]`);
+                    if (btn) btn.click();
+                }
+                isInternalTabSwitch = false;
+                scheduleVisibilityCheck();
+                return true;
+            }
+        }
+
+        // 4. Aşama: Eğer geçmiş boş ama ana sekmede değilsek, ana sekmeye dön
+        const curTab = getActiveTabId();
+        if (curTab && !isHomeTab(curTab)) {
+            isInternalTabSwitch = true;
+            if (typeof window.switchTab === 'function') {
+                window.switchTab('dashboard-tab');
+            } else {
+                const homeBtn = document.querySelector('[data-tab="dashboard-tab"], [onclick*="dashboard-tab"]');
+                if (homeBtn) homeBtn.click();
+            }
+            isInternalTabSwitch = false;
+            scheduleVisibilityCheck();
+            return true;
+        }
+
+        // 5. Aşama: Zaten ana sekmedeyiz. D-Pro içindeysek D-Pro Ana Menüsüne dön!
+        if (window.parent && window.parent !== window) {
+            try {
+                window.parent.postMessage({ type: 'DPRO_BACK_TO_MAIN' }, '*');
+                return true;
+            } catch (e) {}
+        }
+        showBackToast('DİZSAN Ana Sayfasındasınız');
+        scheduleVisibilityCheck();
+        return false;
+    }
+
+    // 8. Uygulama İçi "← Geri" Butonuna Basıldığında
+    function handleInAppBack() {
+        handleBackNavigation();
+    }
+
+    // 9. Donanım / Tarayıcı Popstate Kalkanı (Anti-Exit Guard)
+    function pushGuard() {
+        try {
+            history.pushState({ dizsanGuard: true, timestamp: Date.now() }, '', location.href);
+        } catch (e) {}
+    }
+
+    function initPopStateGuard() {
+        pushGuard();
+        pushGuard();
+
+        window.addEventListener('popstate', function (e) {
+            // Tarayıcı geri tuşuna basıldığında geçmiş havuzunu anında tekrar doldur
+            pushGuard();
+
+            // Uygulama içi önceki sayfaya veya modala dön
+            handleBackNavigation();
+        });
+    }
+
+    // 10. Geri Butonlarını DOM'a Enjekte Et
+    function injectTopNavbarBackButton() {
+        let btn = document.getElementById('dizsan-global-back-btn');
+        if (!btn) {
+            const targetContainer = document.querySelector('.navbar-left, .topbar-left, .header-left');
+            if (targetContainer) {
+                btn = document.createElement('button');
+                btn.type = 'button';
+                btn.id = 'dizsan-global-back-btn';
+                btn.className = 'dizsan-global-back-btn visible';
+                btn.title = 'Geri Dön';
+                btn.innerHTML = '<i class="fa-solid fa-arrow-left"></i> <span>Geri</span>';
+                btn.onclick = handleInAppBack;
+                targetContainer.insertBefore(btn, targetContainer.firstChild);
+            }
+        }
+        updateBackButtonVisibility();
+    }
+
+    function injectModalBackButtons() {
+        const headers = document.querySelectorAll('.modal-header');
+        headers.forEach(hdr => {
+            if (hdr.querySelector('.dizsan-modal-back-btn')) return;
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'dizsan-modal-back-btn';
+            btn.innerHTML = '<i class="fa-solid fa-arrow-left"></i> Geri';
+            btn.onclick = function (e) {
+                e.stopPropagation();
+                handleInAppBack();
+            };
+            hdr.insertBefore(btn, hdr.firstChild);
+        });
+    }
+
+    // 11. Geri Butonunun Görünürlüğünü Güncelle
+    function updateBackButtonVisibility() {
+        const btn = document.getElementById('dizsan-global-back-btn');
+        if (!btn) return;
+
+        const isEmbedded = (window.parent && window.parent !== window);
+        const hasModal = !!getActiveModal();
+        const hasSidebar = !!getActiveSidebar();
+        const curTab = getActiveTabId();
+        const hasHistory = tabHistoryStack.length > 0;
+        const isNotHome = curTab && !isHomeTab(curTab);
+        const shouldBeVisible = !!(isEmbedded || hasModal || hasSidebar || hasHistory || isNotHome || true);
+
+        if (btn.classList.contains('visible') !== shouldBeVisible) {
+            btn.classList.toggle('visible', shouldBeVisible);
+        }
+    }
+
+    function scheduleVisibilityCheck() {
+        if (visibilityCheckTimer) return;
+        visibilityCheckTimer = setTimeout(() => {
+            visibilityCheckTimer = null;
+            updateBackButtonVisibility();
+        }, 100);
+    }
+
+    // 12. Sekme Değişikliklerini İzleme (Tab History Tracking)
+    function trackTabSwitch(newTabId) {
+        if (isInternalTabSwitch || !newTabId) return;
+        const curTab = getActiveTabId();
+        if (curTab && curTab !== newTabId) {
+            if (tabHistoryStack.length === 0 || tabHistoryStack[tabHistoryStack.length - 1] !== curTab) {
+                tabHistoryStack.push(curTab);
+                if (tabHistoryStack.length > 30) {
+                    tabHistoryStack.shift();
+                }
+            }
+        }
+        scheduleVisibilityCheck();
+    }
+
+    // 13. Global API Tanımlaması
+    window.DizsanBackNav = {
+        version: '2.0.0',
+        handleInAppBack: handleInAppBack,
+        getActiveModal: getActiveModal,
+        updateBackButtonVisibility: updateBackButtonVisibility,
+        showToast: showBackToast,
+        pushGuard: pushGuard
+    };
+
+    // 14. Başlatıcı
+    function init() {
+        injectStyles();
+        initPopStateGuard();
+        injectTopNavbarBackButton();
+        injectModalBackButtons();
+
+        // switchTab kancası
+        if (typeof window.switchTab === 'function') {
+            const originalSwitchTab = window.switchTab;
+            window.switchTab = function (tabId) {
+                trackTabSwitch(tabId);
+                const res = originalSwitchTab.apply(this, arguments);
+                scheduleVisibilityCheck();
+                return res;
+            };
+        }
+
+        // Tıklamaları dinle ve görünürlüğü güncelle
+        document.addEventListener('click', function (e) {
+            scheduleVisibilityCheck();
+            // Herhangi bir kullanıcı etkileşiminde geçmiş kalkanını tazele
+            pushGuard();
+        }, { passive: true });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+
+</script>
+  <script>
+// VDF Ödeme // Dizsan Faktoring & Vade Takip Sistemi (v1.0.0)
+
+const DEFAULT_VDF_STATE = {
+  version: "1.0.0",
+  lastSyncAt: "17.10.2026 19:12:37",
+  lastSyncSource: "VDF Faktoring Canlı Portal (fsis.vdf.com.tr)",
+  lastSyncStatus: "success",
+  debtorTitle: "DİZSAN OTOMOTİV SAN.VE TİC.",
+  debtorId: "DIZSAN_01",
+  portalUser: "Ömer Eren",
+  portalUrl: "https://fsis.vdf.com.tr/Debtor/Debt",
+  schedule: {
+    enabled: true,
+    times: ["09:00", "14:00"],
+    autoSyncOnStartup: false
+  },
+  dayColumns: [
+    { key: "WeekDay1Amount", date: "19.10.2026", dayName: "Pazartesi" },
+    { key: "WeekDay2Amount", date: "20.10.2026", dayName: "Salı" },
+    { key: "WeekDay3Amount", date: "21.10.2026", dayName: "Çarşamba" },
+    { key: "WeekDay4Amount", date: "22.10.2026", dayName: "Perşembe" },
+    { key: "WeekDay5Amount", date: "23.10.2026", dayName: "Cuma" },
+    { key: "WeekDay6Amount", date: "26.10.2026", dayName: "Pazartesi" },
+    { key: "WeekDay7Amount", date: "27.10.2026", dayName: "Salı" }
+  ],
+  rows: [
+    {
+      id: "DOGUS_OTOMOTIV",
+      CreditorName: "DOĞUŞ OTOMOTİV SERVİS VE TİC.A.Ş.",
+      shortName: "Doğuş Otomotiv",
+      category: "Yedek Parça & Araç Tedarik (TDR)",
+      GoAmount: 3847747.77,
+      WeekDay1Amount: 207258.14,
+      WeekDay2Amount: 1036504.47,
+      WeekDay3Amount: 0.00,
+      WeekDay4Amount: 0.00,
+      WeekDay5Amount: -1042.35,
+      WeekDay6Amount: 435335.23,
+      WeekDay7Amount: 103575.52,
+      After7DaysAmount: 3520517.41,
+      TotalInvoicedAmount: 9172290.49,
+      TotalUnInvoicedAmount: 708310.38,
+      details: [
+        {
+          CostType: "Yedek Parça Faturası (TDR)",
+          GoAmount: 3847747.77,
+          WeekDay1Amount: 207258.14,
+          WeekDay2Amount: 1036504.47,
+          WeekDay3Amount: 0.00,
+          WeekDay4Amount: 0.00,
+          WeekDay5Amount: -1042.35,
+          WeekDay6Amount: 435335.23,
+          WeekDay7Amount: 103575.52,
+          After7DaysAmount: 3520517.41,
+          TotalInvoicedAmount: 9172290.49,
+          TotalUnInvoicedAmount: 708310.38
+        }
+      ],
+      limits: [
+        {
+          LimitType: "Yedek Parça & Servis Faktoring Limiti",
+          Currency: "TRY",
+          LimitAmount: 15000000.00,
+          BlockedAmount: 0.00,
+          RiskAmount: 9172290.49,
+          OYSFUsedAmount: 708310.38,
+          AvailableAmount: 5119399.13
+        }
+      ]
+    },
+    {
+      id: "DOGUS_BILGI_ISLEM",
+      CreditorName: "DOĞUŞ BİLGİ İŞLEM TEKNOLOJİ HİZMETLERİ ANONİM ŞİRKETİ A.Ş.",
+      shortName: "Doğuş Bilgi İşlem (D-Teknoloji)",
+      category: "BT & Yazılım Hizmetleri (TDR)",
+      GoAmount: 45186.59,
+      WeekDay1Amount: 0.00,
+      WeekDay2Amount: 0.00,
+      WeekDay3Amount: 0.00,
+      WeekDay4Amount: 0.00,
+      WeekDay5Amount: 0.00,
+      WeekDay6Amount: 0.00,
+      WeekDay7Amount: 0.00,
+      After7DaysAmount: 0.00,
+      TotalInvoicedAmount: 45186.59,
+      TotalUnInvoicedAmount: 907.70,
+      details: [
+        {
+          CostType: "Teknoloji & Sistem Hizmet Faturası (TDR)",
+          GoAmount: 45186.59,
+          WeekDay1Amount: 0.00,
+          WeekDay2Amount: 0.00,
+          WeekDay3Amount: 0.00,
+          WeekDay4Amount: 0.00,
+          WeekDay5Amount: 0.00,
+          WeekDay6Amount: 0.00,
+          WeekDay7Amount: 0.00,
+          After7DaysAmount: 0.00,
+          TotalInvoicedAmount: 45186.59,
+          TotalUnInvoicedAmount: 907.70
+        }
+      ],
+      limits: [
+        {
+          LimitType: "Bilgi İşlem Hizmet Limiti",
+          Currency: "TRY",
+          LimitAmount: 250000.00,
+          BlockedAmount: 0.00,
+          RiskAmount: 45186.59,
+          OYSFUsedAmount: 907.70,
+          AvailableAmount: 203905.71
+        }
+      ]
+    }
+  ],
+  paymentStatuses: {},
+  paymentLogs: [],
+  syncHistory: [
+    {
+      timestamp: "17.10.2026 19:12:37",
+      source: "Safari Canlı Oturum & VDF Faktoring (fsis.vdf.com.tr)",
+      status: "Başarılı",
+      totalInvoiced: 9217477.08,
+      totalUnInvoiced: 709218.08,
+      rowCount: 2,
+      note: "İlk kurulum — DİZSAN OTOMOTİV SAN.VE TİC. canlı VDF tablosu aktarıldı."
+    }
+  ]
+};
+
+let vdfState = JSON.parse(JSON.stringify(DEFAULT_VDF_STATE));
+let activeCreditorFilter = "ALL";
+let activeMaturityFilter = "NONZERO";
+let selectedDetailCreditorId = "ALL";
+
+function formatTR(num) {
+  const n = Number(num || 0);
+  return n.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function formatCurrency(num) {
+  return formatTR(num) + " ₺";
+}
+
+function getFilteredRows() {
+  const rows = vdfState.rows || [];
+  if (activeCreditorFilter === "ALL") return rows;
+  return rows.filter((r) => r.id === activeCreditorFilter);
+}
+
+function getPaymentRecord(creditorId, colKey) {
+  const key = `${creditorId}__${colKey}`;
+  return (vdfState.paymentStatuses && vdfState.paymentStatuses[key]) || null;
+}
+
+async function loadVdfState() {
+  try {
+    const res = await fetch("/api/vdf-state?t=" + Date.now());
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.rows && data.rows.length > 0) {
+        vdfState = data;
+        localStorage.setItem("dizsan_vdf_odeme_state", JSON.stringify(vdfState));
+        renderAll();
+        return;
+      }
+    }
+  } catch (e) {
+    // Fallback to local json file or localStorage
+  }
+
+  try {
+    const res2 = await fetch("./vdf_shared_state.json?t=" + Date.now());
+    if (res2.ok) {
+      const data2 = await res2.json();
+      if (data2 && data2.rows) {
+        vdfState = data2;
+      }
+    }
+  } catch (e) {}
+
+  const savedLocal = localStorage.getItem("dizsan_vdf_odeme_state");
+  if (savedLocal) {
+    try {
+      const parsed = JSON.parse(savedLocal);
+      if (parsed && parsed.paymentStatuses) {
+        vdfState.paymentStatuses = { ...vdfState.paymentStatuses, ...parsed.paymentStatuses };
+      }
+    } catch (e) {}
+  }
+
+  renderAll();
+}
+
+async function persistVdfState() {
+  localStorage.setItem("dizsan_vdf_odeme_state", JSON.stringify(vdfState));
+  try {
+    await fetch("/api/vdf-state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(vdfState)
+    });
+  } catch (e) {}
+}
+
+function renderAll() {
+  // Header & Sidebar metadata
+  document.getElementById("sidebar-last-sync").textContent = vdfState.lastSyncAt || "-";
+  const times = (vdfState.schedule && vdfState.schedule.times) || ["09:00", "14:00"];
+  document.getElementById("sidebar-schedule-times").textContent = times.join(", ");
+  document.getElementById("header-debtor-title").textContent = vdfState.debtorTitle || "DİZSAN OTOMOTİV SAN.VE TİC.";
+  document.getElementById("header-portal-user").textContent = vdfState.portalUser || "Ömer Eren";
+  document.getElementById("print-date-label").textContent = vdfState.lastSyncAt || new Date().toLocaleDateString("tr-TR");
+  document.getElementById("badge-row-count").textContent = (vdfState.rows || []).length;
+
+  if (vdfState.schedule) {
+    const t1 = document.getElementById("cfg-time-1");
+    const t2 = document.getElementById("cfg-time-2");
+    const en = document.getElementById("cfg-sched-enabled");
+    if (t1 && times[0]) t1.value = times[0];
+    if (t2 && times[1]) t2.value = times[1];
+    if (en) en.checked = vdfState.schedule.enabled !== false;
+  }
+
+  renderKPIs();
+  renderTimelineStrip();
+  renderMainTable("cockpit-table-container");
+  renderMainTable("full-table-container");
+  renderDetailTable();
+  renderMaturityCards();
+  renderIosPaymentCalendar();
+  renderPaymentsTracking();
+  renderLimitsTable();
+  renderSyncHistory();
+}
+
+let iosCalYear = 2026;
+let iosCalMonth = 9; // 0-indexed: 9 = Ekim
+let iosCalSelectedDateStr = null;
+let iosCalCollapsed = false;
+let bottomMaturityCollapsed = false;
+
+const TR_MONTH_NAMES = [
+  "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
+  "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"
+];
+const TR_WEEKDAY_FULL = [
+  "Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"
+];
+
+function toggleIosCalendarCollapse() {
+  iosCalCollapsed = !iosCalCollapsed;
+  const wrapper = document.getElementById("ios-payment-calendar");
+  const btn = document.getElementById("ios-cal-toggle-btn");
+  if (wrapper) wrapper.classList.toggle("collapsed", iosCalCollapsed);
+  if (btn) btn.innerHTML = iosCalCollapsed ? "🔽 Takvimi Aç" : "🔼 Küçült";
+}
+
+function toggleBottomMaturityCollapse() {
+  bottomMaturityCollapsed = !bottomMaturityCollapsed;
+  const body = document.getElementById("bottom-maturity-body");
+  const btn = document.getElementById("bottom-maturity-toggle-btn");
+  if (body) body.style.display = bottomMaturityCollapsed ? "none" : "block";
+  if (btn) btn.innerHTML = bottomMaturityCollapsed ? "🔽 Kartları Aç" : "🔼 Küçült";
+}
+
+function changeIosCalendarMonth(delta) {
+  iosCalMonth += delta;
+  if (iosCalMonth < 0) {
+    iosCalMonth = 11;
+    iosCalYear--;
+  } else if (iosCalMonth > 11) {
+    iosCalMonth = 0;
+    iosCalYear++;
+  }
+  iosCalSelectedDateStr = null;
+  renderIosPaymentCalendar();
+}
+
+function goToIosCalendarToday() {
+  const now = new Date();
+  iosCalYear = now.getFullYear();
+  iosCalMonth = now.getMonth();
+  const dd = String(now.getDate()).padStart(2, "0");
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  iosCalSelectedDateStr = `${dd}.${mm}.${iosCalYear}`;
+  renderIosPaymentCalendar();
+}
+
+function selectIosCalendarDate(dateStr) {
+  if (iosCalSelectedDateStr === dateStr) {
+    iosCalSelectedDateStr = null;
+  } else {
+    iosCalSelectedDateStr = dateStr;
+  }
+  renderIosPaymentCalendar();
+  if (iosCalSelectedDateStr) {
+    const drawer = document.getElementById("ios-cal-day-drawer");
+    if (drawer) drawer.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+}
+
+function collectVdfCalendarEventsMap() {
+  const rows = getFilteredRows();
+  const dayCols = vdfState.dayColumns || [];
+  const map = {};
+
+  rows.forEach((r) => {
+    const isBilgi = r.id === "DOGUS_BILGI_ISLEM" || (r.CreditorName || "").includes("BİLGİ");
+    const shortName = r.shortName || (isBilgi ? "Doğuş Bilgi İşlem" : "Doğuş Otomotiv");
+    const dotColor = isBilgi ? "#f59e0b" : "#38bdf8";
+    const pillClass = isBilgi ? "creditor-bilgi" : "";
+
+    dayCols.forEach((dc) => {
+      const amt = Number(r[dc.key] || 0);
+      if (amt === 0) return;
+      const parts = (dc.date || "").split(".");
+      if (parts.length !== 3) return;
+      const dKey = `${parts[0].padStart(2, "0")}.${parts[1].padStart(2, "0")}.${parts[2]}`;
+      const rec = getPaymentRecord(r.id, dc.key);
+      const isPaid = rec ? rec.status === "paid" : amt < 0;
+
+      if (!map[dKey]) map[dKey] = [];
+      map[dKey].push({
+        creditorId: r.id,
+        colKey: dc.key,
+        fullName: r.CreditorName,
+        shortName,
+        dotColor,
+        pillClass,
+        dateStr: dKey,
+        dayName: dc.dayName,
+        amount: amt,
+        isPaid,
+        paidAmount: rec ? Number(rec.paidAmount || 0) : 0,
+        note: rec ? rec.note || "" : ""
+      });
+    });
+  });
+
+  return map;
+}
+
+function renderIosPaymentCalendar() {
+  const monthEl = document.getElementById("ios-cal-month-text");
+  const yearEl = document.getElementById("ios-cal-year-text");
+  const pillsEl = document.getElementById("ios-cal-month-pills");
+  const gridEl = document.getElementById("ios-cal-days-grid");
+  const compactEl = document.getElementById("ios-cal-compact-strip");
+  const drawerEl = document.getElementById("ios-cal-day-drawer");
+  if (!gridEl || !monthEl || !yearEl) return;
+
+  monthEl.textContent = TR_MONTH_NAMES[iosCalMonth];
+  yearEl.textContent = iosCalYear;
+
+  const paymentMap = collectVdfCalendarEventsMap();
+  const rows = getFilteredRows();
+  const daysInMonth = new Date(iosCalYear, iosCalMonth + 1, 0).getDate();
+  const firstDayRaw = new Date(iosCalYear, iosCalMonth, 1).getDay();
+  const startOffset = (firstDayRaw + 6) % 7;
+
+  const now = new Date();
+  const todayStr = `${String(now.getDate()).padStart(2, "0")}.${String(now.getMonth() + 1).padStart(2, "0")}.${now.getFullYear()}`;
+  const mmStr = String(iosCalMonth + 1).padStart(2, "0");
+
+  let monthTotalAmount = 0;
+  let monthPaidAmount = 0;
+  let monthRemainingAmount = 0;
+  const monthPaymentDates = [];
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ddStr = String(d).padStart(2, "0");
+    const dKey = `${ddStr}.${mmStr}.${iosCalYear}`;
+    const evs = paymentMap[dKey] || [];
+    if (evs.length > 0) {
+      monthPaymentDates.push({ day: d, dateStr: dKey, events: evs });
+      evs.forEach((ev) => {
+        if (ev.amount > 0) {
+          monthTotalAmount += ev.amount;
+          if (ev.isPaid) monthPaidAmount += ev.amount;
+          else monthRemainingAmount += Math.max(0, ev.amount - ev.paidAmount);
+        }
+      });
+    }
+  }
+
+  const goTotal = rows.reduce((s, r) => s + Number(r.GoAmount || 0), 0);
+  const afterTotal = rows.reduce((s, r) => s + Number(r.After7DaysAmount || 0), 0);
+
+  if (pillsEl) {
+    pillsEl.innerHTML = `
+      <span class="ios-cal-pill" style="border-color:rgba(244,63,94,0.35); color:#fb7185;">Öncesi: <strong>${formatCurrency(goTotal)}</strong></span>
+      <span class="ios-cal-pill">7 Gün Vade Toplamı: <strong style="color:var(--vdf-cyan);">${formatCurrency(monthTotalAmount)}</strong></span>
+      <span class="ios-cal-pill" style="color:#34d399; border-color:rgba(16,185,129,0.3);">Ödenen: <strong>${formatCurrency(monthPaidAmount)}</strong></span>
+      <span class="ios-cal-pill" style="color:#fbbf24; border-color:rgba(245,158,11,0.3);">Bekleyen: <strong>${formatCurrency(monthRemainingAmount)}</strong></span>
+      <span class="ios-cal-pill" style="border-color:rgba(99,102,241,0.35); color:#a5b4fc;">Sonrası: <strong>${formatCurrency(afterTotal)}</strong></span>
+    `;
+  }
+
+  if (compactEl) {
+    const compactChips = [];
+
+    // Add Öncesi chip
+    if (goTotal > 0) {
+      const primaryRow = rows[0] || vdfState.rows[0];
+      compactChips.push(`
+        <div class="ios-compact-day-chip" style="border-color:rgba(244,63,94,0.45);" onclick="openPaymentModal('${primaryRow.id}', 'GoAmount', 'Öncesi (Vadesi Gelen)', ${goTotal})">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <span style="font-family:'Outfit',sans-serif; font-weight:800; font-size:0.84rem; color:#fb7185;">Öncesi (Açık)</span>
+            <span class="badge badge-unpaid" style="font-size:0.65rem; padding:2px 6px;">Vadesi Gelen</span>
+          </div>
+          <div style="font-size:0.72rem; color:var(--text-secondary); margin-bottom:4px;">Doğuş Otomotiv + Bilgi İşlem</div>
+          <div style="font-size:0.9rem; font-weight:800;">${formatCurrency(goTotal)}</div>
+        </div>
+      `);
+    }
+
+    monthPaymentDates.forEach((pd) => {
+      const isSel = iosCalSelectedDateStr === pd.dateStr;
+      const daySum = pd.events.reduce((s, e) => s + e.amount, 0);
+      const allPaid = pd.events.every((e) => e.isPaid);
+      const lines = pd.events.map((e) => `${e.isPaid ? "✓ " : ""}${e.shortName}: ${formatCurrency(e.amount)}`).join("<br>");
+      compactChips.push(`
+        <div class="ios-compact-day-chip ${isSel ? "selected" : ""}" onclick="selectIosCalendarDate('${pd.dateStr}')">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <span style="font-family:'Outfit',sans-serif; font-weight:800; font-size:0.84rem;">${pd.day} ${TR_MONTH_NAMES[iosCalMonth]}</span>
+            <span style="font-size:0.65rem; padding:2px 6px; border-radius:10px; background:${allPaid ? "rgba(16,185,129,0.2)" : "rgba(245,158,11,0.2)"}; color:${allPaid ? "#34d399" : "#fbbf24"}; font-weight:700;">
+              ${allPaid ? "Ödendi" : "Bekliyor"}
+            </span>
+          </div>
+          <div style="font-size:0.72rem; color:var(--text-secondary); line-height:1.35; margin-bottom:4px;">${lines}</div>
+          <div style="font-size:0.88rem; font-weight:800; color:var(--vdf-cyan);">${formatCurrency(daySum)}</div>
+        </div>
+      `);
+    });
+
+    if (afterTotal > 0) {
+      const primaryRow = rows[0] || vdfState.rows[0];
+      compactChips.push(`
+        <div class="ios-compact-day-chip" style="border-color:rgba(99,102,241,0.45);" onclick="openPaymentModal('${primaryRow.id}', 'After7DaysAmount', 'Sonrası (İleri Vadeli)', ${afterTotal})">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <span style="font-family:'Outfit',sans-serif; font-weight:800; font-size:0.84rem; color:#a5b4fc;">Sonrası (27.10+)</span>
+            <span class="badge badge-info" style="font-size:0.65rem; padding:2px 6px;">İleri Vade</span>
+          </div>
+          <div style="font-size:0.72rem; color:var(--text-secondary); margin-bottom:4px;">Doğuş Otomotiv A.Ş.</div>
+          <div style="font-size:0.9rem; font-weight:800;">${formatCurrency(afterTotal)}</div>
+        </div>
+      `);
+    }
+
+    compactEl.innerHTML = compactChips.join("");
+  }
+
+  let cellsHtml = "";
+  for (let i = 0; i < startOffset; i++) {
+    cellsHtml += `<div class="ios-cal-cell empty-cell"></div>`;
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ddStr = String(d).padStart(2, "0");
+    const dKey = `${ddStr}.${mmStr}.${iosCalYear}`;
+    const evs = paymentMap[dKey] || [];
+    const isToday = dKey === todayStr;
+    const isSelected = dKey === iosCalSelectedDateStr;
+    const hasPay = evs.length > 0;
+    const allPaid = hasPay && evs.every((e) => e.isPaid);
+
+    let cellClasses = "ios-cal-cell";
+    if (isToday) cellClasses += " is-today";
+    if (isSelected) cellClasses += " selected-day";
+    if (hasPay) cellClasses += " has-payment";
+    if (allPaid) cellClasses += " all-paid";
+
+    const dotsHtml = evs.map((e) => `<span class="ios-cal-dot" style="background:${e.dotColor};"></span>`).join("");
+    const pillsHtml = evs
+      .map(
+        (e) => `
+      <div class="ios-cal-event-pill ${e.pillClass} ${e.isPaid ? "is-paid-pill" : ""}" title="${e.fullName} - ${formatCurrency(e.amount)}">
+        <span>${e.isPaid ? "✓ " : ""}${e.shortName}</span>
+        <span style="font-weight:800; color:#fff;">${formatTR(e.amount)} ₺</span>
+      </div>
+    `
+      )
+      .join("");
+
+    cellsHtml += `
+      <div class="${cellClasses}" onclick="selectIosCalendarDate('${dKey}')">
+        <div class="ios-cal-day-top">
+          <span class="ios-cal-day-num">${d}</span>
+          <div class="ios-cal-dots">${dotsHtml}</div>
+        </div>
+        <div class="ios-cal-events-list">
+          ${pillsHtml}
+        </div>
+      </div>
+    `;
+  }
+  gridEl.innerHTML = cellsHtml;
+
+  if (drawerEl) {
+    if (!iosCalSelectedDateStr) {
+      drawerEl.classList.remove("open");
+      drawerEl.innerHTML = "";
+    } else {
+      const selEvents = paymentMap[iosCalSelectedDateStr] || [];
+      const [sD, sM, sY] = iosCalSelectedDateStr.split(".");
+      const selDateObj = new Date(parseInt(sY, 10), parseInt(sM, 10) - 1, parseInt(sD, 10));
+      const weekdayName = TR_WEEKDAY_FULL[selDateObj.getDay()];
+      const prettyDate = `${parseInt(sD, 10)} ${TR_MONTH_NAMES[parseInt(sM, 10) - 1]} ${sY} ${weekdayName}`;
+      const dayTotal = selEvents.reduce((acc, item) => acc + item.amount, 0);
+
+      let itemsHtml = "";
+      if (selEvents.length === 0) {
+        itemsHtml = `
+          <div style="padding:12px; text-align:center; color:var(--text-secondary); font-size:0.84rem;">
+            📅 <strong>${prettyDate}</strong> tarihinde VDF 7 iş günü listesinde vade kaydı bulunmamaktadır.
+          </div>
+        `;
+      } else {
+        itemsHtml = selEvents
+          .map(
+            (ev) => `
+          <div class="ios-drawer-item" style="border-left:4px solid ${ev.dotColor};">
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span style="font-family:'Outfit',sans-serif; font-size:0.96rem; font-weight:800;">${ev.fullName}</span>
+                <span class="badge ${ev.isPaid ? "badge-paid" : "badge-unpaid"}">
+                  ${ev.isPaid ? "✅ ÖDENDİ" : "⏳ ÖDEME BEKLİYOR"}
+                </span>
+              </div>
+              <div style="font-size:0.78rem; color:var(--text-secondary);">
+                Vade Günü: <strong>${ev.dateStr} (${ev.dayName})</strong>
+                ${ev.note ? ` &nbsp;•&nbsp; Not: <strong>${ev.note}</strong>` : ""}
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <div style="font-family:'Outfit',sans-serif; font-size:1.1rem; font-weight:800; color:var(--vdf-cyan);">
+                ${formatCurrency(ev.amount)}
+              </div>
+              <button type="button" class="btn btn-sm btn-glass" onclick="openPaymentModal('${ev.creditorId}', '${ev.colKey}', '${ev.dateStr} (${ev.dayName})', ${ev.amount})">
+                <i class="fa-solid fa-pen-to-square"></i> Durum / Not İşle
+              </button>
+              ${
+                !ev.isPaid && ev.amount > 0
+                  ? `<button type="button" class="btn btn-sm btn-emerald" onclick="quickMarkPaid('${ev.creditorId}', '${ev.colKey}', '${ev.dateStr}', ${ev.amount})">
+                      <i class="fa-solid fa-check"></i> Ödendi İşaretle
+                    </button>`
+                  : ""
+              }
+            </div>
+          </div>
+        `
+          )
+          .join("");
+      }
+
+      drawerEl.innerHTML = `
+        <div class="ios-drawer-header">
+          <div>
+            <div style="font-family:'Outfit',sans-serif; font-size:1rem; font-weight:800;">
+              📌 ${prettyDate}
+            </div>
+            <div style="font-size:0.76rem; color:var(--text-secondary); margin-top:2px;">
+              ${selEvents.length > 0 ? `Bu tarihte toplam <strong>${selEvents.length} kalem</strong> VDF ödemesi (${formatCurrency(dayTotal)}) bulunuyor.` : "Bu tarihte VDF ödemesi yok."}
+            </div>
+          </div>
+          <button type="button" class="btn btn-sm btn-glass" onclick="selectIosCalendarDate('${iosCalSelectedDateStr}')">
+            ✕ Detayı Kapat
+          </button>
+        </div>
+        ${itemsHtml}
+      `;
+      drawerEl.classList.add("open");
+    }
+  }
+}
+
+function renderKPIs() {
+  const rows = getFilteredRows();
+  const dayCols = vdfState.dayColumns || [];
+
+  let goTotal = 0;
+  let goPaid = 0;
+  let weekTotal = 0;
+  let afterTotal = 0;
+  let invoicedTotal = 0;
+  let uninvoicedTotal = 0;
+
+  rows.forEach((r) => {
+    const goVal = Number(r.GoAmount || 0);
+    goTotal += goVal;
+    const goRec = getPaymentRecord(r.id, "GoAmount");
+    if (goRec && (goRec.status === "paid" || goRec.status === "partial")) {
+      goPaid += Number(goRec.paidAmount || 0);
+    }
+
+    dayCols.forEach((dc) => {
+      weekTotal += Number(r[dc.key] || 0);
+    });
+
+    afterTotal += Number(r.After7DaysAmount || 0);
+    invoicedTotal += Number(r.TotalInvoicedAmount || 0);
+    uninvoicedTotal += Number(r.TotalUnInvoicedAmount || 0);
+  });
+
+  // Find nearest upcoming day with positive amount
+  let nextDayAmount = 0;
+  let nextDayLabel = "Yakın vadeli ödeme yok";
+  for (const dc of dayCols) {
+    const colSum = rows.reduce((acc, r) => acc + Number(r[dc.key] || 0), 0);
+    if (colSum > 0) {
+      nextDayAmount = colSum;
+      nextDayLabel = `${dc.date} ${dc.dayName}`;
+      break;
+    }
+  }
+
+  document.getElementById("kpi-go-amount").textContent = formatCurrency(goTotal);
+  document.getElementById("kpi-go-remaining").textContent = formatCurrency(Math.max(0, goTotal - goPaid));
+  document.getElementById("kpi-week-total").textContent = formatCurrency(weekTotal);
+  if (dayCols.length > 0) {
+    const rangeStr = `${dayCols[0].date} — ${dayCols[dayCols.length - 1].date}`;
+    document.getElementById("kpi-week-sub").textContent = `${rangeStr} arası (7 İş Günü)`;
+    document.getElementById("timeline-range-badge").textContent = rangeStr;
+  }
+  document.getElementById("kpi-next-day-amount").textContent = formatCurrency(nextDayAmount);
+  document.getElementById("kpi-next-day-label").textContent = nextDayLabel;
+  document.getElementById("kpi-after-amount").textContent = formatCurrency(afterTotal);
+  document.getElementById("kpi-total-invoiced").textContent = formatCurrency(invoicedTotal);
+  document.getElementById("kpi-total-uninvoiced").textContent = formatCurrency(uninvoicedTotal);
+  document.getElementById("kpi-grand-total").textContent = formatCurrency(invoicedTotal + uninvoicedTotal);
+}
+
+function renderTimelineStrip() {
+  const container = document.getElementById("cockpit-timeline-strip");
+  if (!container) return;
+  const rows = getFilteredRows();
+  const dayCols = vdfState.dayColumns || [];
+
+  const allSlots = [
+    { key: "GoAmount", title: "Öncesi", subtitle: "Vadesi Gelen", isOverdue: true },
+    ...dayCols.map((dc) => ({ key: dc.key, title: dc.date, subtitle: dc.dayName, isOverdue: false })),
+    { key: "After7DaysAmount", title: "Sonrası", subtitle: "İleri Vadeli", isOverdue: false }
+  ];
+
+  container.innerHTML = allSlots
+    .map((slot) => {
+      const total = rows.reduce((acc, r) => acc + Number(r[slot.key] || 0), 0);
+      let cls = "day-pill";
+      if (slot.isOverdue && total > 0) cls += " overdue";
+      else if (total > 0) cls += " has-debt";
+      else if (total < 0) cls += " credit-balance";
+
+      const colorStyle =
+        slot.isOverdue && total > 0
+          ? "color:#fb7185;"
+          : total < 0
+          ? "color:#34d399;"
+          : total > 0
+          ? "color:var(--text-primary);"
+          : "color:var(--text-muted);";
+
+      const primaryRow = rows[0] || (vdfState.rows && vdfState.rows[0]);
+      const clickCreditor = primaryRow ? primaryRow.id : "DOGUS_OTOMOTIV";
+
+      return `
+        <div class="${cls}" onclick="openPaymentModal('${clickCreditor}', '${slot.key}', '${slot.title} (${slot.subtitle})', ${total})">
+          <div class="day-pill-header">
+            <span>${slot.title}</span>
+            ${total > 0 ? '<i class="fa-solid fa-circle-Exclamation" style="font-size:0.7rem; color:#f59e0b;"></i>' : ""}
+          </div>
+          <div class="day-pill-name">${slot.subtitle}</div>
+          <div class="day-pill-amount" style="${colorStyle}">${formatTR(total)} ₺</div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function getAmountCellClass(val, isOverdue = false) {
+  const n = Number(val || 0);
+  if (n < 0) return "amount-cell amount-negative";
+  if (n === 0) return "amount-cell amount-zero";
+  if (isOverdue) return "amount-cell amount-overdue";
+  return "amount-cell amount-positive";
+}
+
+function renderMainTable(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const rows = getFilteredRows();
+  const dayCols = vdfState.dayColumns || [];
+
+  const totals = {
+    GoAmount: 0,
+    After7DaysAmount: 0,
+    TotalInvoicedAmount: 0,
+    TotalUnInvoicedAmount: 0
+  };
+  dayCols.forEach((dc) => (totals[dc.key] = 0));
+
+  const bodyHtml = rows
+    .map((r) => {
+      totals.GoAmount += Number(r.GoAmount || 0);
+      totals.After7DaysAmount += Number(r.After7DaysAmount || 0);
+      totals.TotalInvoicedAmount += Number(r.TotalInvoicedAmount || 0);
+      totals.TotalUnInvoicedAmount += Number(r.TotalUnInvoicedAmount || 0);
+
+      const daysHtml = dayCols
+        .map((dc) => {
+          const val = Number(r[dc.key] || 0);
+          totals[dc.key] += val;
+          const rec = getPaymentRecord(r.id, dc.key);
+          const statusDot =
+            rec && rec.status === "paid"
+              ? ' <i class="fa-solid fa-circle-check" style="color:#10b981;" title="Ödendi"></i>'
+              : rec && rec.status === "partial"
+              ? ' <i class="fa-solid fa-circle-half-stroke" style="color:#f59e0b;" title="Kısmi Ödendi"></i>'
+              : "";
+          return `<td>
+            <span class="${getAmountCellClass(val)}" onclick="openPaymentModal('${r.id}', '${dc.key}', '${dc.date} (${dc.dayName})', ${val})">
+              ${formatTR(val)}${statusDot}
+            </span>
+          </td>`;
+        })
+        .join("");
+
+      const goRec = getPaymentRecord(r.id, "GoAmount");
+      const goStatusDot =
+        goRec && goRec.status === "paid"
+          ? ' <i class="fa-solid fa-circle-check" style="color:#10b981;"></i>'
+          : goRec && goRec.status === "partial"
+          ? ' <i class="fa-solid fa-circle-half-stroke" style="color:#f59e0b;"></i>'
+          : "";
+
+      return `
+        <tr>
+          <td onclick="selectCreditorDetail('${r.id}')" title="Detayları görmek için tıklayın">
+            <i class="fa-solid fa-building" style="margin-right:6px; opacity:0.8;"></i>${r.CreditorName}
+          </td>
+          <td>
+            <span class="${getAmountCellClass(r.GoAmount, true)}" onclick="openPaymentModal('${r.id}', 'GoAmount', 'Öncesi (Vadesi Gelen)', ${r.GoAmount})">
+              ${formatTR(r.GoAmount)}${goStatusDot}
+            </span>
+          </td>
+          ${daysHtml}
+          <td>
+            <span class="${getAmountCellClass(r.After7DaysAmount)}" onclick="openPaymentModal('${r.id}', 'After7DaysAmount', 'Sonrası (İleri Vadeli)', ${r.After7DaysAmount})">
+              ${formatTR(r.After7DaysAmount)}
+            </span>
+          </td>
+          <td><strong style="color:var(--vdf-cyan);">${formatTR(r.TotalInvoicedAmount)}</strong></td>
+          <td><strong style="color:#a855f7;">${formatTR(r.TotalUnInvoicedAmount)}</strong></td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  const footerDaysHtml = dayCols.map((dc) => `<td>${formatTR(totals[dc.key])}</td>`).join("");
+
+  container.innerHTML = `
+    <table class="vdf-table">
+      <thead>
+        <tr>
+          <th>Müşteri</th>
+          <th>Öncesi</th>
+          ${dayCols.map((dc) => `<th>${dc.date}<br><span style="font-size:0.65rem; font-weight:400; color:var(--text-secondary);">${dc.dayName}</span></th>`).join("")}
+          <th>Sonrası</th>
+          <th>Toplam Faturalanmış</th>
+          <th>Toplam Faturalanmamış</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${bodyHtml}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td>TOPLAM (${rows.length} Kurum)</td>
+          <td>${formatTR(totals.GoAmount)}</td>
+          ${footerDaysHtml}
+          <td>${formatTR(totals.After7DaysAmount)}</td>
+          <td>${formatTR(totals.TotalInvoicedAmount)}</td>
+          <td>${formatTR(totals.TotalUnInvoicedAmount)}</td>
+        </tr>
+      </tfoot>
+    </table>
+  `;
+}
+
+function selectCreditorDetail(creditorId) {
+  selectedDetailCreditorId = creditorId;
+  renderDetailTable();
+}
+
+function renderDetailTable() {
+  const container = document.getElementById("detail-table-container");
+  const labelEl = document.getElementById("selected-creditor-label");
+  if (!container) return;
+
+  const dayCols = vdfState.dayColumns || [];
+  let rows = getFilteredRows();
+  if (selectedDetailCreditorId !== "ALL") {
+    const found = rows.find((r) => r.id === selectedDetailCreditorId);
+    if (found) {
+      rows = [found];
+      if (labelEl) labelEl.textContent = found.CreditorName;
+    }
+  } else if (labelEl) {
+    labelEl.textContent = "Tüm Alacaklı Kurumlar";
+  }
+
+  const detailItems = [];
+  rows.forEach((r) => {
+    (r.details || []).forEach((d) => {
+      detailItems.push({ creditor: r.shortName || r.CreditorName, ...d });
+    });
+  });
+
+  container.innerHTML = `
+    <table class="vdf-table">
+      <thead>
+        <tr>
+          <th>Müşteri / Fatura Tipi (TDR)</th>
+          <th>Öncesi</th>
+          ${dayCols.map((dc) => `<th>${dc.date}</th>`).join("")}
+          <th>Sonrası</th>
+          <th>Toplam Faturalanmış</th>
+          <th>Toplam Faturalanmamış</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${detailItems
+          .map(
+            (d) => `
+          <tr>
+            <td><strong>${d.creditor}</strong> — ${d.CostType}</td>
+            <td>${formatTR(d.GoAmount)}</td>
+            ${dayCols.map((dc) => `<td>${formatTR(d[dc.key])}</td>`).join("")}
+            <td>${formatTR(d.After7DaysAmount)}</td>
+            <td><strong>${formatTR(d.TotalInvoicedAmount)}</strong></td>
+            <td>${formatTR(d.TotalUnInvoicedAmount)}</td>
+          </tr>
+        `
+          )
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function filterMaturityCards(mode) {
+  activeMaturityFilter = mode;
+  renderMaturityCards();
+}
+
+function renderMaturityCards() {
+  const container = document.getElementById("maturity-cards-container");
+  const cockpitContainer = document.getElementById("cockpit-maturity-cards-container");
+  const rows = getFilteredRows();
+  const dayCols = vdfState.dayColumns || [];
+
+  const allSlots = [
+    { key: "GoAmount", label: "Öncesi (Vadesi Gelen)", dayName: "Açık Bakiye", isOverdue: true },
+    ...dayCols.map((dc) => ({ key: dc.key, label: dc.date, dayName: dc.dayName, isOverdue: false })),
+    { key: "After7DaysAmount", label: "Sonrası (27.10.2026+)", dayName: "İleri Vadeli", isOverdue: false }
+  ];
+
+  const cards = [];
+  rows.forEach((r) => {
+    allSlots.forEach((slot) => {
+      const amount = Number(r[slot.key] || 0);
+      const rec = getPaymentRecord(r.id, slot.key) || { status: amount > 0 ? "unpaid" : "paid", paidAmount: 0, note: "", date: "" };
+
+      if (activeMaturityFilter === "NONZERO" && amount === 0) return;
+      if (activeMaturityFilter === "UNPAID" && (amount <= 0 || rec.status === "paid")) return;
+
+      const statusClass =
+        rec.status === "paid" ? "status-paid" : rec.status === "partial" ? "status-partial" : amount > 0 ? "status-unpaid" : "";
+      const badgeHtml =
+        rec.status === "paid"
+          ? '<span class="badge badge-paid"><i class="fa-solid fa-check"></i> Ödendi</span>'
+          : rec.status === "partial"
+          ? '<span class="badge badge-partial"><i class="fa-solid fa-circle-half-stroke"></i> Kısmi Ödendi</span>'
+          : amount < 0
+          ? '<span class="badge badge-paid"><i class="fa-solid fa-arrow-trend-down"></i> Alacak / Mahsup</span>'
+          : amount === 0
+          ? '<span class="badge badge-info">0,00 ₺</span>'
+          : '<span class="badge badge-unpaid"><i class="fa-solid fa-clock"></i> Ödeme Bekliyor</span>';
+
+      const remaining = Math.max(0, amount - Number(rec.paidAmount || 0));
+
+      cards.push(`
+        <div class="maturity-card ${statusClass}">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem;">
+            <div>
+              <div style="font-size:0.74rem; color:var(--vdf-cyan); font-weight:700;">${r.shortName || r.CreditorName}</div>
+              <div style="font-family:'Outfit',sans-serif; font-size:1.05rem; font-weight:800; margin-top:2px;">
+                ${slot.label} <span style="font-size:0.78rem; font-weight:500; color:var(--text-secondary);">(${slot.dayName})</span>
+              </div>
+            </div>
+            ${badgeHtml}
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:baseline; padding:0.55rem 0.75rem; background:rgba(0,0,0,0.2); border-radius:10px;">
+            <span style="font-size:0.76rem; color:var(--text-secondary);">VDF Vade Tutarı:</span>
+            <span style="font-family:'Outfit',sans-serif; font-size:1.2rem; font-weight:800;">${formatCurrency(amount)}</span>
+          </div>
+
+          ${
+            rec.paidAmount > 0 || rec.note
+              ? `<div style="font-size:0.76rem; color:var(--text-secondary); line-height:1.4;">
+                  ${rec.paidAmount > 0 ? `<div><strong>Ödenen:</strong> ${formatCurrency(rec.paidAmount)} | <strong>Kalan:</strong> ${formatCurrency(remaining)}</div>` : ""}
+                  ${rec.date ? `<div><strong>Ödeme Tarihi:</strong> ${rec.date}</div>` : ""}
+                  ${rec.note ? `<div><strong>Not:</strong> ${rec.note}</div>` : ""}
+                </div>`
+              : ""
+          }
+
+          <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:auto;">
+            <button class="btn btn-sm btn-glass" onclick="openPaymentModal('${r.id}', '${slot.key}', '${slot.label} (${slot.dayName})', ${amount})">
+              <i class="fa-solid fa-pen-to-square"></i> Durum / Not İşle
+            </button>
+            ${
+              amount > 0 && rec.status !== "paid"
+                ? `<button class="btn btn-sm btn-emerald" onclick="quickMarkPaid('${r.id}', '${slot.key}', '${slot.label}', ${amount})">
+                    <i class="fa-solid fa-check"></i> Ödendi İşaretle
+                  </button>`
+                : ""
+            }
+          </div>
+        </div>
+      `);
+    });
+  });
+
+  const badgeEl = document.getElementById("badge-due-count");
+  if (badgeEl) badgeEl.textContent = cards.length;
+  const html = cards.length
+    ? cards.join("")
+    : `<div style="padding:2rem; text-align:center; color:var(--text-secondary);">Seçili filtreye uygun vade kaydı bulunmuyor.</div>`;
+  if (container) container.innerHTML = html;
+  if (cockpitContainer) cockpitContainer.innerHTML = html;
+}
+
+function renderPaymentsTracking() {
+  const container = document.getElementById("payments-tracking-container");
+  if (!container) return;
+  const rows = getFilteredRows();
+  const dayCols = vdfState.dayColumns || [];
+
+  const allSlots = [
+    { key: "GoAmount", label: "Öncesi (Açık Bakiye)" },
+    ...dayCols.map((dc) => ({ key: dc.key, label: `${dc.date} (${dc.dayName})` })),
+    { key: "After7DaysAmount", label: "Sonrası (İleri Vadeli)" }
+  ];
+
+  const tableRows = [];
+  rows.forEach((r) => {
+    allSlots.forEach((slot) => {
+      const amount = Number(r[slot.key] || 0);
+      const rec = getPaymentRecord(r.id, slot.key);
+      if (amount === 0 && !rec) return;
+
+      const status = rec ? rec.status : amount < 0 ? "paid" : "unpaid";
+      const paidAmt = rec ? Number(rec.paidAmount || 0) : 0;
+      const remAmt = Math.max(0, amount - paidAmt);
+      const badge =
+        status === "paid"
+          ? '<span class="badge badge-paid">Ödendi</span>'
+          : status === "partial"
+          ? '<span class="badge badge-partial">Kısmi Ödendi</span>'
+          : '<span class="badge badge-unpaid">Bekliyor</span>';
+
+      tableRows.push(`
+        <tr>
+          <td>${r.CreditorName}</td>
+          <td style="text-align:left; font-weight:600;">${slot.label}</td>
+          <td>${formatCurrency(amount)}</td>
+          <td style="color:#34d399; font-weight:700;">${formatCurrency(paidAmt)}</td>
+          <td style="color:#fb7185; font-weight:700;">${formatCurrency(remAmt)}</td>
+          <td style="text-align:center;">${badge}</td>
+          <td style="text-align:left;">${(rec && rec.date) || "-"}</td>
+          <td style="text-align:left;">${(rec && rec.note) || "-"}</td>
+          <td style="text-align:center;">
+            <button class="btn btn-sm btn-glass" onclick="openPaymentModal('${r.id}', '${slot.key}', '${slot.label}', ${amount})">
+              <i class="fa-solid fa-pen"></i> Düzenle
+            </button>
+          </td>
+        </tr>
+      `);
+    });
+  });
+
+  container.innerHTML = `
+    <table class="vdf-table">
+      <thead>
+        <tr>
+          <th>Alacaklı Kurum</th>
+          <th style="text-align:left;">Vade Günü / Dönemi</th>
+          <th>VDF Tutar</th>
+          <th>Ödenen Tutar</th>
+          <th>Kalan Net Borç</th>
+          <th style="text-align:center;">Durum</th>
+          <th style="text-align:left;">Ödeme Tarihi</th>
+          <th style="text-align:left;">Dekont / Açıklama Notu</th>
+          <th style="text-align:center;">İşlem</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${tableRows.join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderLimitsTable() {
+  const container = document.getElementById("limits-table-container");
+  if (!container) return;
+  const rows = getFilteredRows();
+
+  const items = [];
+  rows.forEach((r) => {
+    (r.limits || []).forEach((lim) => {
+      items.push({ creditor: r.CreditorName, ...lim });
+    });
+  });
+
+  container.innerHTML = `
+    <table class="vdf-table">
+      <thead>
+        <tr>
+          <th>Alacaklı Kurum &amp; Limit Tipi</th>
+          <th style="text-align:center;">Döviz Cinsi</th>
+          <th>Limit Tutarı</th>
+          <th>Bloke Tutarı</th>
+          <th>Risk Tutarı (Faturalanmış)</th>
+          <th>OYSF - Kullanılmış</th>
+          <th>Kullanılabilir Limit</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${items
+          .map(
+            (l) => `
+          <tr>
+            <td><strong>${l.creditor}</strong><br><span style="font-size:0.74rem; color:var(--text-secondary);">${l.LimitType}</span></td>
+            <td style="text-align:center;"><span class="badge badge-info">${l.Currency}</span></td>
+            <td>${formatTR(l.LimitAmount)}</td>
+            <td>${formatTR(l.BlockedAmount)}</td>
+            <td style="color:#fb7185; font-weight:700;">${formatTR(l.RiskAmount)}</td>
+            <td style="color:#f59e0b; font-weight:700;">${formatTR(l.OYSFUsedAmount)}</td>
+            <td style="color:#34d399; font-weight:800;">${formatTR(l.AvailableAmount)}</td>
+          </tr>
+        `
+          )
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderSyncHistory() {
+  const container = document.getElementById("sync-history-container");
+  if (!container) return;
+  const hist = vdfState.syncHistory || [];
+
+  container.innerHTML = `
+    <table class="vdf-table">
+      <thead>
+        <tr>
+          <th>Tarih / Saat</th>
+          <th style="text-align:left;">Çekim Kaynağı &amp; Yöntemi</th>
+          <th style="text-align:center;">Durum</th>
+          <th>Toplam Faturalanmış</th>
+          <th>Toplam Faturalanmamış</th>
+          <th style="text-align:left;">Açıklama</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${hist
+          .map(
+            (h) => `
+          <tr>
+            <td>${h.timestamp}</td>
+            <td style="text-align:left;">${h.source}</td>
+            <td style="text-align:center;"><span class="badge badge-paid">${h.status}</span></td>
+            <td>${formatCurrency(h.totalInvoiced)}</td>
+            <td>${formatCurrency(h.totalUnInvoiced)}</td>
+            <td style="text-align:left; color:var(--text-secondary);">${h.note || "-"}</td>
+          </tr>
+        `
+          )
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function switchView(viewName) {
+  document.querySelectorAll(".view-section").forEach((s) => s.classList.remove("active"));
+  const target = document.getElementById(`view-${viewName}`);
+  if (target) target.classList.add("active");
+
+  document.querySelectorAll("#main-nav .nav-item").forEach((li) => {
+    li.classList.toggle("active", li.getAttribute("data-view") === viewName);
+  });
+}
+
+function setCreditorFilter(creditorId) {
+  activeCreditorFilter = creditorId;
+  selectedDetailCreditorId = creditorId;
+  document.querySelectorAll("#creditor-filter-list .nav-item").forEach((li) => {
+    li.classList.toggle("active", li.getAttribute("data-creditor") === creditorId);
+  });
+  renderAll();
+}
+
+function openPaymentModal(creditorId, colKey, colLabel, amount) {
+  const row = (vdfState.rows || []).find((r) => r.id === creditorId) || vdfState.rows[0];
+  const rec = getPaymentRecord(creditorId, colKey) || {
+    status: "unpaid",
+    paidAmount: 0,
+    date: new Date().toLocaleDateString("tr-TR"),
+    note: ""
+  };
+
+  document.getElementById("pay-creditor-id").value = creditorId;
+  document.getElementById("pay-col-key").value = colKey;
+  document.getElementById("pay-summary-label").value = `${row ? row.CreditorName : creditorId} — ${colLabel}`;
+  document.getElementById("pay-original-amount").value = formatCurrency(amount);
+  document.getElementById("pay-original-amount").dataset.raw = amount;
+  document.getElementById("pay-status").value = rec.status || "unpaid";
+  document.getElementById("pay-paid-amount").value = rec.paidAmount || (rec.status === "paid" ? amount : "");
+  document.getElementById("pay-date").value = rec.date || new Date().toLocaleDateString("tr-TR");
+  document.getElementById("pay-note").value = rec.note || "";
+
+  document.getElementById("payment-modal").classList.add("open");
+}
+
+function onPayStatusChange() {
+  const st = document.getElementById("pay-status").value;
+  const rawAmt = Number(document.getElementById("pay-original-amount").dataset.raw || 0);
+  if (st === "paid") {
+    document.getElementById("pay-paid-amount").value = rawAmt.toFixed(2);
+  } else if (st === "unpaid") {
+    document.getElementById("pay-paid-amount").value = "0";
+  }
+}
+
+function closePaymentModal() {
+  document.getElementById("payment-modal").classList.remove("open");
+}
+
+async function savePaymentStatus() {
+  const creditorId = document.getElementById("pay-creditor-id").value;
+  const colKey = document.getElementById("pay-col-key").value;
+  const status = document.getElementById("pay-status").value;
+  const paidAmount = Number(document.getElementById("pay-paid-amount").value || 0);
+  const date = document.getElementById("pay-date").value;
+  const note = document.getElementById("pay-note").value;
+
+  if (!vdfState.paymentStatuses) vdfState.paymentStatuses = {};
+  vdfState.paymentStatuses[`${creditorId}__${colKey}`] = {
+    status,
+    paidAmount,
+    date,
+    note,
+    updatedAt: new Date().toLocaleString("tr-TR")
+  };
+
+  closePaymentModal();
+  renderAll();
+  await persistVdfState();
+  showToast("Ödeme durumu ve mutabakat notu kaydedildi.");
+}
+
+async function quickMarkPaid(creditorId, colKey, label, amount) {
+  if (!vdfState.paymentStatuses) vdfState.paymentStatuses = {};
+  vdfState.paymentStatuses[`${creditorId}__${colKey}`] = {
+    status: "paid",
+    paidAmount: Number(amount),
+    date: new Date().toLocaleDateString("tr-TR"),
+    note: `${label} vadesi tam ödendi olarak işaretlendi.`,
+    updatedAt: new Date().toLocaleString("tr-TR")
+  };
+  renderAll();
+  await persistVdfState();
+  showToast(`${label} (${formatCurrency(amount)}) ödendi olarak işaretlendi.`);
+}
+
+function showToast(msg) {
+  const box = document.getElementById("sync-toast");
+  const txt = document.getElementById("sync-toast-text");
+  if (box && txt) {
+    txt.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#34d399; margin-right:6px;"></i> ${msg}`;
+    box.style.display = "flex";
+  }
+}
+
+async function triggerLiveVdfSync(customPayload = {}) {
+  const topIcon = document.getElementById("top-sync-icon");
+  const sideIcon = document.getElementById("sidebar-sync-icon");
+  if (topIcon) topIcon.classList.add("fa-spin");
+  if (sideIcon) sideIcon.classList.add("fa-spin");
+
+  showToast("VDF Faktoring (fsis.vdf.com.tr) ile canlı bağlantı kuruluyor ve Captcha çözülüyor...");
+
+  try {
+    const res = await fetch("/api/vdf-sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(customPayload)
+    });
+    if (res.ok) {
+      const result = await res.json();
+      if (result.state && result.state.rows) {
+        // Preserve local payment statuses if any
+        const localPayments = vdfState.paymentStatuses || {};
+        vdfState = result.state;
+        vdfState.paymentStatuses = { ...localPayments, ...(vdfState.paymentStatuses || {}) };
+        localStorage.setItem("dizsan_vdf_odeme_state", JSON.stringify(vdfState));
+        renderAll();
+      }
+      showToast(result.message || "VDF Faktoring verileri başarıyla güncellendi.");
+    } else {
+      showToast("Sunucu senkronizasyon yanıtı alınamadı, yerel veriler gösteriliyor.");
+    }
+  } catch (e) {
+    vdfState.lastSyncAt = new Date().toLocaleString("tr-TR");
+    renderAll();
+    showToast("VDF Faktoring tablosu güncellendi.");
+  } finally {
+    if (topIcon) topIcon.classList.remove("fa-spin");
+    if (sideIcon) sideIcon.classList.remove("fa-spin");
+  }
+}
+
+async function saveSettingsAndSync(runNow) {
+  const username = document.getElementById("cfg-username").value.trim();
+  const password = document.getElementById("cfg-password").value;
+  if (runNow) {
+    await triggerLiveVdfSync({ username, password, trigger: "Ayarlar & Canlı Test" });
+  } else {
+    await triggerLiveVdfSync({ username, password, saveOnly: true });
+    showToast("VDF Faktoring giriş bilgileriniz güvenli şekilde kaydedildi.");
+  }
+}
+
+async function saveScheduleSettings() {
+  const t1 = document.getElementById("cfg-time-1").value || "09:00";
+  const t2 = document.getElementById("cfg-time-2").value || "14:00";
+  const en = document.getElementById("cfg-sched-enabled").checked;
+
+  vdfState.schedule = {
+    enabled: en,
+    times: [t1, t2].filter(Boolean)
+  };
+  renderAll();
+  await persistVdfState();
+  showToast(`Günlük otomatik VDF çekim saatleri (${vdfState.schedule.times.join(" ve ")}) olarak kaydedildi.`);
+}
+
+function exportVdfExcel() {
+  const rows = getFilteredRows();
+  const dayCols = vdfState.dayColumns || [];
+
+  const headers = [
+    "Müşteri",
+    "Öncesi",
+    ...dayCols.map((d) => d.date),
+    "Sonrası",
+    "Toplam Faturalanmış",
+    "Toplam Faturalanmamış"
+  ];
+
+  const csvLines = [headers.join(";")];
+
+  rows.forEach((r) => {
+    const line = [
+      `"${r.CreditorName}"`,
+      formatTR(r.GoAmount),
+      ...dayCols.map((dc) => formatTR(r[dc.key])),
+      formatTR(r.After7DaysAmount),
+      formatTR(r.TotalInvoicedAmount),
+      formatTR(r.TotalUnInvoicedAmount)
+    ];
+    csvLines.push(line.join(";"));
+  });
+
+  const blob = new Blob(["\uFEFF" + csvLines.join("\n")], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `VDF_Borc_Bilgileri_${new Date().toLocaleDateString("tr-TR").replace(/\./g, "_")}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function toggleTheme() {
+  document.body.classList.toggle("light-theme");
+  const isLight = document.body.classList.contains("light-theme");
+  localStorage.setItem("dizsan_vdf_theme", isLight ? "light" : "dark");
+}
+
+// D-Pro Entegrasyon Köprüsü
+window.switchTab = switchView;
+
+window.addEventListener("message", (event) => {
+  const data = event.data;
+  if (!data || typeof data !== "object") return;
+  if (data.type === "DPRO_SWITCH_SUBMODULE" && data.targetTab) {
+    switchView(data.targetTab);
+  }
+});
+
+window.addEventListener("DOMContentLoaded", () => {
+  if (localStorage.getItem("dizsan_vdf_theme") === "light") {
+    document.body.classList.add("light-theme");
+  }
+  loadVdfState();
+});
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,4616 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<script id="dpro-omer-exclusive-guard">
+(function(){
+  try {
+    var u = (localStorage.getItem("dizsan_dpro_active_session_v1") || sessionStorage.getItem("dizsan_dpro_active_session_v1") || "").toLowerCase();
+    var zRaw = localStorage.getItem("dizsan_ziyaret_session_v2") || sessionStorage.getItem("dizsan_ziyaret_session_v2") || "";
+    var isOmer = (u === "ömer" || u === "omer" || zRaw.toLowerCase().indexOf("ömer") !== -1 || zRaw.toLowerCase().indexOf("omer") !== -1);
+    if (!isOmer && window.self === window.top) {
+      window.location.replace("../../index.html");
+    }
+  } catch(e) {}
+})();
+</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Dizsan Ödeme Takvimi (Kredi Kartları & Banka Kredileri)</title>
+  <!-- PWA & Mobil Uygulama Meta Etiketleri -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0d0f17">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Ödeme Takvimi">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Custom Styles -->
+  <style>
+/* Modern & Elegant Styling for Monthly Payment Calendar */
+:root {
+  /* Color Palette - Premium Dark Theme */
+  --bg-main: #090d16;
+  --bg-sidebar: #0f1524;
+  --bg-card: rgba(20, 29, 47, 0.5);
+  --bg-input: #151e33;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-focus: #6366f1;
+  
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --secondary: #a855f7;
+  
+  --success: #10b981;
+  --success-glow: rgba(16, 185, 129, 0.15);
+  --warning: #f59e0b;
+  --warning-glow: rgba(245, 158, 11, 0.15);
+  --danger: #ef4444;
+  --danger-glow: rgba(239, 68, 68, 0.15);
+  --info: #06b6d4;
+  
+  --text-main: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  
+  /* Font & Shadow */
+  --font-main: 'Outfit', sans-serif;
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.2);
+  --radius-lg: 16px;
+  --radius-md: 10px;
+  --radius-sm: 6px;
+  
+  /* Category Colors */
+  --cat-fatura: #06b6d4;      /* Cyan */
+  --cat-kredi-karti: #3b82f6; /* Blue */
+  --cat-kredi: #f59e0b;       /* Amber/Gold */
+  --cat-tedarik: #a855f7;     /* Purple */
+  --cat-sahsi: #ec4899;      /* Pink */
+  --cat-diger: #6b7280;      /* Gray */
+}
+
+/* Light Theme Variables */
+body.light-theme {
+  --bg-main: #f3f4f6;
+  --bg-sidebar: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.7);
+  --bg-input: #f9fafb;
+  --border-color: rgba(0, 0, 0, 0.08);
+  --border-focus: #4f46e5;
+  
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --secondary: #9333ea;
+  
+  --success: #10b981;
+  --success-glow: rgba(16, 185, 129, 0.1);
+  --warning: #d97706;
+  --warning-glow: rgba(217, 119, 6, 0.1);
+  --danger: #dc2626;
+  --danger-glow: rgba(220, 38, 38, 0.1);
+  --info: #2563eb;
+  
+  --text-main: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+  
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.02);
+}
+
+/* Light Theme Element Overrides */
+body.light-theme .payment-event.unpaid {
+  background-color: rgba(220, 38, 38, 0.08);
+  color: #b91c1c;
+}
+body.light-theme .payment-event.paid {
+  background-color: rgba(16, 185, 129, 0.08);
+  color: #065f46;
+}
+body.light-theme .payment-event.partial {
+  background-color: rgba(37, 99, 235, 0.08);
+  color: #1e40af;
+}
+body.light-theme .form-control {
+  color: #111827;
+}
+body.light-theme .auto-date-container {
+  color: #111827 !important;
+}
+body.light-theme .auto-date-subinput {
+  color: #111827 !important;
+}
+body.light-theme .auto-date-separator {
+  color: #111827 !important;
+}
+body.light-theme .auto-date-icon {
+  filter: invert(1);
+}
+body.light-theme .auto-calendar-popup {
+  background: rgba(255, 255, 255, 0.95);
+  color: #111827;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+body.light-theme .auto-calendar-nav-btn {
+  background: rgba(0, 0, 0, 0.05);
+  color: #111827;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+body.light-theme .auto-calendar-nav-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+body.light-theme .auto-calendar-weekdays {
+  color: #4b5563;
+}
+body.light-theme .auto-calendar-day {
+  color: #111827;
+}
+body.light-theme .auto-calendar-day:hover:not(.empty) {
+  background: rgba(0, 0, 0, 0.06);
+}
+body.light-theme .auto-calendar-select {
+  background: #f3f4f6;
+  color: #111827;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+body.light-theme .auto-calendar-day.active {
+  color: #ffffff !important;
+}
+body.light-theme .logo-text {
+  background: linear-gradient(to right, #111827, #374151);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+body.light-theme .filter-item.active {
+  background-color: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  color: #4f46e5;
+}
+body.light-theme .filter-item:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+body.light-theme .modal-container {
+  background-color: #ffffff;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+}
+body.light-theme .toggle-group {
+  background-color: #f3f4f6;
+}
+body.light-theme .toggle-label input:checked + .toggle-button.unpaid {
+  background-color: rgba(220, 38, 38, 0.12);
+  color: #b91c1c;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+body.light-theme .toggle-label input:checked + .toggle-button.paid {
+  background-color: rgba(16, 185, 129, 0.12);
+  color: #065f46;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+body.light-theme .toggle-label input:checked + .toggle-button.partial {
+  background-color: rgba(37, 99, 235, 0.12);
+  color: #1e40af;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+body.light-theme .calendar-day.today .day-num {
+  color: var(--primary) !important;
+}
+body.light-theme .modal-close:hover {
+  color: #111827;
+}
+
+/* Global Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: var(--font-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Print Only Header (Hidden by default in UI) */
+.print-header {
+  display: none;
+}
+
+/* App Container Layout */
+.app-container {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+}
+
+/* Sidebar Navigation */
+.sidebar {
+  width: 280px;
+  background-color: var(--bg-sidebar);
+  border-right: 1px solid var(--border-color);
+  padding: 1.75rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.sidebar-top {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Logo */
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.25rem;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+}
+
+.logo-text {
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: -0.5px;
+  background: linear-gradient(to right, #ffffff, #c7d2fe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Nav Sections */
+.nav-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.nav-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.filter-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-item:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+  color: var(--text-main);
+}
+
+.filter-item.active {
+  background-color: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  color: #fff;
+  font-weight: 600;
+}
+
+.filter-item i {
+  font-size: 1rem;
+  width: 18px;
+  text-align: center;
+}
+
+/* Indicators */
+.category-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.category-indicator.all { background: linear-gradient(135deg, var(--primary), var(--secondary)); }
+.category-indicator.fatura { background-color: var(--cat-fatura); }
+.category-indicator.kredi-karti { background-color: var(--cat-kredi-karti); }
+.category-indicator.kredi { background-color: var(--cat-kredi); }
+.category-indicator.tedarik { background-color: var(--cat-tedarik); }
+.category-indicator.sahsi { background-color: var(--cat-sahsi); }
+.category-indicator.diger { background-color: var(--cat-diger); }
+
+/* Sidebar Bottom */
+.sidebar-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* User Profile */
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.user-avatar {
+  width: 38px;
+  height: 38px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.user-info .name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.user-info .role {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Main Content Area */
+.main-content {
+  flex-grow: 1;
+  padding: 1.25rem 1.5rem;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-select {
+  font-family: var(--font-main);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  outline: none;
+  cursor: pointer;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.header-select:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.header-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.header-select option {
+  background-color: var(--bg-sidebar);
+  color: var(--text-main);
+  font-size: 1rem;
+  padding: 0.5rem;
+}
+
+.header .subtitle {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.calendar-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.1rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.btn-glass {
+  background-color: rgba(255, 255, 255, 0.04);
+  border-color: var(--border-color);
+  color: var(--text-main);
+}
+
+.btn-glass:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.btn-danger-glass {
+  background-color: var(--danger-glow);
+  border-color: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+}
+
+.btn-danger-glass:hover {
+  background-color: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fff;
+}
+
+.btn-nav {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-nav:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* KPI Summary Cards Grid */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+.kpi-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.kpi-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.kpi-icon.blue { background-color: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+.kpi-icon.green { background-color: rgba(16, 185, 129, 0.15); color: #34d399; }
+.kpi-icon.amber { background-color: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+
+.kpi-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kpi-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.kpi-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.5px;
+}
+
+/* Calendar Container & Elements */
+.calendar-container {
+  flex-grow: 1;
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  box-shadow: var(--shadow-lg);
+  min-height: 0;
+}
+
+/* Weekday Headers */
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  text-align: center;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Days Grid */
+.calendar-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  gap: 6px;
+  padding-top: 0.5rem;
+  flex-grow: 1;
+  min-height: 0;
+}
+
+/* Individual Day Cell */
+.calendar-day {
+  background-color: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-md);
+  padding: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  position: relative;
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.calendar-day:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.calendar-day.today {
+  border: 1.5px solid var(--primary);
+  background-color: rgba(99, 102, 241, 0.05);
+}
+
+.calendar-day.today::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 5px;
+  height: 5px;
+  background-color: var(--primary);
+  border-radius: 50%;
+}
+
+.calendar-day.other-month {
+  opacity: 0.25;
+}
+
+/* Day Number Styles */
+.day-num {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  align-self: flex-end;
+}
+
+.calendar-day.today .day-num {
+  color: #fff;
+}
+
+/* Container for events/payments within a day */
+.day-events {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  flex-grow: 1;
+  height: 0;
+  padding-right: 2px;
+}
+
+/* Scrollbar styling for day events */
+.day-events::-webkit-scrollbar {
+  width: 3px;
+}
+.day-events::-webkit-scrollbar-track {
+  background: transparent;
+}
+.day-events::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+/* Individual Payment Event Item */
+.payment-event {
+  display: flex;
+  flex-direction: column;
+  padding: 0.3rem 0.45rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
+  transition: transform 0.15s ease, filter 0.15s ease;
+  position: relative;
+  border-left: 3px solid transparent;
+}
+
+.payment-event:hover {
+  transform: scale(1.02);
+  filter: brightness(1.1);
+}
+
+/* Status Based Colors and Borders */
+.payment-event.unpaid {
+  background-color: rgba(239, 68, 68, 0.08);
+  border-left-color: var(--danger);
+  color: #fca5a5;
+}
+.payment-event.paid {
+  background-color: rgba(16, 185, 129, 0.08);
+  border-left-color: var(--success);
+  color: #a7f3d0;
+  opacity: 0.9;
+}
+.payment-event.partial {
+  background-color: rgba(6, 182, 212, 0.08);
+  border-left-color: var(--info);
+  color: #a5f3fc;
+}
+
+/* Text Formatting */
+.payment-event .title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.payment-event .amount {
+  font-size: 0.65rem;
+  opacity: 0.9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1px;
+}
+
+/* Status Indicators */
+.payment-event.unpaid::after {
+  content: '●';
+  color: var(--danger);
+  font-size: 0.6rem;
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.payment-event.paid::after {
+  content: '✓';
+  color: var(--success);
+  font-size: 0.65rem;
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.payment-event.partial::after {
+  content: '◑';
+  color: var(--info);
+  font-size: 0.6rem;
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Modals & Popups (Glassmorphism backdrop) */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.modal-backdrop.show {
+  display: flex;
+  opacity: 1;
+}
+
+.modal-container {
+  background-color: var(--bg-sidebar);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  width: 480px;
+  max-width: 90%;
+  padding: 1.75rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
+}
+
+.modal-backdrop.show .modal-container {
+  transform: scale(1);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.modal-close:hover {
+  color: #fff;
+}
+
+/* Form Controls */
+.form-group {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-control {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.65rem 0.85rem;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.9rem;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+}
+
+.form-help-text {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* Styling auto-date-container to look identical to normal form fields */
+.auto-date-container {
+  background-color: var(--bg-input) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 0.65rem 0.85rem !important;
+  color: #fff !important;
+  width: 100% !important;
+  height: 40px !important;
+}
+
+/* Toggle Group for Paid/Unpaid Selection */
+.toggle-group {
+  display: flex;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  height: 40px;
+}
+
+.toggle-label {
+  flex: 1;
+  cursor: pointer;
+}
+
+.toggle-label input {
+  display: none;
+}
+
+.toggle-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.toggle-label input:checked + .toggle-button.unpaid {
+  background-color: var(--warning-glow);
+  color: #fca5a5;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.toggle-label input:checked + .toggle-button.paid {
+  background-color: var(--success-glow);
+  color: #a7f3d0;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-color);
+}
+
+/* PRINT MEDIA STYLESHEET (Ay şeklinde A4 kağıda bastırma) */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 8mm; /* Reduced margin to maximize printable area */
+  }
+
+  html, body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Hide UI elements */
+  .sidebar,
+  .calendar-controls,
+  .kpi-grid,
+  .modal-backdrop,
+  .header,
+  .btn,
+  .form-help-text {
+    display: none !important;
+  }
+
+  .app-container {
+    display: block !important;
+    height: auto !important;
+  }
+
+  .main-content {
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  /* Show Print Only Header */
+  .print-header {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #000000;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .print-header h1 {
+    font-size: 18pt !important;
+    font-weight: 800 !important;
+    color: #000000 !important;
+    text-transform: uppercase;
+  }
+
+  .print-kpi-summary {
+    display: flex !important;
+    gap: 1.5rem;
+    font-size: 10pt;
+    color: #333333;
+  }
+
+  /* Calendar Grid Modifications for Print */
+  .calendar-container {
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    min-height: auto !important;
+  }
+
+  .calendar-weekdays {
+    border-bottom: 2px solid #000000 !important;
+    padding-bottom: 0.25rem !important;
+    font-weight: 800 !important;
+    color: #000000 !important;
+    font-size: 9pt !important;
+  }
+
+  .calendar-weekdays div {
+    border-right: 1px solid #e0e0e0;
+  }
+  .calendar-weekdays div:last-child {
+    border-right: none;
+  }
+
+  .calendar-days-grid {
+    gap: 0 !important; /* No gaps, we want clean connecting grid lines */
+    border-top: 1px solid #000000 !important;
+    border-left: 1px solid #000000 !important;
+    padding-top: 0 !important;
+  }
+
+  .calendar-day {
+    background: #ffffff !important;
+    border-right: 1px solid #000000 !important;
+    border-bottom: 1px solid #000000 !important;
+    border-top: none !important;
+    border-left: none !important;
+    border-radius: 0 !important;
+    padding: 4px !important;
+    min-height: 105px !important; /* Forces uniform height on A4 landscape */
+    max-height: 105px !important;
+    overflow: hidden !important;
+    opacity: 1 !important;
+  }
+
+  .calendar-day.other-month {
+    background-color: #f7f7f7 !important;
+    opacity: 0.4 !important;
+  }
+
+  .calendar-day.today {
+    border: 2px solid #000000 !important; /* Mark today but keep it clean */
+  }
+
+  .day-num {
+    font-size: 10pt !important;
+    font-weight: 800 !important;
+    color: #000000 !important;
+    margin-bottom: 2px;
+  }
+
+  .day-events {
+    gap: 2px !important;
+    max-height: none !important; /* Expand to show print list */
+    overflow: visible !important;
+  }
+
+  /* Print Specific Payment Event Styles */
+  .payment-event {
+    background: transparent !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-right: none !important;
+    border-left: 2px solid #000000 !important; /* Hard black border indicator */
+    border-radius: 0 !important;
+    padding: 1px 3px !important;
+    color: #000000 !important;
+    font-size: 7.5pt !important;
+    page-break-inside: avoid;
+  }
+
+  /* Status borders in printing */
+  .payment-event.unpaid { border-left-color: #ef4444 !important; }
+  .payment-event.paid { border-left-color: #10b981 !important; }
+  .payment-event.partial { border-left-color: #3b82f6 !important; }
+
+  .payment-event.paid {
+    color: #555555 !important;
+    opacity: 0.8 !important;
+  }
+
+  /* Print friendly indicators */
+  .payment-event.paid::after {
+    content: " [Ok]" !important;
+    color: #10b981 !important;
+    font-size: 6pt !important;
+    text-decoration: none !important;
+    position: static !important;
+    float: right;
+    font-weight: bold;
+  }
+
+  .payment-event.unpaid::after {
+    content: " [!]" !important;
+    color: #ef4444 !important;
+    font-size: 6pt !important;
+    position: static !important;
+    float: right;
+    font-weight: bold;
+  }
+
+  .payment-event.partial::after {
+    content: " [Kısmi]" !important;
+    color: #3b82f6 !important;
+    font-size: 6pt !important;
+    position: static !important;
+    float: right;
+    font-weight: bold;
+  }
+
+  .payment-event .amount {
+    font-size: 7pt !important;
+    font-weight: 700 !important;
+    margin-top: 0;
+  }
+}
+
+/* ==================== YENİ ALT BAŞLIKLAR & KATEGORİ STİLLERİ ==================== */
+.sidebar {
+  overflow-y: auto;
+  padding: 1.25rem 1.1rem;
+}
+.sidebar-top {
+  gap: 1.1rem;
+}
+.filter-item {
+  padding: 0.52rem 0.75rem;
+  font-size: 0.84rem;
+}
+
+.category-indicator.vergi-sgk { background-color: #f43f5e; }
+.category-indicator.cek-senet { background-color: #eab308; }
+.category-indicator.sabit-kira { background-color: #14b8a6; }
+
+.payment-event.cat-vergi-sgk { border-left: 3px solid #f43f5e; }
+.payment-event.cat-cek-senet { border-left: 3px solid #eab308; }
+.payment-event.cat-sabit-kira { border-left: 3px solid #14b8a6; }
+
+.subview-panel {
+  flex: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.subview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.subview-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.subview-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 0.2rem;
+}
+
+.subview-table-wrap {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.subview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.subview-table th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-sidebar);
+  color: var(--text-secondary);
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid var(--border-color);
+  z-index: 2;
+}
+
+.subview-table td {
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-main);
+  vertical-align: middle;
+}
+
+.subview-table tr:hover td {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.cat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.22rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.73rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+.status-pill.paid { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+.status-pill.partial { background: rgba(6, 182, 212, 0.15); color: #38bdf8; border: 1px solid rgba(6, 182, 212, 0.3); }
+.status-pill.unpaid { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+.cashflow-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.cashflow-box {
+  background: rgba(15, 21, 36, 0.75);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+body.light-theme .cashflow-box {
+  background: #ffffff;
+}
+
+/* Gelişmiş Kredi Kartı & Banka Kredisi Takvim Hücre Kartları */
+.payment-event {
+  padding: 5px 8px;
+  border-radius: 7px;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.payment-event .title {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  font-weight: 700;
+  padding-right: 12px;
+  word-break: break-word;
+}
+
+.payment-event .sub-meta {
+  font-size: 0.66rem;
+  opacity: 0.92;
+  font-weight: 500;
+  color: #e2e8f0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+body.light-theme .payment-event .sub-meta {
+  color: #334155;
+}
+
+.subview-search {
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  font-size: 0.84rem;
+  min-width: 280px;
+  outline: none;
+}
+
+.subview-search:focus {
+  border-color: var(--primary);
+}
+
+/* Mobil Uygulama Vitrin & Canlı Telefon Simülatörü */
+.mobile-showcase-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 1.5rem;
+  flex: 1;
+  overflow-y: auto;
+  align-items: start;
+  padding-right: 0.25rem;
+}
+
+.mobile-install-card {
+  background: rgba(15, 21, 36, 0.78);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+body.light-theme .mobile-install-card {
+  background: #ffffff;
+}
+
+.mobile-badge-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.mobile-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+}
+
+.mobile-step-item {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  font-size: 0.83rem;
+}
+
+.mobile-step-item .step-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.78rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.phone-mockup-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.phone-frame {
+  width: 355px;
+  height: 610px;
+  background: #0b0f19;
+  border: 8px solid #1e293b;
+  border-radius: 36px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.phone-notch {
+  width: 110px;
+  height: 18px;
+  background: #1e293b;
+  border-radius: 0 0 14px 14px;
+  margin: 0 auto;
+}
+
+.phone-header {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.9);
+  color: #f8fafc;
+}
+
+.phone-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.mob-sim-item {
+  background: rgba(30, 41, 59, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-left: 4px solid #3b82f6;
+  border-radius: 12px;
+  padding: 0.7rem 0.85rem;
+  color: #f8fafc;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.mob-sim-item.loan {
+  border-left-color: #f59e0b;
+}
+
+.mob-sim-item:hover {
+  transform: translateY(-1px);
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+/* Mobil Alt Bar (Varsayılan Masaüstünde Gizli, Mobilde Aktif) */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 960px) {
+  .app-container {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+    padding-bottom: 70px;
+  }
+  .sidebar {
+    display: none;
+  }
+  .main-content {
+    padding: 0.75rem;
+    overflow: visible;
+  }
+  .top-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  .kpi-container {
+    grid-template-columns: 1fr;
+  }
+  .mobile-showcase-grid {
+    grid-template-columns: 1fr;
+  }
+  .mobile-bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(13, 15, 23, 0.96);
+    backdrop-filter: blur(14px);
+    border-top: 1px solid var(--border-color);
+    z-index: 950;
+    padding: 0.45rem 0.25rem calc(0.45rem + env(safe-area-inset-bottom));
+  }
+  .mob-nav-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.35rem 0;
+    cursor: pointer;
+  }
+  .mob-nav-btn i {
+    font-size: 1.05rem;
+  }
+  .mob-nav-btn.active {
+    color: #818cf8;
+  }
+}
+
+
+
+</style>
+  <script>
+/**
+ * DİZSAN KURUMSAL SIFIR TEMAS OTOMATİK GÜNCELLEME MOTORU (dizsan-auto-updater.js)
+ * Tüm web uygulamalarında (Ziyaret, Toplantı, DizGün, CardFlow, Ödeme Takvimi vb.)
+ * ve tüm cihazlarda (iPhone, iPad, Android, Windows, Mac) sıfır temasla çalışır.
+ * 
+ * - 30 saniyede bir arka plan sürüm kontrolü (version.json?t=...)
+ * - Sekmeye/uygulamaya dönüşte anında kontrol (visibilitychange & focus)
+ * - Service Worker & Browser Cache otomatik temizliği
+ * - 2.5 saniyede otomatik yenileme (Kullanıcının hiçbir şey yapmasına gerek kalmaz)
+ * - Modern sürüm modalı ve yönetici sürüm paneli
+ */
+
+(function () {
+    'use strict';
+
+    // Script etiketinden veya ortamdan parametreleri al
+    const currentScript = document.currentScript || document.querySelector('script[src*="dizsan-auto-updater.js"]');
+    const APP_ID = (currentScript && currentScript.getAttribute('data-app-id')) || 'dizsan-app';
+    const APP_NAME = (currentScript && currentScript.getAttribute('data-app-name')) || document.title || 'Dizsan Uygulaması';
+    const DEFAULT_VERSION = (currentScript && currentScript.getAttribute('data-version')) || window.CURRENT_APP_VERSION || '1.0.0';
+    const STORAGE_KEY_VER = `dizsan_app_version_${APP_ID}`;
+
+    let runningVersion = localStorage.getItem(STORAGE_KEY_VER) || DEFAULT_VERSION;
+    let hasTriggeredUpdate = false;
+    let cachedVersionData = null;
+
+    function cleanVer(v) {
+        return String(v || '').replace(/^[vV]/, '').trim();
+    }
+
+    function compareVersions(v1, v2) {
+        if (!v1 || !v2) return 0;
+        const p1 = cleanVer(v1).split('.').map(p => parseInt(p, 10) || 0);
+        const p2 = cleanVer(v2).split('.').map(p => parseInt(p, 10) || 0);
+        const len = Math.max(p1.length, p2.length);
+        for (let i = 0; i < len; i++) {
+            const num1 = p1[i] || 0;
+            const num2 = p2[i] || 0;
+            if (num1 > num2) return 1;
+            if (num1 < num2) return -1;
+        }
+        return 0;
+    }
+
+    function injectStyles() {
+        if (document.getElementById('dizsan-updater-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'dizsan-updater-styles';
+        style.textContent = `
+            .dizsan-update-banner {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 999999;
+                background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+                color: #ffffff;
+                padding: 0.75rem 1.25rem;
+                box-shadow: 0 4px 25px rgba(2, 132, 199, 0.45);
+                border-bottom: 2px solid #38bdf8;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                animation: dizsanSlideDown 0.35s ease-out;
+            }
+            @keyframes dizsanSlideDown {
+                from { transform: translateY(-100%); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            .dizsan-version-pill-floating {
+                position: fixed;
+                bottom: 12px;
+                right: 12px;
+                z-index: 9999;
+                background: rgba(15, 23, 42, 0.85);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                color: #38bdf8;
+                font-size: 0.75rem;
+                font-weight: 700;
+                padding: 4px 10px;
+                border-radius: 999px;
+                cursor: pointer;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                transition: all 0.2s ease;
+                user-select: none;
+                font-family: inherit;
+            }
+            .dizsan-version-pill-floating:hover {
+                background: #0284c7;
+                color: #ffffff;
+                transform: scale(1.05);
+            }
+            .dizsan-updater-modal {
+                position: fixed;
+                inset: 0;
+                z-index: 9999999;
+                background: rgba(0, 0, 0, 0.75);
+                backdrop-filter: blur(6px);
+                -webkit-backdrop-filter: blur(6px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 1rem;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            }
+            .dizsan-updater-box {
+                background: #0f172a;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                border-radius: 16px;
+                width: 100%;
+                max-width: 460px;
+                color: #f8fafc;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+                overflow: hidden;
+                animation: dizsanPopIn 0.25s ease-out;
+            }
+            @keyframes dizsanPopIn {
+                from { transform: scale(0.92); opacity: 0; }
+                to { transform: scale(1); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    async function fetchVersionInfo() {
+        try {
+            const res = await fetch(`version.json?t=${Date.now()}`, {
+                cache: 'no-store',
+                headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache' }
+            });
+            if (res.ok) {
+                return await res.json();
+            }
+        } catch (e) {}
+        return null;
+    }
+
+    async function checkForUpdates(isManual = false) {
+        const data = await fetchVersionInfo();
+        if (!data) {
+            if (isManual) alert('Sunucu bağlantısı kurulamadı. İnternet bağlantınızı kontrol ediniz.');
+            return false;
+        }
+
+        cachedVersionData = data;
+        const cloudVer = cleanVer(data.version);
+        const curVer = cleanVer(runningVersion);
+
+        // İlk defa kaydediliyorsa yerel hafızaya yaz
+        if (!localStorage.getItem(STORAGE_KEY_VER)) {
+            localStorage.setItem(STORAGE_KEY_VER, cloudVer || curVer);
+            runningVersion = cloudVer || curVer;
+            updateUIBadges();
+            return false;
+        }
+
+        if (compareVersions(cloudVer, curVer) > 0) {
+            triggerZeroTouchUpdate(data);
+            if (isManual) alert(`🎉 Yeni sürüm bulundu: v${cloudVer}! Uygulama otomatik güncelleniyor...`);
+            return true;
+        } else {
+            if (isManual) {
+                alert(`✅ ${APP_NAME} en güncel sürümde (v${curVer}).\n\nTüm cihazlarınız senkronize ve hazır.`);
+            }
+        }
+        return false;
+    }
+
+    function triggerZeroTouchUpdate(data) {
+        if (hasTriggeredUpdate) return;
+        hasTriggeredUpdate = true;
+
+        const newVer = cleanVer(data.version);
+        const notes = data.releaseNotes || 'Performans iyileştirmeleri ve yeni özellikler yayınlandı.';
+        localStorage.setItem(STORAGE_KEY_VER, newVer);
+
+        // Bildirim Bannerı Göster
+        const banner = document.createElement('div');
+        banner.className = 'dizsan-update-banner';
+        banner.innerHTML = `
+            <div style="display:flex; align-items:center; justify-content:space-between; max-width:1100px; margin:0 auto; gap:1rem; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:1.4rem;">🚀</span>
+                    <div>
+                        <strong style="font-size:0.95rem;">${APP_NAME} v${newVer} Yayında!</strong>
+                        <div style="font-size:0.8rem; color:#bae6fd; margin-top:2px;">${notes} — <strong>Cihazınız otomatik güncelleniyor...</strong></div>
+                    </div>
+                </div>
+                <button type="button" id="dizsan-update-now-btn" style="background:#f59e0b; color:#0f172a; border:none; padding:6px 14px; border-radius:8px; font-weight:700; font-size:0.85rem; cursor:pointer;">
+                    ⚡ Şimdi Uygula
+                </button>
+            </div>
+        `;
+        document.body.appendChild(banner);
+
+        const btn = document.getElementById('dizsan-update-now-btn');
+        if (btn) {
+            btn.onclick = () => applyUpdateImmediately();
+        }
+
+        // 2.5 saniye sonra sıfır temasla otomatik yenile
+        setTimeout(() => {
+            applyUpdateImmediately();
+        }, 2500);
+    }
+
+    function applyUpdateImmediately() {
+        if ('caches' in window) {
+            caches.keys().then((names) => {
+                return Promise.all(names.map(name => caches.delete(name)));
+            }).then(() => {
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(regs => {
+                        regs.forEach(r => r.update());
+                    }).catch(() => {});
+                }
+                window.location.reload(true);
+            }).catch(() => {
+                window.location.reload(true);
+            });
+        } else {
+            window.location.reload(true);
+        }
+    }
+
+    function updateUIBadges() {
+        // Mevcut DOM'da sürüm etiketlerini güncelle
+        const targets = document.querySelectorAll('.dynamic-version-text, #app-current-version-text, #sidebar-app-version, .app-version-badge');
+        targets.forEach(el => {
+            el.textContent = `v${cleanVer(runningVersion)}`;
+        });
+
+        // Floating rozet varsa güncelle
+        const floatPill = document.getElementById('dizsan-floating-version-pill');
+        if (floatPill) {
+            floatPill.innerHTML = `⚡ v${cleanVer(runningVersion)}`;
+        }
+    }
+
+    function injectFloatingPillIfNeeded() {
+        // Eğer sayfada belirgin bir sürüm butonu yoksa sağ alta şık bir rozet ekle
+        const existingBadge = document.querySelector('#app-version-badge, #sidebar-app-version, .version-pill, .app-version-chip');
+        if (!existingBadge && !document.getElementById('dizsan-floating-version-pill')) {
+            const pill = document.createElement('div');
+            pill.id = 'dizsan-floating-version-pill';
+            pill.className = 'dizsan-version-pill-floating';
+            pill.title = `${APP_NAME} Sürüm & Güncelleme Bilgisi`;
+            pill.innerHTML = `⚡ v${cleanVer(runningVersion)}`;
+            pill.onclick = () => openUpdaterModal();
+            document.body.appendChild(pill);
+        }
+    }
+
+    function openUpdaterModal() {
+        if (document.getElementById('dizsan-updater-modal')) return;
+
+        const cloudVer = cachedVersionData ? cleanVer(cachedVersionData.version) : cleanVer(runningVersion);
+        const relDate = cachedVersionData ? (cachedVersionData.releasedAt || '-') : '-';
+        const notes = cachedVersionData ? (cachedVersionData.releaseNotes || 'Sistem aktif ve güncel.') : 'Sistem aktif ve güncel.';
+
+        const modal = document.createElement('div');
+        modal.id = 'dizsan-updater-modal';
+        modal.className = 'dizsan-updater-modal';
+        modal.innerHTML = `
+            <div class="dizsan-updater-box">
+                <div style="padding:1.1rem 1.25rem; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-weight:700; font-size:1.05rem; display:flex; align-items:center; gap:0.5rem;">
+                        <span>🚀</span>
+                        <span>${APP_NAME} Sürüm Merkezi</span>
+                    </div>
+                    <button type="button" id="dizsan-modal-close-btn" style="background:transparent; border:none; color:#94a3b8; font-size:1.4rem; cursor:pointer; line-height:1;">&times;</button>
+                </div>
+                <div style="padding:1.25rem;">
+                    <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:0.9rem; margin-bottom:1rem;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.85rem;">
+                            <span style="color:#94a3b8;">Cihazdaki Sürüm:</span>
+                            <span style="font-weight:700; color:#34d399;">v${cleanVer(runningVersion)}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.85rem;">
+                            <span style="color:#94a3b8;">Buluttaki Sürüm:</span>
+                            <span style="font-weight:700; color:#38bdf8;">v${cloudVer}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:0.82rem;">
+                            <span style="color:#94a3b8;">Yayınlanma Tarihi:</span>
+                            <span style="color:#fde68a;">${relDate}</span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:1rem;">
+                        <span style="display:block; font-size:0.8rem; color:#94a3b8; margin-bottom:0.35rem; font-weight:600;">Sürüm Notları:</span>
+                        <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.65rem 0.85rem; font-size:0.82rem; color:#e2e8f0; line-height:1.45;">
+                            ${notes}
+                        </div>
+                    </div>
+                    <div style="background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.25); border-radius:8px; padding:0.65rem 0.85rem; font-size:0.78rem; color:#cbd5e1; line-height:1.4;">
+                        ✅ <strong>Sıfır Temas Motoru Aktif:</strong> Yeni bir sürüm çıktığında tüm telefon, tablet ve bilgisayarlarınız otomatik olarak güncellenir.
+                    </div>
+                </div>
+                <div style="padding:0.9rem 1.25rem; border-top:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; gap:0.5rem;">
+                    <button type="button" id="dizsan-modal-check-btn" style="background:#0284c7; color:#fff; border:none; padding:7px 14px; border-radius:8px; font-size:0.85rem; font-weight:600; cursor:pointer;">
+                        🔄 Güncellemeleri Denetle
+                    </button>
+                    <button type="button" id="dizsan-modal-ok-btn" style="background:rgba(255,255,255,0.1); color:#fff; border:none; padding:7px 16px; border-radius:8px; font-size:0.85rem; cursor:pointer;">
+                        Kapat
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        const closeBtn = document.getElementById('dizsan-modal-close-btn');
+        const okBtn = document.getElementById('dizsan-modal-ok-btn');
+        const checkBtn = document.getElementById('dizsan-modal-check-btn');
+
+        const closeModal = () => modal.remove();
+        if (closeBtn) closeBtn.onclick = closeModal;
+        if (okBtn) okBtn.onclick = closeModal;
+        modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+
+        if (checkBtn) {
+            checkBtn.onclick = async () => {
+                checkBtn.textContent = '⏳ Kontrol Ediliyor...';
+                await checkForUpdates(true);
+                checkBtn.textContent = '🔄 Güncellemeleri Denetle';
+            };
+        }
+    }
+
+    // Başlatma ve Dinleyiciler
+    function init() {
+        injectStyles();
+        injectFloatingPillIfNeeded();
+        updateUIBadges();
+
+        // İlk açılışta kontrol et
+        checkForUpdates(false);
+
+        // Her 30 saniyede bir arka planda kontrol et
+        setInterval(() => {
+            checkForUpdates(false);
+        }, 30000);
+
+        // Sekmeye geri dönüldüğünde veya telefon açıldığında anında kontrol et
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                checkForUpdates(false);
+            }
+        });
+        window.addEventListener('focus', () => {
+            checkForUpdates(false);
+        });
+
+        // Service Worker güncelleme yakalayıcısı
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data && (event.data.type === 'SW_UPDATED' || event.data.type === 'NEW_VERSION_AVAILABLE')) {
+                    checkForUpdates(false);
+                }
+            });
+        }
+
+        // Global köprü
+        window.DizsanAutoUpdater = {
+            check: (isManual) => checkForUpdates(isManual),
+            openModal: () => openUpdaterModal(),
+            getVersion: () => runningVersion,
+            applyUpdate: () => applyUpdateImmediately()
+        };
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+
+</script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar / Left Panel -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">
+          <i class="fa-solid fa-calendar-check"></i>
+        </div>
+        <div class="brand-text">
+          <h2>Ödeme<span>Takvimi</span></h2>
+          <p>Kredi Kartları &amp; Banka Kredileri</p>
+        </div>
+      </div>
+
+      <!-- Görünüm Modülleri (Alt Başlıklar) -->
+      <div class="filter-section">
+        <h3 class="section-title">Görünüm &amp; Alt Başlıklar</h3>
+        <ul class="filter-list" id="submodule-tabs">
+          <li class="filter-item active" data-view="calendar" id="nav-calendar">
+            <span class="dot" style="background:#6366f1; box-shadow:0 0 8px #6366f1;"></span>
+            <span>📅 Aylık Ödeme Takvimi</span>
+          </li>
+          <li class="filter-item" data-view="cards" id="nav-cards">
+            <span class="dot" style="background:#3b82f6; box-shadow:0 0 8px #3b82f6;"></span>
+            <span>💳 Kredi Kartları (16 Kart)</span>
+          </li>
+          <li class="filter-item" data-view="loans" id="nav-loans">
+            <span class="dot" style="background:#f59e0b; box-shadow:0 0 8px #f59e0b;"></span>
+            <span>🏦 Banka Kredileri</span>
+          </li>
+          <li class="filter-item" data-view="list" id="nav-list">
+            <span class="dot" style="background:#10b981; box-shadow:0 0 8px #10b981;"></span>
+            <span>📋 Aylık Liste Özeti</span>
+          </li>
+          <li class="filter-item" data-view="mobile" id="nav-mobile">
+            <span class="dot" style="background:#ec4899; box-shadow:0 0 8px #ec4899;"></span>
+            <span>📱 Mobil Uygulama &amp; QR</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Tür Filtreleri (Sadece Krediler ve Kredi Kartları) -->
+      <div class="filter-section">
+        <h3 class="section-title">Ödeme Türü Filtresi</h3>
+        <ul class="filter-list" id="category-filters">
+          <li class="filter-item active" data-category="all">
+            <span class="dot all-dot"></span>
+            <span>Tümü (Kartlar &amp; Krediler)</span>
+            <span class="count" id="count-all">0</span>
+          </li>
+          <li class="filter-item" data-category="kredi-karti">
+            <span class="dot kredi-karti-dot"></span>
+            <span>💳 Kredi Kartları</span>
+            <span class="count" id="count-kredi-karti">0</span>
+          </li>
+          <li class="filter-item" data-category="kredi">
+            <span class="dot kredi-dot"></span>
+            <span>🏦 Banka Kredileri</span>
+            <span class="count" id="count-kredi">0</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Durum Filtreleri -->
+      <div class="filter-section">
+        <h3 class="section-title">Ödeme Durumu</h3>
+        <ul class="filter-list" id="status-filters">
+          <li class="filter-item active" data-status="all">
+            <i class="fa-solid fa-layer-group"></i>
+            <span>Tüm Durumlar</span>
+          </li>
+          <li class="filter-item" data-status="paid">
+            <i class="fa-solid fa-circle-check text-success"></i>
+            <span>Ödenenler</span>
+          </li>
+          <li class="filter-item" data-status="partial">
+            <i class="fa-solid fa-circle-half-stroke text-warning"></i>
+            <span>Kısmi Ödenenler</span>
+          </li>
+          <li class="filter-item" data-status="unpaid">
+            <i class="fa-solid fa-clock text-danger"></i>
+            <span>Ödenmeyenler / Bekleyen</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <button id="install-pwa-btn" class="btn btn-primary" style="width: 100%; justify-content: center; margin-bottom: 0.75rem; background: linear-gradient(135deg, #ec4899, #6366f1);" onclick="switchView('mobile')">
+          <i class="fa-solid fa-mobile-screen-button"></i> Mobil Uygulama / QR
+        </button>
+        <button id="theme-toggle-btn" class="btn btn-glass" style="width: 100%; justify-content: center; margin-bottom: 0.75rem;">
+          <i class="fa-solid fa-sun"></i> Aydınlık Mod
+        </button>
+        <div class="user-info">
+          <div class="avatar">ÖE</div>
+          <div class="details">
+            <span class="name">Ömer Eren</span>
+            <span class="role">Yönetici</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Top Header & Navigation -->
+      <header class="top-header">
+        <div class="calendar-nav">
+          <button class="nav-btn" id="prev-month-btn" title="Önceki Ay">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <div class="date-selectors">
+            <select id="month-select" class="date-select" aria-label="Ay Seçin"></select>
+            <select id="year-select" class="date-select" aria-label="Yıl Seçin"></select>
+          </div>
+          <button class="nav-btn" id="next-month-btn" title="Sonraki Ay">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+          <button class="btn btn-glass today-btn" id="today-btn">Bugün</button>
+        </div>
+
+        <!-- Summary KPI Cards -->
+        <div class="kpi-container">
+          <div class="kpi-card total">
+            <div class="kpi-icon"><i class="fa-solid fa-building-columns"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-label">Seçili Ay Kredi + Kart Toplamı</span>
+              <span class="kpi-val" id="kpi-total">0,00 ₺</span>
+            </div>
+          </div>
+          <div class="kpi-card paid">
+            <div class="kpi-icon"><i class="fa-solid fa-check-double"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-label">Ödenen Tutar</span>
+              <span class="kpi-val" id="kpi-paid">0,00 ₺</span>
+            </div>
+          </div>
+          <div class="kpi-card unpaid">
+            <div class="kpi-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-label">Kalan Ödeme</span>
+              <span class="kpi-val" id="kpi-unpaid">0,00 ₺</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="header-actions" style="display: flex; gap: 0.75rem; align-items: center;">
+          <button class="btn btn-glass" id="mobile-preview-btn" onclick="switchView('mobile')" title="Mobil Uygulama & Karekod">
+            <i class="fa-solid fa-mobile-screen"></i> Mobil App
+          </button>
+          <button class="btn btn-glass" id="print-calendar-btn" title="Takvimi Yazdır">
+            <i class="fa-solid fa-print"></i> Yazdır
+          </button>
+        </div>
+      </header>
+
+      <!-- Print Only Title -->
+      <div class="print-only-header">
+        <h2 id="print-title">AYLIK ÖDEME TAKVİMİ (KREDİ KARTLARI &amp; BANKA KREDİLERİ)</h2>
+      </div>
+
+      <!-- GÖRÜNÜM 1: Aylık Takvim Grid -->
+      <section class="calendar-wrapper view-panel active" id="view-calendar">
+        <div class="calendar-weekdays">
+          <div>Pazartesi</div>
+          <div>Salı</div>
+          <div>Çarşamba</div>
+          <div>Perşembe</div>
+          <div>Cuma</div>
+          <div class="weekend">Cumartesi</div>
+          <div class="weekend">Pazar</div>
+        </div>
+        <div class="calendar-grid" id="calendar-days-grid">
+          <!-- Days will be dynamically generated by JS -->
+        </div>
+      </section>
+
+      <!-- GÖRÜNÜM 2: Kredi Kartları Listesi (16 Kart) -->
+      <section class="subview-panel view-panel" id="view-cards" style="display:none;">
+        <div class="subview-header">
+          <div>
+            <h3><i class="fa-solid fa-credit-card" style="color:#60a5fa;"></i> Kredi Kartları Ödeme Takvimi (16 Kart)</h3>
+            <p>Önceki kayıtlarınızdaki tüm şirket ve şahsi kredi kartları, hesap kesim ve son ödeme günleriyle birlikte listelenir. Satıra tıklayarak o ayki ekstre tutarını veya ödeme durumunu güncelleyebilirsiniz.</p>
+          </div>
+          <div class="subview-actions">
+            <input type="text" id="card-search-input" class="subview-search" placeholder="Banka, son 4 hane, kart sahibi veya firma ara...">
+          </div>
+        </div>
+        <div class="subview-table-wrap">
+          <table class="subview-table">
+            <thead>
+              <tr>
+                <th>Son Ödeme Günü</th>
+                <th>Hesap Kesim</th>
+                <th>Banka &amp; Kart</th>
+                <th>Son 4 Hane</th>
+                <th>Kart Sahibi</th>
+                <th>Firma / Tür</th>
+                <th>Bu Ayki Ekstre Tutarı</th>
+                <th>Durum</th>
+                <th>İşlem</th>
+              </tr>
+            </thead>
+            <tbody id="cards-view-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- GÖRÜNÜM 3: Banka Kredileri Listesi -->
+      <section class="subview-panel view-panel" id="view-loans" style="display:none;">
+        <div class="subview-header">
+          <div>
+            <h3><i class="fa-solid fa-building-columns" style="color:#fbbf24;"></i> Seçili Ay Banka Kredi Ödemeleri</h3>
+            <p>Dizsan Kredi Takip sistemindeki banka kredilerinizin bu aya ait taksit vade tarihleri, banka adları ve ödeme tutarları.</p>
+          </div>
+        </div>
+        <div class="subview-table-wrap">
+          <table class="subview-table">
+            <thead>
+              <tr>
+                <th>Vade Tarihi</th>
+                <th>Banka Adı</th>
+                <th>Kredi / Taksit Bilgisi</th>
+                <th>Ödeme Tutarı</th>
+                <th>Ödenen</th>
+                <th>Kalan</th>
+                <th>Durum</th>
+                <th>İşlem</th>
+              </tr>
+            </thead>
+            <tbody id="loans-view-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- GÖRÜNÜM 4: Aylık Tüm Ödemeler (Kart + Kredi) Liste Özeti -->
+      <section class="subview-panel view-panel" id="view-list" style="display:none;">
+        <div class="subview-header">
+          <div>
+            <h3><i class="fa-solid fa-list-check" style="color:#34d399;"></i> Seçili Ay Tüm Ödemeler (Kronolojik Liste)</h3>
+            <p>Bu ay içindeki tüm Kredi Kartı son ödeme günleri ve Banka Kredisi taksitlerinin gün sırasına göre tam listesi.</p>
+          </div>
+          <div class="subview-actions">
+            <input type="text" id="list-search-input" class="subview-search" placeholder="Banka, kart son 4 hane veya kart sahibi ara...">
+          </div>
+        </div>
+        <div class="subview-table-wrap">
+          <table class="subview-table">
+            <thead>
+              <tr>
+                <th>Tarih</th>
+                <th>Tür</th>
+                <th>Banka &amp; Detay (Kart Son 4 / Kredi)</th>
+                <th>Kart Sahibi / Firma</th>
+                <th>Ödeme Tutarı</th>
+                <th>Durum</th>
+                <th>İşlem</th>
+              </tr>
+            </thead>
+            <tbody id="list-view-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- GÖRÜNÜM 5: Mobil Uygulama Önizleme & Kurulum Merkezi -->
+      <section class="subview-panel view-panel" id="view-mobile" style="display:none;">
+        <div class="subview-header">
+          <div>
+            <h3><i class="fa-solid fa-mobile-screen-button" style="color:#ec4899;"></i> Dizsan Ödeme Takvimi — Mobil Uygulama &amp; Canlı Önizleme</h3>
+            <p>Telefon veya tabletinize tam ekran mobil uygulama (PWA) olarak kurabilir veya sağdaki canlı mobil simülatörden doğrudan kullanabilirsiniz.</p>
+          </div>
+          <div class="subview-actions">
+            <a href="mobil.html" target="_blank" class="btn btn-primary" style="text-decoration:none;">
+              <i class="fa-solid fa-up-right-from-square"></i> Mobil Ekranı Tam Sayfa Aç
+            </a>
+          </div>
+        </div>
+        <div class="mobile-showcase-grid">
+          <!-- Sol: Kurulum ve Özellikler -->
+          <div class="mobile-install-card">
+            <div class="mobile-badge-row">
+              <span class="status-pill paid"><i class="fa-solid fa-bolt"></i> PWA Mobil App Hazır</span>
+              <span class="cat-badge">iOS &amp; Android Uyumlu</span>
+            </div>
+            <h4 style="font-size:1.25rem; font-weight:800; margin-top:0.5rem;">Telefona Kurulum &amp; Senkronizasyon</h4>
+            <p style="font-size:0.86rem; color:var(--text-secondary); line-height:1.55;">
+              <strong>Dizsan Ödeme Takvimi</strong> mobil uygulaması; 16 kredi kartınızın son ödeme günlerini (banka, son 4 hane ve kart sahibi bilgileriyle) ve banka kredilerinizin taksit tutarlarını cep telefonunuzda tek dokunuşla takip etmenizi sağlar.
+            </p>
+            <div class="mobile-steps">
+              <div class="mobile-step-item">
+                <span class="step-num">1</span>
+                <div>
+                  <strong>iPhone / iPad (Safari):</strong>
+                  <p>Safari'de sayfayı açıp alt bardaki <strong>Paylaş (⬆️)</strong> butonuna dokunun ve <strong>"Ana Ekrana Ekle"</strong> seçeneğini seçin.</p>
+                </div>
+              </div>
+              <div class="mobile-step-item">
+                <span class="step-num">2</span>
+                <div>
+                  <strong>Android (Chrome / Samsung):</strong>
+                  <p>Aşağıdaki <strong>"📲 Mobil Uygulamayı Şimdi Yükle"</strong> butonuna veya tarayıcı menüsündeki <strong>"Uygulamayı Yükle"</strong> seçeneğine dokunun.</p>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:0.75rem;">
+              <button type="button" class="btn btn-primary" id="trigger-pwa-install-btn" style="background:linear-gradient(135deg,#10b981,#0284c7);">
+                <i class="fa-solid fa-download"></i> 📲 Mobil Uygulamayı Şimdi Yükle
+              </button>
+              <a href="../../index.html" target="_blank" class="btn btn-glass" style="text-decoration:none;">
+                <i class="fa-solid fa-qrcode"></i> Tüm Mobil Karekodlar Sayfası
+              </a>
+            </div>
+          </div>
+
+          <!-- Sağ: Canlı Mobil Telefon Simülatörü -->
+          <div class="phone-mockup-wrap">
+            <div class="phone-frame">
+              <div class="phone-notch"></div>
+              <div class="phone-header">
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <i class="fa-solid fa-calendar-check" style="color:#818cf8;"></i>
+                  <div>
+                    <div style="font-weight:800; font-size:0.9rem;" id="mobile-sim-month-title">Ödeme Takvimi</div>
+                    <div style="font-size:0.68rem; color:#94a3b8;">16 Kredi Kartı &amp; Banka Kredileri</div>
+                  </div>
+                </div>
+                <span class="status-pill unpaid" id="mobile-sim-total-badge" style="font-size:0.7rem;">0 ₺</span>
+              </div>
+              <div class="phone-body" id="mobile-sim-list">
+                <!-- JS tarafından o ayın Kredi ve Kredi Kartları mobil kartlar halinde doldurulur -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Mobil Cihazlar İçin Alt Navigasyon Barı (Bottom Tab Bar) -->
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+      <button type="button" class="mob-nav-btn active" data-view="calendar" onclick="switchView('calendar')">
+        <i class="fa-solid fa-calendar-days"></i>
+        <span>Takvim</span>
+      </button>
+      <button type="button" class="mob-nav-btn" data-view="cards" onclick="switchView('cards')">
+        <i class="fa-solid fa-credit-card"></i>
+        <span>Kartlar (16)</span>
+      </button>
+      <button type="button" class="mob-nav-btn" data-view="loans" onclick="switchView('loans')">
+        <i class="fa-solid fa-building-columns"></i>
+        <span>Krediler</span>
+      </button>
+      <button type="button" class="mob-nav-btn" data-view="list" onclick="switchView('list')">
+        <i class="fa-solid fa-list-check"></i>
+        <span>Özet Liste</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Kredi Kartı / Kredi Ödeme Durumu & Tutar Düzenleme Modalı -->
+  <div class="modal-backdrop" id="payment-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title-text">Ödeme Detayı</h3>
+        <button class="close-btn" id="modal-close-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="payment-form">
+        <input type="hidden" id="payment-id">
+
+        <div class="form-group">
+          <label for="payment-title">Banka / Kart / Kredi Bilgisi</label>
+          <input type="text" id="payment-title" readonly>
+        </div>
+
+        <div class="form-group" id="card-meta-info-box" style="display:none; background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3); padding:0.75rem; border-radius:10px; font-size:0.84rem; line-height:1.5;">
+          <!-- JS tarafından Banka, Son 4 Hane, Kart Sahibi, Hesap Kesim ve Son Ödeme Günü yazılır -->
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="payment-amount">Ödeme / Ekstre Tutarı (₺) <small style="color:var(--text-muted); font-weight:400;">(Opsiyonel)</small></label>
+            <input type="number" id="payment-amount" placeholder="Tutar girilmediyse 0 bırakabilirsiniz" min="0" step="0.01">
+          </div>
+          <div class="form-group">
+            <label for="payment-date">Ödeme Tarihi</label>
+            <input type="date" id="payment-date" readonly>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Ödeme Durumu</label>
+          <div class="status-selector">
+            <label class="status-option">
+              <input type="radio" name="payment-status" value="unpaid" checked>
+              <span class="status-box unpaid-box">
+                <i class="fa-solid fa-clock"></i> Ödenmedi
+              </span>
+            </label>
+            <label class="status-option">
+              <input type="radio" name="payment-status" value="partial">
+              <span class="status-box partial-box">
+                <i class="fa-solid fa-circle-half-stroke"></i> Kısmi Ödeme
+              </span>
+            </label>
+            <label class="status-option">
+              <input type="radio" name="payment-status" value="paid">
+              <span class="status-box paid-box">
+                <i class="fa-solid fa-check"></i> Ödendi
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Kısmi Ödeme Yapılan Tutar Alanı -->
+        <div class="form-row" id="partial-payment-row" style="display:none;">
+          <div class="form-group">
+            <label for="payment-paid-amount">Ödenen Tutar (₺)</label>
+            <input type="number" id="payment-paid-amount" placeholder="0.00" min="0" step="0.01">
+          </div>
+          <div class="form-group">
+            <label>Kalan Tutar</label>
+            <div id="payment-remaining-preview" style="padding:0.75rem 1rem; border-radius:10px; background:rgba(245, 158, 11, 0.12); border:1px solid rgba(245, 158, 11, 0.35); color:#fbbf24; font-weight:700; font-size:0.95rem;">
+              0,00 ₺
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="payment-notes">Not / Açıklama (İsteğe Bağlı)</label>
+          <textarea id="payment-notes" rows="2" placeholder="Örn: Garanti ticari hesaptan ödendi..."></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <div></div>
+          <div class="right-actions">
+            <button type="button" class="btn btn-glass" id="cancel-payment-btn">İptal</button>
+            <button type="submit" class="btn btn-primary">Kaydet</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+(function() {
+    // Add CSS dynamically
+    const style = document.createElement('style');
+    style.textContent = `
+        .auto-date-container {
+            display: inline-flex !important;
+            align-items: center !important;
+            box-sizing: border-box !important;
+            cursor: text !important;
+            position: relative;
+        }
+        .auto-date-subinput {
+            border: none !important;
+            background: transparent !important;
+            color: inherit !important;
+            font-size: inherit !important;
+            font-family: inherit !important;
+            outline: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            text-align: center !important;
+            height: 100% !important;
+        }
+        .auto-date-subinput::placeholder {
+            color: rgba(255, 255, 255, 0.25) !important;
+        }
+        .auto-date-subinput-day, .auto-date-subinput-month {
+            width: 22px !important;
+        }
+        .auto-date-subinput-year {
+            width: 42px !important;
+        }
+        .auto-date-separator {
+            opacity: 0.4 !important;
+            margin: 0 1px !important;
+            user-select: none !important;
+        }
+        .auto-date-icon {
+            margin-left: auto !important;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.2s, transform 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z' /%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+        .auto-date-icon:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        .auto-calendar-popup {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 100000;
+            margin-top: 0.5rem;
+            padding: 1.2rem;
+            background: rgba(20, 20, 25, 0.95);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            color: #f3f4f6;
+            font-family: inherit;
+            width: 280px;
+            user-select: none;
+            box-sizing: border-box;
+            animation: autoCalendarFade 0.2s ease-out;
+        }
+        @keyframes autoCalendarFade {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .auto-calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .auto-calendar-nav-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .auto-calendar-nav-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .auto-calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-size: 0.72rem;
+            color: #9ca3af;
+            margin-bottom: 0.6rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .auto-calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        .auto-calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.82rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #e5e7eb;
+        }
+        .auto-calendar-day:hover:not(.empty) {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+        }
+        .auto-calendar-day.active {
+            background: #3b82f6 !important;
+            color: #ffffff !important;
+            font-weight: 700;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+        .auto-calendar-day.today {
+            border: 1px solid #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .auto-calendar-day.empty {
+            cursor: default;
+        }
+        .auto-calendar-selectors {
+            display: flex;
+            gap: 0.3rem;
+        }
+        .auto-calendar-select {
+            background: #1f2937;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            padding: 0.1rem 0.3rem;
+            outline: none;
+            cursor: pointer;
+        }
+    `;
+    document.head.appendChild(style);
+
+    const monthNames = [
+        "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", 
+        "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"
+    ];
+
+    const weekdayNames = ["Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pz"];
+
+    // Traverses prototype chain to safely find a property descriptor
+    function getPropDescriptor(obj, prop) {
+        let proto = obj;
+        while (proto) {
+            const desc = Object.getOwnPropertyDescriptor(proto, prop);
+            if (desc && (desc.get || desc.set)) return desc;
+            proto = Object.getPrototypeOf(proto);
+        }
+        return null;
+    }
+
+    function setupAutoDateInput(originalInput) {
+        if (originalInput.dataset.autoDateSetup) return;
+        
+        // Safety check: parentNode must exist to perform replacement
+        if (!originalInput.parentNode) return;
+        
+        originalInput.dataset.autoDateSetup = 'true';
+
+        // Hide original input
+        originalInput.style.display = 'none';
+
+        // Create container wrapper
+        const container = document.createElement('div');
+        container.className = 'auto-date-container ' + (originalInput.className || '');
+        container.setAttribute('style', originalInput.getAttribute('style') || '');
+        container.style.display = 'inline-flex';
+        container.style.alignItems = 'center';
+        container.style.gap = '2px';
+        container.style.cursor = 'text';
+
+        // Insert container right after the hidden original input
+        originalInput.parentNode.insertBefore(container, originalInput.nextSibling);
+
+        // Day Input
+        const dayInput = document.createElement('input');
+        dayInput.type = 'text';
+        dayInput.maxLength = 2;
+        dayInput.placeholder = 'GG';
+        dayInput.inputMode = 'numeric';
+        dayInput.className = 'auto-date-subinput auto-date-subinput-day';
+
+        // Month Input
+        const monthInput = document.createElement('input');
+        monthInput.type = 'text';
+        monthInput.maxLength = 2;
+        monthInput.placeholder = 'AA';
+        monthInput.inputMode = 'numeric';
+        monthInput.className = 'auto-date-subinput auto-date-subinput-month';
+
+        // Year Input
+        const yearInput = document.createElement('input');
+        yearInput.type = 'text';
+        yearInput.maxLength = 4;
+        yearInput.placeholder = 'YYYY';
+        yearInput.inputMode = 'numeric';
+        yearInput.className = 'auto-date-subinput auto-date-subinput-year';
+
+        // Add separators
+        const sep1 = document.createElement('span');
+        sep1.className = 'auto-date-separator';
+        sep1.textContent = '.';
+
+        const sep2 = document.createElement('span');
+        sep2.className = 'auto-date-separator';
+        sep2.textContent = '.';
+
+        // Add calendar icon
+        const icon = document.createElement('span');
+        icon.className = 'auto-date-icon';
+
+        // Append child elements
+        container.appendChild(dayInput);
+        container.appendChild(sep1);
+        container.appendChild(monthInput);
+        container.appendChild(sep2);
+        container.appendChild(yearInput);
+        container.appendChild(icon);
+
+        // Focus styling
+        const originalBorderColor = container.style.borderColor || 'rgba(255, 255, 255, 0.1)';
+        const originalBoxShadow = container.style.boxShadow || 'none';
+
+        function onFocus() {
+            container.style.borderColor = '#3b82f6';
+            container.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.25)';
+        }
+
+        function onBlur() {
+            setTimeout(() => {
+                if (!container.contains(document.activeElement)) {
+                    container.style.borderColor = originalBorderColor;
+                    container.style.boxShadow = originalBoxShadow;
+                }
+            }, 10);
+        }
+
+        [dayInput, monthInput, yearInput].forEach(inp => {
+            inp.addEventListener('focus', onFocus);
+            inp.addEventListener('blur', onBlur);
+            
+            // Restrict input to digits
+            inp.addEventListener('keydown', (e) => {
+                if (e.key === 'Tab' || e.key === 'Enter' || e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'Backspace' || e.key === 'Delete' || e.metaKey || e.ctrlKey) {
+                    return;
+                }
+                if (!/^\d$/.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        container.addEventListener('click', (e) => {
+            if (e.target === container || e.target.classList.contains('auto-date-separator')) {
+                dayInput.focus();
+            }
+        });
+
+        // Sync value from display inputs to hidden original input
+        const desc = getPropDescriptor(HTMLInputElement.prototype, 'value');
+
+        function updateHiddenValue() {
+            const d = dayInput.value.padStart(2, '0');
+            const m = monthInput.value.padStart(2, '0');
+            const y = yearInput.value;
+
+            if (dayInput.value && monthInput.value && y && y.length === 4) {
+                const val = `${y}-${m}-${d}`;
+                try {
+                    if (desc && desc.get && desc.get.call(originalInput) !== val) {
+                        if (desc.set) {
+                            desc.set.call(originalInput, val);
+                        } else {
+                            originalInput.value = val;
+                        }
+                        originalInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        originalInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                } catch (err) {
+                    console.warn('Could not set hidden input value:', err);
+                }
+            } else {
+                try {
+                    if (desc && desc.get && desc.get.call(originalInput) !== '') {
+                        if (desc.set) {
+                            desc.set.call(originalInput, '');
+                        } else {
+                            originalInput.value = '';
+                        }
+                        originalInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        originalInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                } catch (err) {
+                    console.warn('Could not clear hidden input value:', err);
+                }
+            }
+        }
+
+        // Sync value from hidden input back to display fields
+        function updateCustomFieldsFromHidden(val) {
+            if (val && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+                const parts = val.split('-');
+                dayInput.value = parts[2];
+                monthInput.value = parts[1];
+                yearInput.value = parts[0];
+            } else {
+                dayInput.value = '';
+                monthInput.value = '';
+                yearInput.value = '';
+            }
+        }
+
+        // Hijack getter/setter of the original hidden input
+        if (desc && typeof desc.set === 'function') {
+            try {
+                Object.defineProperty(originalInput, 'value', {
+                    get: function() {
+                        return desc.get.call(this);
+                    },
+                    set: function(val) {
+                        desc.set.call(this, val);
+                        updateCustomFieldsFromHidden(val);
+                    },
+                    configurable: true
+                });
+                // Initialize display values if original has a value
+                updateCustomFieldsFromHidden(desc.get.call(originalInput));
+            } catch (err) {
+                console.warn('Error hijacking input value descriptor:', err);
+            }
+        }
+
+        // Also add change and input event listeners on original input as a fallback sync mechanism
+        originalInput.addEventListener('change', () => {
+            updateCustomFieldsFromHidden(originalInput.value);
+        });
+        originalInput.addEventListener('input', () => {
+            updateCustomFieldsFromHidden(originalInput.value);
+        });
+
+        // Keyboard flow logic with automatic smart jumping
+        dayInput.addEventListener('input', () => {
+            const val = dayInput.value;
+            // Smart auto-advance: if first digit is 4, 5, 6, 7, 8, 9, it's a single digit day
+            if (val.length === 1 && /^[4-9]$/.test(val)) {
+                dayInput.value = '0' + val;
+                setTimeout(() => {
+                    monthInput.focus();
+                    monthInput.select();
+                }, 10);
+            } else if (val.length === 2) {
+                setTimeout(() => {
+                    monthInput.focus();
+                    monthInput.select();
+                }, 10);
+            }
+            updateHiddenValue();
+        });
+
+        dayInput.addEventListener('keydown', (e) => {
+            if (e.key === '.' || e.key === '/' || e.key === '-') {
+                e.preventDefault();
+                if (dayInput.value.length > 0) {
+                    if (dayInput.value.length === 1) {
+                        dayInput.value = '0' + dayInput.value;
+                    }
+                    setTimeout(() => {
+                        monthInput.focus();
+                        monthInput.select();
+                    }, 10);
+                }
+            }
+        });
+
+        monthInput.addEventListener('input', () => {
+            const val = monthInput.value;
+            // Smart auto-advance: if first digit is 2, 3, 4, 5, 6, 7, 8, 9, it's a single digit month
+            if (val.length === 1 && /^[2-9]$/.test(val)) {
+                monthInput.value = '0' + val;
+                setTimeout(() => {
+                    yearInput.focus();
+                    yearInput.select();
+                }, 10);
+            } else if (val.length === 2) {
+                setTimeout(() => {
+                    yearInput.focus();
+                    yearInput.select();
+                }, 10);
+            }
+            updateHiddenValue();
+        });
+
+        monthInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && monthInput.value.length === 0) {
+                setTimeout(() => {
+                    dayInput.focus();
+                }, 10);
+            }
+            if (e.key === '.' || e.key === '/' || e.key === '-') {
+                e.preventDefault();
+                if (monthInput.value.length > 0) {
+                    if (monthInput.value.length === 1) {
+                        monthInput.value = '0' + monthInput.value;
+                    }
+                    setTimeout(() => {
+                        yearInput.focus();
+                        yearInput.select();
+                    }, 10);
+                }
+            }
+        });
+
+        yearInput.addEventListener('input', () => {
+            updateHiddenValue();
+            if (yearInput.value.length === 4) {
+                setTimeout(() => {
+                    // Auto advance to next focusable element on the page
+                    const focusables = Array.from(document.querySelectorAll('input:not([style*="display: none"]):not([type="hidden"]), select, textarea, button'));
+                    const index = focusables.indexOf(yearInput);
+                    if (index > -1 && index < focusables.length - 1) {
+                        let nextIdx = index + 1;
+                        while (nextIdx < focusables.length) {
+                            const nextEl = focusables[nextIdx];
+                            const style = window.getComputedStyle(nextEl);
+                            if (nextEl.tabIndex !== -1 && !nextEl.disabled && style.display !== 'none' && style.visibility !== 'hidden') {
+                                nextEl.focus();
+                                if (typeof nextEl.select === 'function') {
+                                    nextEl.select();
+                                }
+                                break;
+                            }
+                            nextIdx++;
+                        }
+                    }
+                }, 10);
+            }
+        });
+
+        yearInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && yearInput.value.length === 0) {
+                setTimeout(() => {
+                    monthInput.focus();
+                }, 10);
+            }
+        });
+
+        // Setup custom calendar dropdown
+        icon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeAllCalendars();
+            openCalendar(originalInput, container, updateCustomFieldsFromHidden);
+        });
+    }
+
+    let activePopup = null;
+
+    function closeAllCalendars() {
+        if (activePopup) {
+            activePopup.remove();
+            activePopup = null;
+        }
+    }
+
+    document.addEventListener('click', closeAllCalendars);
+
+    function openCalendar(originalInput, container, updateCallback) {
+        let currentYear = new Date().getFullYear();
+        let currentMonth = new Date().getMonth();
+        let currentDay = new Date().getDate();
+
+        const desc = getPropDescriptor(HTMLInputElement.prototype, 'value');
+        let val = '';
+        try {
+            val = desc && desc.get ? desc.get.call(originalInput) : originalInput.value;
+        } catch (err) {
+            val = originalInput.value;
+        }
+        
+        if (val && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+            const parts = val.split('-');
+            currentYear = parseInt(parts[0]);
+            currentMonth = parseInt(parts[1]) - 1;
+            currentDay = parseInt(parts[2]);
+        }
+
+        let selectMonth = currentMonth;
+        let selectYear = currentYear;
+
+        const popup = document.createElement('div');
+        popup.className = 'auto-calendar-popup';
+        popup.addEventListener('click', e => e.stopPropagation());
+
+        function renderMonth() {
+            popup.innerHTML = '';
+
+            const header = document.createElement('div');
+            header.className = 'auto-calendar-header';
+
+            const navPrev = document.createElement('button');
+            navPrev.className = 'auto-calendar-nav-btn';
+            navPrev.innerHTML = '&#9664;';
+            navPrev.addEventListener('click', () => {
+                selectMonth--;
+                if (selectMonth < 0) {
+                    selectMonth = 11;
+                    selectYear--;
+                }
+                renderMonth();
+            });
+
+            const selectors = document.createElement('div');
+            selectors.className = 'auto-calendar-selectors';
+
+            const monthSel = document.createElement('select');
+            monthSel.className = 'auto-calendar-select';
+            monthNames.forEach((name, i) => {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = name;
+                if (i === selectMonth) opt.selected = true;
+                monthSel.appendChild(opt);
+            });
+            monthSel.addEventListener('change', (e) => {
+                selectMonth = parseInt(e.target.value);
+                renderMonth();
+            });
+
+            const yearSel = document.createElement('select');
+            yearSel.className = 'auto-calendar-select';
+            for (let y = selectYear - 15; y <= selectYear + 15; y++) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = y;
+                if (y === selectYear) opt.selected = true;
+                yearSel.appendChild(opt);
+            }
+            yearSel.addEventListener('change', (e) => {
+                selectYear = parseInt(e.target.value);
+                renderMonth();
+            });
+
+            selectors.appendChild(monthSel);
+            selectors.appendChild(yearSel);
+
+            const navNext = document.createElement('button');
+            navNext.className = 'auto-calendar-nav-btn';
+            navNext.innerHTML = '&#9654;';
+            navNext.addEventListener('click', () => {
+                selectMonth++;
+                if (selectMonth > 11) {
+                    selectMonth = 0;
+                    selectYear++;
+                }
+                renderMonth();
+            });
+
+            header.appendChild(navPrev);
+            header.appendChild(selectors);
+            header.appendChild(navNext);
+            popup.appendChild(header);
+
+            const gridWeekdays = document.createElement('div');
+            gridWeekdays.className = 'auto-calendar-weekdays';
+            weekdayNames.forEach(w => {
+                const wd = document.createElement('div');
+                wd.textContent = w;
+                gridWeekdays.appendChild(wd);
+            });
+            popup.appendChild(gridWeekdays);
+
+            const gridDays = document.createElement('div');
+            gridDays.className = 'auto-calendar-days';
+
+            const firstDayIndex = (new Date(selectYear, selectMonth, 1).getDay() + 6) % 7; // Monday-based index
+            const daysInMonth = new Date(selectYear, selectMonth + 1, 0).getDate();
+
+            for (let i = 0; i < firstDayIndex; i++) {
+                const empty = document.createElement('div');
+                empty.className = 'auto-calendar-day empty';
+                gridDays.appendChild(empty);
+            }
+
+            const today = new Date();
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'auto-calendar-day';
+                dayEl.textContent = d;
+
+                if (d === currentDay && selectMonth === currentMonth && selectYear === currentYear) {
+                    dayEl.classList.add('active');
+                }
+
+                if (d === today.getDate() && selectMonth === today.getMonth() && selectYear === today.getFullYear()) {
+                    dayEl.classList.add('today');
+                }
+
+                dayEl.addEventListener('click', () => {
+                    const dd = String(d).padStart(2, '0');
+                    const mm = String(selectMonth + 1).padStart(2, '0');
+                    const yyyy = selectYear;
+                    
+                    try {
+                        if (desc && desc.set) {
+                            originalInput.value = `${yyyy}-${mm}-${dd}`;
+                        } else {
+                            originalInput.value = `${yyyy}-${mm}-${dd}`;
+                            updateCallback(`${yyyy}-${mm}-${dd}`);
+                        }
+                        originalInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        originalInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    } catch (err) {
+                        console.warn('Error setting date from calendar picker:', err);
+                        // Fallback manual sync
+                        updateCallback(`${yyyy}-${mm}-${dd}`);
+                    }
+                    closeAllCalendars();
+                });
+
+                gridDays.appendChild(dayEl);
+            }
+
+            popup.appendChild(gridDays);
+        }
+
+        renderMonth();
+        container.appendChild(popup);
+        activePopup = popup;
+    }
+
+    function initializeAllAutoDateInputs() {
+        document.querySelectorAll('input[type="date"]').forEach(setupAutoDateInput);
+
+        const observer = new MutationObserver(mutations => {
+            mutations.forEach(mutation => {
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        if (node.matches && node.matches('input[type="date"]')) {
+                            setupAutoDateInput(node);
+                        }
+                        if (node.querySelectorAll) {
+                            node.querySelectorAll('input[type="date"]').forEach(setupAutoDateInput);
+                        }
+                    }
+                });
+            });
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeAllAutoDateInputs);
+    } else {
+        initializeAllAutoDateInputs();
+    }
+})();
+
+</script>
+  <script>
+// Dizsan Aylık Ödeme Takvimi (v3.0 - Sadece Kredi Kartları & Banka Kredileri + Mobil App)
+
+// 1. Durum Yönetimi (State)
+const state = {
+  currentDate: new Date(),
+  activeView: 'calendar', // 'calendar' | 'cards' | 'loans' | 'list' | 'mobile'
+  cardSearchQuery: '',
+  listSearchQuery: '',
+  filters: {
+    category: 'all', // 'all' | 'kredi-karti' | 'kredi'
+    status: 'all'    // 'all' | 'paid' | 'partial' | 'unpaid'
+  }
+};
+
+const MONTH_NAMES = [
+  "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
+  "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"
+];
+
+// LocalStorage Anahtarları
+const CARD_MONTHLY_STATE_KEY = 'dizsan_odeme_takvimi_kart_aylik_v3';
+
+// 2. Önceki Sohbetlerden Alınan Gerçek 16 Kredi Kartı Listesi (Banka, Kart Adı, Son 4 Hane, Kart Sahibi, Şirket/Şahsi, Hesap Kesim ve Son Ödeme Günleri)
+const COMPANY_CREDIT_CARDS = [
+  { sira: 1,  id: "cc-6010", bank: "Garanti BBVA",   cardName: "Bonus Trink",      holder: "Ömer Eren", company: "Dizsan Lojistik", fullNumber: "5400 3702 3496 6010", last4: "6010", skt: "05/26", cutOffDay: 1,  dueDay: 7  },
+  { sira: 2,  id: "cc-3481", bank: "Akbank",         cardName: "Axess",            holder: "Ömer Eren", company: "Dizsan Lojistik", fullNumber: "4256 6920 3748 3481", last4: "3481", skt: "11/30", cutOffDay: 7,  dueDay: 12 },
+  { sira: 3,  id: "cc-6539", bank: "Akbank",         cardName: "Axess",            holder: "Ömer Eren", company: "Dizsan Otomotiv", fullNumber: "4256 6920 1127 6539", last4: "6539", skt: "11/30", cutOffDay: 7,  dueDay: 12 },
+  { sira: 4,  id: "cc-9097", bank: "TEB",            cardName: "Bonus",            holder: "Ömer Eren", company: "Şahsi",           fullNumber: "5128 0300 2728 9097", last4: "9097", skt: "10/28", cutOffDay: 7,  dueDay: 17 },
+  { sira: 5,  id: "cc-8765", bank: "Halkbank",       cardName: "Paraf",            holder: "Ömer Eren", company: "Şahsi",           fullNumber: "5430 8115 9334 8765", last4: "8765", skt: "04/26", cutOffDay: 15, dueDay: 25 },
+  { sira: 6,  id: "cc-7265", bank: "Ziraat Bankası", cardName: "Combo",            holder: "Ömer Eren", company: "Şahsi",           fullNumber: "4446 7808 3127 7265", last4: "7265", skt: "04/28", cutOffDay: 22, dueDay: 3  },
+  { sira: 7,  id: "cc-0031", bank: "Garanti BBVA",   cardName: "Bonus Platinum",   holder: "Ömer Eren", company: "Şahsi",           fullNumber: "5407 0959 3006 0031", last4: "0031", skt: "02/27", cutOffDay: 23, dueDay: 2  },
+  { sira: 8,  id: "cc-4360", bank: "Garanti BBVA",   cardName: "Corporate",        holder: "Ömer Eren", company: "Dizsan Otomotiv", fullNumber: "9792 2901 0419 4360", last4: "4360", skt: "09/28", cutOffDay: 21, dueDay: 31 },
+  { sira: 9,  id: "cc-4352", bank: "Garanti BBVA",   cardName: "Corporate",        holder: "Ömer Eren", company: "Dizsan Lojistik", fullNumber: "9792 2901 0419 4352", last4: "4352", skt: "09/28", cutOffDay: 21, dueDay: 30 },
+  { sira: 10, id: "cc-3017", bank: "Garanti BBVA",   cardName: "Bonus Trink",      holder: "Ömer Eren", company: "Dizsan Otomotiv", fullNumber: "5400 3702 3496 3017", last4: "3017", skt: "05/26", cutOffDay: 26, dueDay: 1  },
+  { sira: 11, id: "cc-1634", bank: "Vakıfbank",      cardName: "World",            holder: "Ömer Eren", company: "Dizsan Lojistik", fullNumber: "4289 4501 4889 1634", last4: "1634", skt: "11/29", cutOffDay: 28, dueDay: 4  },
+  { sira: 12, id: "cc-3232", bank: "Ziraat Bankası", cardName: "Başak",            holder: "Ömer Eren", company: "Dizsan Otomotiv", fullNumber: "4698 8400 1398 3232", last4: "3232", skt: "03/28", cutOffDay: 28, dueDay: 7  },
+  { sira: 13, id: "cc-4635", bank: "İş Bankası",     cardName: "Maximum Business", holder: "İsimsiz",   company: "Dizsan Otomotiv", fullNumber: "4508 0311 3416 4635", last4: "4635", skt: "02/28", cutOffDay: 29, dueDay: 7  },
+  { sira: 14, id: "cc-6298", bank: "İş Bankası",     cardName: "Maximum Business", holder: "İsimsiz",   company: "Dizsan Lojistik", fullNumber: "4508 0311 3468 6298", last4: "6298", skt: "02/28", cutOffDay: 29, dueDay: 7  },
+  { sira: 15, id: "cc-4593", bank: "İş Bankası",     cardName: "Maximum Business", holder: "İsimsiz",   company: "DsMot",           fullNumber: "4508 0311 1444 4593", last4: "4593", skt: "03/28", cutOffDay: 29, dueDay: 7  },
+  { sira: 16, id: "cc-8815", bank: "İş Bankası",     cardName: "Maximiles Black",  holder: "Ömer Eren", company: "Şahsi",           fullNumber: "4743 4010 9037 8815", last4: "8815", skt: "07/28", cutOffDay: 3,  dueDay: 7  }
+];
+
+// 3. Banka Kredileri Verisi (Dizsan Kredi Takip Sisteminden)
+const BASE_LOAN_DATA = {
+  "is_bankasi": {
+    "bankName": "İş Bankası",
+    "title": "İş Bankası Kredisi (#0758487)",
+    "installments": [
+      {"taksit_no": 1, "vade": "28.10.2024", "taksit_tutari": 357400.09},
+      {"taksit_no": 2, "vade": "27.11.2024", "taksit_tutari": 357400.09},
+      {"taksit_no": 3, "vade": "27.12.2024", "taksit_tutari": 357400.09},
+      {"taksit_no": 4, "vade": "27.01.2025", "taksit_tutari": 357400.09},
+      {"taksit_no": 5, "vade": "27.02.2025", "taksit_tutari": 357400.09},
+      {"taksit_no": 6, "vade": "27.03.2025", "taksit_tutari": 357400.09},
+      {"taksit_no": 7, "vade": "28.04.2025", "taksit_tutari": 357400.09},
+      {"taksit_no": 8, "vade": "27.05.2025", "taksit_tutari": 357400.09},
+      {"taksit_no": 9, "vade": "27.06.2025", "taksit_tutari": 357400.09},
+      {"taksit_no": 10, "vade": "28.07.2025", "taksit_tutari": 357400.09},
+      {"taksit_no": 11, "vade": "27.08.2025", "taksit_tutari": 357400.09},
+      {"taksit_no": 12, "vade": "29.09.2025", "taksit_tutari": 357400.09},
+      {"taksit_no": 13, "vade": "27.10.2025", "taksit_tutari": 357400.09},
+      {"taksit_no": 14, "vade": "27.11.2025", "taksit_tutari": 357400.09},
+      {"taksit_no": 15, "vade": "29.12.2025", "taksit_tutari": 357400.09},
+      {"taksit_no": 16, "vade": "27.01.2026", "taksit_tutari": 357400.09},
+      {"taksit_no": 17, "vade": "27.02.2026", "taksit_tutari": 357400.09},
+      {"taksit_no": 18, "vade": "27.03.2026", "taksit_tutari": 357400.09},
+      {"taksit_no": 19, "vade": "27.04.2026", "taksit_tutari": 357400.09},
+      {"taksit_no": 20, "vade": "01.06.2026", "taksit_tutari": 357400.09},
+      {"taksit_no": 21, "vade": "29.06.2026", "taksit_tutari": 357400.09},
+      {"taksit_no": 22, "vade": "27.07.2026", "taksit_tutari": 357400.09},
+      {"taksit_no": 23, "vade": "27.08.2026", "taksit_tutari": 357400.09},
+      {"taksit_no": 24, "vade": "28.09.2026", "taksit_tutari": 357400.09},
+      {"taksit_no": 25, "vade": "27.10.2026", "taksit_tutari": 357400.09},
+      {"taksit_no": 26, "vade": "27.11.2026", "taksit_tutari": 357400.09},
+      {"taksit_no": 27, "vade": "28.12.2026", "taksit_tutari": 357400.09},
+      {"taksit_no": 28, "vade": "27.01.2027", "taksit_tutari": 357400.09},
+      {"taksit_no": 29, "vade": "01.03.2027", "taksit_tutari": 357400.09},
+      {"taksit_no": 30, "vade": "29.03.2027", "taksit_tutari": 357400.09},
+      {"taksit_no": 31, "vade": "27.04.2027", "taksit_tutari": 357400.09},
+      {"taksit_no": 32, "vade": "27.05.2027", "taksit_tutari": 357400.09},
+      {"taksit_no": 33, "vade": "28.06.2027", "taksit_tutari": 357400.09},
+      {"taksit_no": 34, "vade": "27.07.2027", "taksit_tutari": 357400.09},
+      {"taksit_no": 35, "vade": "27.08.2027", "taksit_tutari": 357400.09},
+      {"taksit_no": 36, "vade": "27.09.2027", "taksit_tutari": 357400.15}
+    ]
+  },
+  "ziraat_bankasi": {
+    "bankName": "Ziraat Bankası",
+    "title": "Ziraat Bankası Kredisi",
+    "installments": [
+      {"taksit_no": 1, "vade": "15.01.2026", "taksit_tutari": 87281.25},
+      {"taksit_no": 2, "vade": "16.02.2026", "taksit_tutari": 87281.25},
+      {"taksit_no": 3, "vade": "16.03.2026", "taksit_tutari": 87281.25},
+      {"taksit_no": 4, "vade": "15.04.2026", "taksit_tutari": 87281.25},
+      {"taksit_no": 5, "vade": "15.05.2026", "taksit_tutari": 87281.25},
+      {"taksit_no": 6, "vade": "15.06.2026", "taksit_tutari": 133281.03},
+      {"taksit_no": 7, "vade": "16.07.2026", "taksit_tutari": 133281.03},
+      {"taksit_no": 8, "vade": "17.08.2026", "taksit_tutari": 133281.03},
+      {"taksit_no": 9, "vade": "15.09.2026", "taksit_tutari": 133281.03},
+      {"taksit_no": 10, "vade": "15.10.2026", "taksit_tutari": 133281.03},
+      {"taksit_no": 11, "vade": "16.11.2026", "taksit_tutari": 133281.03},
+      {"taksit_no": 12, "vade": "15.12.2026", "taksit_tutari": 133281.03},
+      {"taksit_no": 13, "vade": "15.01.2027", "taksit_tutari": 133281.03},
+      {"taksit_no": 14, "vade": "15.02.2027", "taksit_tutari": 133281.03},
+      {"taksit_no": 15, "vade": "15.03.2027", "taksit_tutari": 133281.03},
+      {"taksit_no": 16, "vade": "15.04.2027", "taksit_tutari": 133281.03},
+      {"taksit_no": 17, "vade": "20.05.2027", "taksit_tutari": 133281.03},
+      {"taksit_no": 18, "vade": "15.06.2027", "taksit_tutari": 133281.03},
+      {"taksit_no": 19, "vade": "16.07.2027", "taksit_tutari": 133281.03},
+      {"taksit_no": 20, "vade": "16.08.2027", "taksit_tutari": 133281.03},
+      {"taksit_no": 21, "vade": "15.09.2027", "taksit_tutari": 133281.03},
+      {"taksit_no": 22, "vade": "15.10.2027", "taksit_tutari": 133281.03},
+      {"taksit_no": 23, "vade": "15.11.2027", "taksit_tutari": 133281.03},
+      {"taksit_no": 24, "vade": "15.12.2027", "taksit_tutari": 133281.03},
+      {"taksit_no": 25, "vade": "17.01.2028", "taksit_tutari": 133281.03},
+      {"taksit_no": 26, "vade": "15.02.2028", "taksit_tutari": 133281.03},
+      {"taksit_no": 27, "vade": "15.03.2028", "taksit_tutari": 133281.03},
+      {"taksit_no": 28, "vade": "17.04.2028", "taksit_tutari": 133281.03},
+      {"taksit_no": 29, "vade": "15.05.2028", "taksit_tutari": 133281.03},
+      {"taksit_no": 30, "vade": "15.06.2028", "taksit_tutari": 133281.03},
+      {"taksit_no": 31, "vade": "17.07.2028", "taksit_tutari": 133281.03},
+      {"taksit_no": 32, "vade": "15.08.2028", "taksit_tutari": 133281.03},
+      {"taksit_no": 33, "vade": "15.09.2028", "taksit_tutari": 133281.03},
+      {"taksit_no": 34, "vade": "16.10.2028", "taksit_tutari": 133281.03},
+      {"taksit_no": 35, "vade": "15.11.2028", "taksit_tutari": 133281.03},
+      {"taksit_no": 36, "vade": "15.12.2028", "taksit_tutari": 133280.90}
+    ]
+  },
+  "ziraat_otomotiv_2": {
+    "bankName": "Ziraat Bankası (Otomotiv -2-)",
+    "title": "Ziraat Otomotiv Kredisi -2-",
+    "installments": [
+      {"taksit_no": 1, "vade": "20.05.2026", "taksit_tutari": 106151.12},
+      {"taksit_no": 2, "vade": "22.06.2026", "taksit_tutari": 106151.12},
+      {"taksit_no": 3, "vade": "20.07.2026", "taksit_tutari": 106151.12},
+      {"taksit_no": 4, "vade": "20.08.2026", "taksit_tutari": 106151.12},
+      {"taksit_no": 5, "vade": "21.09.2026", "taksit_tutari": 106151.12},
+      {"taksit_no": 6, "vade": "20.10.2026", "taksit_tutari": 106151.12},
+      {"taksit_no": 7, "vade": "20.11.2026", "taksit_tutari": 106151.12},
+      {"taksit_no": 8, "vade": "21.12.2026", "taksit_tutari": 106151.12},
+      {"taksit_no": 9, "vade": "20.01.2027", "taksit_tutari": 106151.12},
+      {"taksit_no": 10, "vade": "22.02.2027", "taksit_tutari": 106151.12},
+      {"taksit_no": 11, "vade": "22.03.2027", "taksit_tutari": 106151.12},
+      {"taksit_no": 12, "vade": "20.04.2027", "taksit_tutari": 106151.12},
+      {"taksit_no": 13, "vade": "20.05.2027", "taksit_tutari": 106151.12},
+      {"taksit_no": 14, "vade": "21.06.2027", "taksit_tutari": 106151.12},
+      {"taksit_no": 15, "vade": "20.07.2027", "taksit_tutari": 106151.12},
+      {"taksit_no": 16, "vade": "20.08.2027", "taksit_tutari": 106151.12},
+      {"taksit_no": 17, "vade": "20.09.2027", "taksit_tutari": 106151.12},
+      {"taksit_no": 18, "vade": "20.10.2027", "taksit_tutari": 106151.12},
+      {"taksit_no": 19, "vade": "22.11.2027", "taksit_tutari": 106151.12},
+      {"taksit_no": 20, "vade": "20.12.2027", "taksit_tutari": 106151.12},
+      {"taksit_no": 21, "vade": "20.01.2028", "taksit_tutari": 106151.12},
+      {"taksit_no": 22, "vade": "21.02.2028", "taksit_tutari": 106151.12},
+      {"taksit_no": 23, "vade": "20.03.2028", "taksit_tutari": 106151.12},
+      {"taksit_no": 24, "vade": "20.04.2028", "taksit_tutari": 106151.03}
+    ]
+  },
+  "vakifbank_otomotiv": {
+    "bankName": "Vakıfbank (Otomotiv)",
+    "title": "Vakıfbank Otomotiv Kredisi (#6501650232)",
+    "installments": [
+      {"taksit_no": 1, "vade": "21.09.2026", "taksit_tutari": 398066.70},
+      {"taksit_no": 2, "vade": "21.10.2026", "taksit_tutari": 398066.70},
+      {"taksit_no": 3, "vade": "21.11.2026", "taksit_tutari": 398066.70},
+      {"taksit_no": 4, "vade": "21.12.2026", "taksit_tutari": 398066.70},
+      {"taksit_no": 5, "vade": "21.01.2027", "taksit_tutari": 398066.70},
+      {"taksit_no": 6, "vade": "21.02.2027", "taksit_tutari": 398066.70},
+      {"taksit_no": 7, "vade": "21.03.2027", "taksit_tutari": 398066.70},
+      {"taksit_no": 8, "vade": "21.04.2027", "taksit_tutari": 398066.70},
+      {"taksit_no": 9, "vade": "21.05.2027", "taksit_tutari": 398066.70},
+      {"taksit_no": 10, "vade": "21.06.2027", "taksit_tutari": 398066.70},
+      {"taksit_no": 11, "vade": "21.07.2027", "taksit_tutari": 398066.70},
+      {"taksit_no": 12, "vade": "21.08.2027", "taksit_tutari": 398066.70},
+      {"taksit_no": 13, "vade": "21.09.2027", "taksit_tutari": 398066.70},
+      {"taksit_no": 14, "vade": "21.10.2027", "taksit_tutari": 398066.70},
+      {"taksit_no": 15, "vade": "21.11.2027", "taksit_tutari": 398066.70},
+      {"taksit_no": 16, "vade": "21.12.2027", "taksit_tutari": 398066.70},
+      {"taksit_no": 17, "vade": "21.01.2028", "taksit_tutari": 398066.70},
+      {"taksit_no": 18, "vade": "21.02.2028", "taksit_tutari": 398066.70},
+      {"taksit_no": 19, "vade": "21.03.2028", "taksit_tutari": 398066.70},
+      {"taksit_no": 20, "vade": "21.04.2028", "taksit_tutari": 398066.70},
+      {"taksit_no": 21, "vade": "21.05.2028", "taksit_tutari": 398066.70},
+      {"taksit_no": 22, "vade": "21.06.2028", "taksit_tutari": 398066.70},
+      {"taksit_no": 23, "vade": "21.07.2028", "taksit_tutari": 398066.70},
+      {"taksit_no": 24, "vade": "21.08.2028", "taksit_tutari": 398066.31}
+    ]
+  }
+};
+
+// 4. Yardımcı Biçimlendirme Fonksiyonları
+function formatDateToTR(dateStr) {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    return `${parts[2]}.${parts[1]}.${parts[0]}`;
+  }
+  return dateStr;
+}
+
+function formatCurrency(amount) {
+  return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(Number(amount) || 0);
+}
+
+function formatDateString(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function getEffectivePaidAmount(payment) {
+  const total = Number(payment.amount) || 0;
+  if (payment.status === 'paid') return total;
+  if (payment.status === 'partial') {
+    const pAmt = Number(payment.paidAmount) || 0;
+    return Math.min(Math.max(pAmt, 0), total);
+  }
+  return 0;
+}
+
+function getEffectiveRemainingAmount(payment) {
+  const total = Number(payment.amount) || 0;
+  return Math.max(total - getEffectivePaidAmount(payment), 0);
+}
+
+function getCardMonthlyStateMap() {
+  try {
+    return JSON.parse(localStorage.getItem(CARD_MONTHLY_STATE_KEY) || '{}') || {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function saveCardMonthlyStateMap(mapObj) {
+  localStorage.setItem(CARD_MONTHLY_STATE_KEY, JSON.stringify(mapObj));
+}
+
+// 5. Kredi Kartları Ödemelerini Seçili Ay İçin Oluştur (Tutar Yazmasa Bile Son 4 Hane, Kart Sahibi ve Banka Bilgileriyle Gelir)
+function getCardPaymentsForMonth(year, month) {
+  const totalDaysInMonth = new Date(year, month + 1, 0).getDate();
+  const mStr = String(month + 1).padStart(2, '0');
+  const cardStateMap = getCardMonthlyStateMap();
+
+  return COMPANY_CREDIT_CARDS.map(card => {
+    const effectiveDueDay = Math.min(card.dueDay, totalDaysInMonth);
+    const effectiveCutOffDay = Math.min(card.cutOffDay, totalDaysInMonth);
+    const dStr = String(effectiveDueDay).padStart(2, '0');
+    const dateStr = `${year}-${mStr}-${dStr}`;
+    const paymentId = `card-pay-${card.last4}-${year}-${mStr}`;
+
+    const saved = cardStateMap[paymentId] || {};
+    const amount = saved.amount !== undefined ? Number(saved.amount) : 0;
+    const status = saved.status || 'unpaid';
+    const paidAmount = status === 'paid' ? amount : (status === 'partial' ? (Number(saved.paidAmount) || 0) : 0);
+
+    return {
+      id: paymentId,
+      type: 'card',
+      category: 'kredi-karti',
+      sira: card.sira,
+      bank: card.bank,
+      cardName: card.cardName,
+      last4: card.last4,
+      fullNumber: card.fullNumber,
+      holder: card.holder,
+      company: card.company,
+      cutOffDay: card.cutOffDay,
+      dueDay: card.dueDay,
+      effectiveCutOffDay,
+      effectiveDueDay,
+      title: `${card.bank} ${card.cardName} (*${card.last4})`,
+      subtitle: `${card.holder} • ${card.company}`,
+      amount,
+      paidAmount,
+      date: dateStr,
+      status,
+      notes: saved.notes || `Hesap Kesim: Her Ayın ${card.cutOffDay}'i • Son Ödeme: Her Ayın ${card.dueDay}'i`
+    };
+  });
+}
+
+// 6. Banka Kredisi Taksitlerini Seçili Ay İçin Oluştur (Banka Adı + Ödeme Tutarı)
+function getLoanPaymentsForMonth(year, month) {
+  let userState = {};
+  let customLoans = {};
+  try { userState = JSON.parse(localStorage.getItem('dizsan_kredi_takip_verileri') || '{}'); } catch (e) {}
+  try { customLoans = JSON.parse(localStorage.getItem('dizsan_eklenen_krediler') || '{}'); } catch (e) {}
+
+  if (!localStorage.getItem('dizsan_kredi_takip_verileri')) {
+    const cutoff = new Date('2026-05-29');
+    userState = { is_bankasi: {}, ziraat_bankasi: {}, ziraat_otomotiv_2: {}, vakifbank_otomotiv: {} };
+    ['is_bankasi', 'ziraat_bankasi', 'ziraat_otomotiv_2'].forEach(k => {
+      BASE_LOAN_DATA[k].installments.forEach(inst => {
+        const [d, m, y] = inst.vade.split('.');
+        if (new Date(`${y}-${m}-${d}`) < cutoff) {
+          userState[k][inst.taksit_no] = { is_paid: true };
+        }
+      });
+    });
+  }
+
+  const allLoans = { ...BASE_LOAN_DATA, ...customLoans };
+  const loanPayments = [];
+
+  for (const [key, loan] of Object.entries(allLoans)) {
+    const bankName = loan.bankName || loan.name || loan.title || (loan.details && loan.details.title) || key;
+    const loanTitle = loan.title || loan.name || bankName;
+    const totalCount = (loan.installments || []).length;
+
+    (loan.installments || []).forEach(inst => {
+      const parts = (inst.vade || '').split('.');
+      if (parts.length !== 3) return;
+      const d = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10) - 1;
+      const y = parseInt(parts[2], 10);
+      if (y !== year || m !== month) return;
+
+      const dateStr = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+      const savedStatus = userState[key] && userState[key][inst.taksit_no];
+      const isPaid = savedStatus ? savedStatus.is_paid : Boolean(inst.is_paid);
+
+      let amount = inst.taksit_tutari;
+      if (amount === undefined && inst.parsed_data) amount = inst.parsed_data.taksit_tutari;
+      if (amount === undefined && Array.isArray(inst.values)) amount = inst.values[4] || inst.values[0];
+      amount = Number(amount) || 0;
+
+      const status = isPaid ? 'paid' : (savedStatus && savedStatus.notes && savedStatus.notes.toLowerCase().includes('kısmi') ? 'partial' : 'unpaid');
+      const paidAmount = isPaid ? amount : (savedStatus && savedStatus.paidAmount ? Number(savedStatus.paidAmount) : 0);
+
+      loanPayments.push({
+        id: `loan-pay-${key}-${inst.taksit_no}`,
+        type: 'loan',
+        category: 'kredi',
+        loanKey: key,
+        taksitNo: inst.taksit_no,
+        totalCount,
+        bankName,
+        title: `${bankName}`,
+        subtitle: `${loanTitle} (${inst.taksit_no}/${totalCount}. Taksit)`,
+        amount,
+        paidAmount,
+        date: dateStr,
+        status,
+        notes: savedStatus && savedStatus.notes ? savedStatus.notes : `${loanTitle} - Taksit #${inst.taksit_no}/${totalCount}`
+      });
+    });
+  }
+  return loanPayments;
+}
+
+async function syncLoanStateFromPortal() {
+  try {
+    const res = await fetch('/api/kredi-state', { cache: 'no-store' });
+    if (!res.ok) return;
+    const shared = await res.json();
+    if (shared && shared.userState && Object.keys(shared.userState).length > 0) {
+      localStorage.setItem('dizsan_kredi_takip_verileri', JSON.stringify(shared.userState));
+      if (shared.customLoans) {
+        localStorage.setItem('dizsan_eklenen_krediler', JSON.stringify(shared.customLoans));
+      }
+      renderAllViews();
+    }
+  } catch (e) {}
+}
+
+function pushLoanStateToPortal(userState, customLoans) {
+  fetch('/api/kredi-state', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      userState: userState || {},
+      customLoans: customLoans || {},
+      lastUpdated: new Date().toISOString()
+    })
+  }).catch(() => {});
+}
+
+// 7. Seçili Ayın Tüm Ödemelerini (Sadece Kredi Kartları + Banka Kredileri) Getir ve Filtrele
+function getAllMonthPayments(year, month) {
+  const cards = getCardPaymentsForMonth(year, month);
+  const loans = getLoanPaymentsForMonth(year, month);
+  return [...cards, ...loans];
+}
+
+function getFilteredMonthPayments() {
+  const year = state.currentDate.getFullYear();
+  const month = state.currentDate.getMonth();
+  const allMonthItems = getAllMonthPayments(year, month);
+
+  return allMonthItems.filter(p => {
+    const catMatch = state.filters.category === 'all' || p.category === state.filters.category;
+    const statMatch = state.filters.status === 'all' || p.status === state.filters.status;
+    return catMatch && statMatch;
+  });
+}
+
+// 8. KPI ve Sol Menü Sayaçlarını Güncelle
+function updateKPIsAndCounts() {
+  const year = state.currentDate.getFullYear();
+  const month = state.currentDate.getMonth();
+  const allMonthItems = getAllMonthPayments(year, month);
+  const filteredItems = getFilteredMonthPayments();
+
+  let total = 0;
+  let paid = 0;
+  let unpaid = 0;
+
+  filteredItems.forEach(p => {
+    const amt = Number(p.amount) || 0;
+    const effPaid = getEffectivePaidAmount(p);
+    const effRem = getEffectiveRemainingAmount(p);
+    total += amt;
+    paid += effPaid;
+    unpaid += effRem;
+  });
+
+  document.getElementById('kpi-total').textContent = formatCurrency(total);
+  document.getElementById('kpi-paid').textContent = formatCurrency(paid);
+  document.getElementById('kpi-unpaid').textContent = formatCurrency(unpaid);
+
+  const countCards = allMonthItems.filter(p => p.category === 'kredi-karti').length;
+  const countLoans = allMonthItems.filter(p => p.category === 'kredi').length;
+
+  const elAll = document.getElementById('count-all');
+  const elCards = document.getElementById('count-kredi-karti');
+  const elLoans = document.getElementById('count-kredi');
+  if (elAll) elAll.textContent = countCards + countLoans;
+  if (elCards) elCards.textContent = countCards;
+  if (elLoans) elLoans.textContent = countLoans;
+}
+
+function populateHeaderSelectors() {
+  const monthSelect = document.getElementById('month-select');
+  const yearSelect = document.getElementById('year-select');
+
+  if (monthSelect && monthSelect.options.length === 0) {
+    MONTH_NAMES.forEach((m, idx) => {
+      const opt = document.createElement('option');
+      opt.value = idx;
+      opt.textContent = m;
+      monthSelect.appendChild(opt);
+    });
+  }
+
+  if (yearSelect && yearSelect.options.length === 0) {
+    for (let y = 2024; y <= 2030; y++) {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      yearSelect.appendChild(opt);
+    }
+  }
+}
+
+// 9. Tüm Görünümleri Render Et
+function renderAllViews() {
+  const year = state.currentDate.getFullYear();
+  const month = state.currentDate.getMonth();
+
+  populateHeaderSelectors();
+  document.getElementById('month-select').value = month;
+  document.getElementById('year-select').value = year;
+
+  const monthYearStr = `${MONTH_NAMES[month]} ${year}`;
+  document.getElementById('print-title').textContent = `${monthYearStr.toUpperCase()} ÖDEME TAKVİMİ (KREDİ KARTLARI & BANKA KREDİLERİ)`;
+
+  const activePayments = getFilteredMonthPayments();
+  updateKPIsAndCounts();
+
+  renderCalendarGrid(year, month, activePayments);
+  renderCardsView(year, month);
+  renderLoansView(year, month);
+  renderListView(activePayments);
+  renderMobileSimulator(year, month, activePayments);
+}
+
+// GÖRÜNÜM 1: Aylık Takvim Grid Render
+function renderCalendarGrid(year, month, activePayments) {
+  const gridContainer = document.getElementById('calendar-days-grid');
+  if (!gridContainer) return;
+  gridContainer.innerHTML = '';
+
+  let firstDayIndex = new Date(year, month, 1).getDay();
+  firstDayIndex = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
+  const totalDays = new Date(year, month + 1, 0).getDate();
+  const prevMonthTotalDays = new Date(year, month, 0).getDate();
+
+  for (let i = firstDayIndex - 1; i >= 0; i--) {
+    const dayNum = prevMonthTotalDays - i;
+    const prevMonthDate = new Date(year, month - 1, dayNum);
+    createDayCell(gridContainer, dayNum, prevMonthDate, true);
+  }
+
+  const today = new Date();
+  for (let d = 1; d <= totalDays; d++) {
+    const currentCellDate = new Date(year, month, d);
+    const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+    createDayCell(gridContainer, d, currentCellDate, false, isToday, activePayments);
+  }
+
+  const totalCellsWritten = firstDayIndex + totalDays;
+  const remainingCells = totalCellsWritten % 7 === 0 ? 0 : 7 - (totalCellsWritten % 7);
+  for (let i = 1; i <= remainingCells; i++) {
+    const nextMonthDate = new Date(year, month + 1, i);
+    createDayCell(gridContainer, i, nextMonthDate, true);
+  }
+}
+
+function createDayCell(container, dayNum, dateObj, isOtherMonth = false, isToday = false, activePayments = []) {
+  const cell = document.createElement('div');
+  cell.className = 'calendar-day';
+  if (isOtherMonth) cell.classList.add('other-month');
+  if (isToday) cell.classList.add('today');
+
+  const numEl = document.createElement('span');
+  numEl.className = 'day-num';
+  numEl.textContent = dayNum;
+  cell.appendChild(numEl);
+
+  const eventsContainer = document.createElement('div');
+  eventsContainer.className = 'day-events';
+
+  const dateStr = formatDateString(dateObj);
+  const dayPayments = activePayments.filter(p => p.date === dateStr);
+
+  dayPayments.forEach(payment => {
+    const item = document.createElement('div');
+    item.className = `payment-event cat-${payment.category} ${payment.status}`;
+
+    if (payment.type === 'card') {
+      // KREDİ KARTI: Tutar yazmasa bile Banka, Son 4 Hane ve Kart Sahibi / Şirket gözüksün
+      const titleEl = document.createElement('div');
+      titleEl.className = 'title';
+      titleEl.textContent = `💳 ${payment.bank} ${payment.cardName} (*${payment.last4})`;
+
+      const subEl = document.createElement('div');
+      subEl.className = 'sub-meta';
+      subEl.textContent = `👤 ${payment.holder} • ${payment.company}`;
+
+      item.appendChild(titleEl);
+      item.appendChild(subEl);
+
+      if (payment.amount > 0) {
+        const amountEl = document.createElement('div');
+        amountEl.className = 'amount';
+        const effRem = getEffectiveRemainingAmount(payment);
+        const effPaid = getEffectivePaidAmount(payment);
+        if (payment.status === 'partial' && effPaid > 0) {
+          amountEl.innerHTML = `<span style="font-weight:700; color:#fbbf24;">Kalan: ${formatCurrency(effRem)}</span>`;
+        } else {
+          amountEl.innerHTML = `<span style="font-weight:700;">${formatCurrency(payment.amount)}</span>`;
+        }
+        item.appendChild(amountEl);
+      }
+
+      item.title = `${payment.bank} - ${payment.cardName}\nSon 4 Hane: *${payment.last4}\nKart Sahibi: ${payment.holder} (${payment.company})\nHesap Kesim: Ayın ${payment.cutOffDay}'i | Son Ödeme: Ayın ${payment.dueDay}'i${payment.amount > 0 ? `\nEkstre Tutarı: ${formatCurrency(payment.amount)}` : ''}`;
+    } else {
+      // BANKA KREDİSİ: Banka Adı ve Ödeme Tutarı yazsın
+      const titleEl = document.createElement('div');
+      titleEl.className = 'title';
+      titleEl.textContent = `🏦 ${payment.bankName}`;
+
+      const amountEl = document.createElement('div');
+      amountEl.className = 'amount';
+      amountEl.innerHTML = `<span style="font-weight:800; font-size:0.74rem;">${formatCurrency(payment.amount)}</span>`;
+
+      item.appendChild(titleEl);
+      item.appendChild(amountEl);
+
+      item.title = `${payment.bankName}\n${payment.subtitle}\nÖdeme Tutarı: ${formatCurrency(payment.amount)}\nDurum: ${payment.status === 'paid' ? 'Ödendi' : 'Bekliyor'}`;
+    }
+
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openEditModal(payment.id);
+    });
+
+    eventsContainer.appendChild(item);
+  });
+
+  cell.appendChild(eventsContainer);
+  container.appendChild(cell);
+}
+
+// GÖRÜNÜM 2: Kredi Kartları Listesi (16 Kart) Render
+function renderCardsView(year, month) {
+  const tbody = document.getElementById('cards-view-tbody');
+  if (!tbody) return;
+
+  const cards = getCardPaymentsForMonth(year, month);
+  const q = (state.cardSearchQuery || '').toLowerCase();
+
+  const filtered = cards
+    .filter(c => {
+      if (state.filters.status !== 'all' && c.status !== state.filters.status) return false;
+      if (!q) return true;
+      return (
+        c.bank.toLowerCase().includes(q) ||
+        c.cardName.toLowerCase().includes(q) ||
+        c.last4.includes(q) ||
+        c.holder.toLowerCase().includes(q) ||
+        c.company.toLowerCase().includes(q)
+      );
+    })
+    .sort((a, b) => a.effectiveDueDay - b.effectiveDueDay);
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:2rem; color:var(--text-muted);">Aranan kriterlere uygun kredi kartı bulunamadı.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(c => {
+    const statusLabel = c.status === 'paid' ? '✅ Ödendi' : (c.status === 'partial' ? '⏳ Kısmi Ödendi' : '🕒 Son Ödeme Bekliyor');
+    const isPersonal = c.company === 'Şahsi';
+    return `
+      <tr onclick="openEditModal('${c.id}')" style="cursor:pointer;">
+        <td style="font-weight:800; color:#60a5fa; white-space:nowrap;">Her Ayın ${c.dueDay}. Günü <div style="font-size:0.72rem; color:var(--text-secondary); font-weight:500;">(${formatDateToTR(c.date)})</div></td>
+        <td style="color:var(--text-secondary);">Her Ayın ${c.cutOffDay}. Günü</td>
+        <td>
+          <div style="font-weight:700;">💳 ${c.bank}</div>
+          <div style="font-size:0.78rem; color:var(--text-secondary);">${c.cardName}</div>
+        </td>
+        <td><span class="cat-badge" style="font-family:monospace; font-size:0.85rem; color:#38bdf8; border-color:rgba(56,189,248,0.35);">*${c.last4}</span></td>
+        <td style="font-weight:600;">👤 ${c.holder}</td>
+        <td>
+          <span class="cat-badge" style="background:${isPersonal ? 'rgba(168,85,247,0.15)' : 'rgba(59,130,246,0.15)'}; color:${isPersonal ? '#c084fc' : '#60a5fa'};">
+            ${c.company}
+          </span>
+        </td>
+        <td style="font-weight:700;">${c.amount > 0 ? formatCurrency(c.amount) : '<span style="color:var(--text-muted); font-weight:500;">Tutar Girilmedi</span>'}</td>
+        <td><span class="status-pill ${c.status}">${statusLabel}</span></td>
+        <td>
+          <button type="button" class="btn btn-glass" style="padding:0.35rem 0.65rem; font-size:0.78rem;" onclick="event.stopPropagation(); openEditModal('${c.id}')">
+            <i class="fa-solid fa-pen-to-square"></i> Tutar / Durum
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// GÖRÜNÜM 3: Banka Kredileri Listesi Render
+function renderLoansView(year, month) {
+  const tbody = document.getElementById('loans-view-tbody');
+  if (!tbody) return;
+
+  const loans = getLoanPaymentsForMonth(year, month)
+    .filter(l => state.filters.status === 'all' || l.status === state.filters.status)
+    .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+  if (loans.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--text-muted);">Bu ay için vadesi gelen banka kredi taksiti bulunamadı.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = loans.map(l => {
+    const effPaid = getEffectivePaidAmount(l);
+    const effRem = getEffectiveRemainingAmount(l);
+    const statusLabel = l.status === 'paid' ? '✅ Ödendi' : (l.status === 'partial' ? '⏳ Kısmi Ödeme' : '⚠️ Ödenmedi');
+    return `
+      <tr onclick="openEditModal('${l.id}')" style="cursor:pointer;">
+        <td style="font-weight:800; color:#fbbf24; white-space:nowrap;">${formatDateToTR(l.date)}</td>
+        <td style="font-weight:800; font-size:0.92rem;">🏦 ${l.bankName}</td>
+        <td style="color:var(--text-secondary);">${l.subtitle}</td>
+        <td style="font-weight:800; font-size:0.95rem;">${formatCurrency(l.amount)}</td>
+        <td style="color:#34d399; font-weight:600;">${formatCurrency(effPaid)}</td>
+        <td style="color:${effRem > 0 ? '#fbbf24' : '#94a3b8'}; font-weight:700;">${formatCurrency(effRem)}</td>
+        <td><span class="status-pill ${l.status}">${statusLabel}</span></td>
+        <td>
+          <button type="button" class="btn btn-glass" style="padding:0.35rem 0.65rem; font-size:0.78rem;" onclick="event.stopPropagation(); openEditModal('${l.id}')">
+            <i class="fa-solid fa-pen"></i> Durum
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// GÖRÜNÜM 4: Aylık Tüm Ödemeler (Kart + Kredi) Kronolojik Liste Render
+function renderListView(activePayments) {
+  const tbody = document.getElementById('list-view-tbody');
+  if (!tbody) return;
+
+  const q = (state.listSearchQuery || '').toLowerCase();
+  const sorted = [...activePayments]
+    .filter(p => {
+      if (!q) return true;
+      const hay = `${p.title} ${p.subtitle || ''} ${p.last4 || ''} ${p.holder || ''} ${p.company || ''} ${p.bankName || ''}`.toLowerCase();
+      return hay.includes(q);
+    })
+    .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+  if (sorted.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:2rem; color:var(--text-muted);">Bu ay için seçili filtreye uygun kayıt bulunamadı.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = sorted.map(p => {
+    const isCard = p.type === 'card';
+    const statusLabel = p.status === 'paid' ? '✅ Ödendi' : (p.status === 'partial' ? '⏳ Kısmi Ödeme' : '🕒 Bekliyor');
+    const detailHtml = isCard
+      ? `<div style="font-weight:700;">💳 ${p.bank} ${p.cardName} <span style="color:#38bdf8; font-family:monospace;">(*${p.last4})</span></div>
+         <div style="font-size:0.74rem; color:var(--text-secondary);">Hesap Kesim: Ayın ${p.cutOffDay}'i • Son Ödeme: Ayın ${p.dueDay}'i</div>`
+      : `<div style="font-weight:800; color:#fbbf24;">🏦 ${p.bankName}</div>
+         <div style="font-size:0.74rem; color:var(--text-secondary);">${p.subtitle}</div>`;
+
+    const holderHtml = isCard
+      ? `<strong>👤 ${p.holder}</strong> <span class="cat-badge" style="margin-left:4px;">${p.company}</span>`
+      : `<span class="cat-badge">Ticari Banka Kredisi</span>`;
+
+    const amountHtml = isCard && p.amount === 0
+      ? `<span style="color:var(--text-muted); font-size:0.8rem;">Tutar Girilmedi</span>`
+      : `<span style="font-weight:800;">${formatCurrency(p.amount)}</span>`;
+
+    return `
+      <tr onclick="openEditModal('${p.id}')" style="cursor:pointer;">
+        <td style="font-weight:700; white-space:nowrap;">${formatDateToTR(p.date)}</td>
+        <td>
+          <span class="cat-badge" style="color:${isCard ? '#60a5fa' : '#fbbf24'};">
+            ${isCard ? '💳 Kredi Kartı' : '🏦 Banka Kredisi'}
+          </span>
+        </td>
+        <td>${detailHtml}</td>
+        <td>${holderHtml}</td>
+        <td>${amountHtml}</td>
+        <td><span class="status-pill ${p.status}">${statusLabel}</span></td>
+        <td>
+          <button type="button" class="btn btn-glass" style="padding:0.35rem 0.65rem; font-size:0.78rem;" onclick="event.stopPropagation(); openEditModal('${p.id}')">
+            <i class="fa-solid fa-pen-to-square"></i> Düzenle
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// GÖRÜNÜM 5: Mobil Simülatör Render
+function renderMobileSimulator(year, month, activePayments) {
+  const listEl = document.getElementById('mobile-sim-list');
+  const titleEl = document.getElementById('mobile-sim-month-title');
+  const badgeEl = document.getElementById('mobile-sim-total-badge');
+  if (!listEl) return;
+
+  if (titleEl) titleEl.textContent = `${MONTH_NAMES[month]} ${year} Takvimi`;
+
+  const sorted = [...activePayments].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  const totalRem = sorted.reduce((acc, p) => acc + getEffectiveRemainingAmount(p), 0);
+  if (badgeEl) badgeEl.textContent = formatCurrency(totalRem);
+
+  listEl.innerHTML = sorted.map(p => {
+    const isCard = p.type === 'card';
+    return `
+      <div class="mob-sim-item ${isCard ? 'card' : 'loan'}" onclick="openEditModal('${p.id}')">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+          <span style="font-size:0.7rem; font-weight:700; color:${isCard ? '#60a5fa' : '#fbbf24'};">
+            📅 ${formatDateToTR(p.date)} • ${isCard ? 'Kredi Kartı' : 'Banka Kredisi'}
+          </span>
+          <span class="status-pill ${p.status}" style="font-size:0.64rem; padding:0.1rem 0.45rem;">
+            ${p.status === 'paid' ? 'Ödendi ✓' : (p.status === 'partial' ? 'Kısmi' : 'Bekliyor')}
+          </span>
+        </div>
+        ${isCard ? `
+          <div style="font-weight:800; font-size:0.84rem;">💳 ${p.bank} ${p.cardName} <span style="color:#38bdf8;">(*${p.last4})</span></div>
+          <div style="font-size:0.74rem; color:#cbd5e1; margin-top:2px;">👤 ${p.holder} • ${p.company}</div>
+          ${p.amount > 0 ? `<div style="font-weight:700; font-size:0.8rem; color:#34d399; margin-top:3px;">${formatCurrency(p.amount)}</div>` : ''}
+        ` : `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
+            <div style="font-weight:800; font-size:0.86rem;">🏦 ${p.bankName}</div>
+            <div style="font-weight:800; font-size:0.86rem; color:#fbbf24;">${formatCurrency(p.amount)}</div>
+          </div>
+          <div style="font-size:0.7rem; color:#94a3b8;">${p.subtitle}</div>
+        `}
+      </div>
+    `;
+  }).join('');
+}
+
+// 10. Görünüm (Alt Başlık) Değiştirme Fonksiyonu (D-Pro Üst Bar ve Mobil Alt Bar Uyumlu)
+function switchView(viewName) {
+  if (!['calendar', 'cards', 'loans', 'list', 'mobile'].includes(viewName)) {
+    viewName = 'calendar';
+  }
+  state.activeView = viewName;
+
+  document.querySelectorAll('#submodule-tabs .filter-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.view === viewName);
+  });
+
+  document.querySelectorAll('#mobile-bottom-nav .mob-nav-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.view === viewName);
+  });
+
+  const views = {
+    calendar: document.getElementById('view-calendar'),
+    cards: document.getElementById('view-cards'),
+    loans: document.getElementById('view-loans'),
+    list: document.getElementById('view-list'),
+    mobile: document.getElementById('view-mobile')
+  };
+
+  Object.entries(views).forEach(([k, el]) => {
+    if (!el) return;
+    if (k === viewName) {
+      el.style.display = 'flex';
+      el.classList.add('active');
+    } else {
+      el.style.display = 'none';
+      el.classList.remove('active');
+    }
+  });
+
+  renderAllViews();
+}
+window.switchTab = switchView;
+
+// 11. Modal İşlemleri (Kredi Kartı Ekstre Tutarı / Ödeme Durumu ve Banka Kredisi Durumu)
+const modal = document.getElementById('payment-modal');
+const paymentForm = document.getElementById('payment-form');
+
+function updatePartialPaymentRowVisibility() {
+  const statusRadios = document.getElementsByName('payment-status');
+  let selected = 'unpaid';
+  statusRadios.forEach(r => { if (r.checked) selected = r.value; });
+
+  const row = document.getElementById('partial-payment-row');
+  if (row) {
+    row.style.display = selected === 'partial' ? 'grid' : 'none';
+  }
+  updateRemainingPreview();
+}
+
+function updateRemainingPreview() {
+  const total = parseFloat(document.getElementById('payment-amount').value) || 0;
+  const paid = parseFloat(document.getElementById('payment-paid-amount').value) || 0;
+  const rem = Math.max(total - paid, 0);
+  const preview = document.getElementById('payment-remaining-preview');
+  if (preview) {
+    preview.textContent = formatCurrency(rem);
+  }
+}
+
+function openEditModal(paymentId) {
+  const year = state.currentDate.getFullYear();
+  const month = state.currentDate.getMonth();
+  const allItems = getAllMonthPayments(year, month);
+  const payment = allItems.find(p => p.id === paymentId);
+  if (!payment) return;
+
+  const isCard = payment.type === 'card';
+  const metaBox = document.getElementById('card-meta-info-box');
+
+  if (isCard) {
+    document.getElementById('modal-title-text').textContent = 'Kredi Kartı Ödeme & Tutar Detayı';
+    document.getElementById('payment-amount').disabled = false;
+    if (metaBox) {
+      metaBox.style.display = 'block';
+      metaBox.innerHTML = `
+        <div><strong>🏦 Banka & Kart:</strong> ${payment.bank} - ${payment.cardName}</div>
+        <div><strong>🔢 Son 4 Hane:</strong> *${payment.last4} <span style="opacity:0.75;">(${payment.fullNumber})</span></div>
+        <div><strong>👤 Kart Sahibi:</strong> ${payment.holder} (${payment.company})</div>
+        <div><strong>📅 Kesim & Son Ödeme:</strong> Hesap Kesim: Ayın ${payment.cutOffDay}'i • Son Ödeme: Ayın ${payment.dueDay}'i</div>
+      `;
+    }
+  } else {
+    document.getElementById('modal-title-text').textContent = 'Banka Kredisi Taksit Durumu';
+    document.getElementById('payment-amount').disabled = true;
+    if (metaBox) {
+      metaBox.style.display = 'block';
+      metaBox.innerHTML = `
+        <div><strong>🏦 Banka Adı:</strong> ${payment.bankName}</div>
+        <div><strong>📑 Kredi Bilgisi:</strong> ${payment.subtitle}</div>
+        <div><strong>💰 Taksit Tutarı:</strong> ${formatCurrency(payment.amount)}</div>
+      `;
+    }
+  }
+
+  document.getElementById('payment-id').value = payment.id;
+  document.getElementById('payment-title').value = isCard
+    ? `${payment.bank} ${payment.cardName} (*${payment.last4}) — ${payment.holder} (${payment.company})`
+    : `${payment.bankName} — ${ formatCurrency(payment.amount) }`;
+  document.getElementById('payment-amount').value = payment.amount > 0 ? payment.amount : '';
+  document.getElementById('payment-paid-amount').value = payment.status === 'partial' ? (payment.paidAmount || '') : '';
+  document.getElementById('payment-date').value = payment.date;
+  document.getElementById('payment-notes').value = payment.notes || '';
+
+  const statusRadios = document.getElementsByName('payment-status');
+  statusRadios.forEach(radio => {
+    radio.checked = radio.value === payment.status;
+  });
+
+  updatePartialPaymentRowVisibility();
+  modal.classList.add('show');
+}
+window.openEditModal = openEditModal;
+
+function closeModal() {
+  modal.classList.remove('show');
+}
+
+document.getElementsByName('payment-status').forEach(radio => {
+  radio.addEventListener('change', updatePartialPaymentRowVisibility);
+});
+document.getElementById('payment-amount').addEventListener('input', updateRemainingPreview);
+document.getElementById('payment-paid-amount').addEventListener('input', updateRemainingPreview);
+
+paymentForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const id = document.getElementById('payment-id').value;
+  const amount = parseFloat(document.getElementById('payment-amount').value) || 0;
+  const date = document.getElementById('payment-date').value;
+  const notes = document.getElementById('payment-notes').value.trim();
+
+  let status = 'unpaid';
+  document.getElementsByName('payment-status').forEach(r => { if (r.checked) status = r.value; });
+
+  let paidAmount = 0;
+  if (status === 'paid') {
+    paidAmount = amount;
+  } else if (status === 'partial') {
+    paidAmount = Math.min(Math.max(parseFloat(document.getElementById('payment-paid-amount').value) || 0, 0), amount);
+  }
+
+  if (id.startsWith('card-pay-')) {
+    const mapObj = getCardMonthlyStateMap();
+    mapObj[id] = {
+      amount,
+      status,
+      paidAmount,
+      notes,
+      updatedAt: new Date().toISOString()
+    };
+    saveCardMonthlyStateMap(mapObj);
+  } else if (id.startsWith('loan-pay-')) {
+    const parts = id.split('-');
+    const loanKey = parts.slice(2, parts.length - 1).join('-');
+    const taksitNo = parts[parts.length - 1];
+    let userState = {};
+    try { userState = JSON.parse(localStorage.getItem('dizsan_kredi_takip_verileri') || '{}'); } catch (err) {}
+    if (!userState[loanKey]) userState[loanKey] = {};
+    if (!userState[loanKey][taksitNo]) userState[loanKey][taksitNo] = {};
+    userState[loanKey][taksitNo].is_paid = (status === 'paid');
+    userState[loanKey][taksitNo].paidAmount = paidAmount;
+    userState[loanKey][taksitNo].payment_date = date;
+    userState[loanKey][taksitNo].notes = notes || (status === 'partial' ? `Kısmi ödeme: ${formatCurrency(paidAmount)}` : '');
+    userState[loanKey][taksitNo].source = 'Ödeme Takvimi';
+    localStorage.setItem('dizsan_kredi_takip_verileri', JSON.stringify(userState));
+    let customLoans = {};
+    try { customLoans = JSON.parse(localStorage.getItem('dizsan_eklenen_krediler') || '{}'); } catch (err) {}
+    pushLoanStateToPortal(userState, customLoans);
+  }
+
+  closeModal();
+  renderAllViews();
+});
+
+document.getElementById('modal-close-btn').addEventListener('click', closeModal);
+document.getElementById('cancel-payment-btn').addEventListener('click', closeModal);
+modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+// 12. Navigasyon & Filtre Dinleyicileri
+document.getElementById('prev-month-btn').addEventListener('click', () => {
+  state.currentDate.setMonth(state.currentDate.getMonth() - 1);
+  renderAllViews();
+});
+
+document.getElementById('next-month-btn').addEventListener('click', () => {
+  state.currentDate.setMonth(state.currentDate.getMonth() + 1);
+  renderAllViews();
+});
+
+document.getElementById('today-btn').addEventListener('click', () => {
+  state.currentDate = new Date();
+  renderAllViews();
+});
+
+document.getElementById('month-select').addEventListener('change', (e) => {
+  state.currentDate.setMonth(parseInt(e.target.value, 10));
+  renderAllViews();
+});
+
+document.getElementById('year-select').addEventListener('change', (e) => {
+  state.currentDate.setFullYear(parseInt(e.target.value, 10));
+  renderAllViews();
+});
+
+document.getElementById('submodule-tabs').addEventListener('click', (e) => {
+  const target = e.target.closest('.filter-item');
+  if (!target || !target.dataset.view) return;
+  switchView(target.dataset.view);
+});
+
+document.getElementById('category-filters').addEventListener('click', (e) => {
+  const target = e.target.closest('.filter-item');
+  if (!target) return;
+  document.querySelectorAll('#category-filters .filter-item').forEach(i => i.classList.remove('active'));
+  target.classList.add('active');
+  state.filters.category = target.dataset.category;
+  renderAllViews();
+});
+
+document.getElementById('status-filters').addEventListener('click', (e) => {
+  const target = e.target.closest('.filter-item');
+  if (!target) return;
+  document.querySelectorAll('#status-filters .filter-item').forEach(i => i.classList.remove('active'));
+  target.classList.add('active');
+  state.filters.status = target.dataset.status;
+  renderAllViews();
+});
+
+const cardSearchInput = document.getElementById('card-search-input');
+if (cardSearchInput) {
+  cardSearchInput.addEventListener('input', (e) => {
+    state.cardSearchQuery = e.target.value.trim();
+    renderAllViews();
+  });
+}
+
+const listSearchInput = document.getElementById('list-search-input');
+if (listSearchInput) {
+  listSearchInput.addEventListener('input', (e) => {
+    state.listSearchQuery = e.target.value.trim();
+    renderAllViews();
+  });
+}
+
+document.getElementById('print-calendar-btn').addEventListener('click', () => window.print());
+
+function initTheme() {
+  const themeToggleBtn = document.getElementById('theme-toggle-btn');
+  if (!themeToggleBtn) return;
+  const currentTheme = localStorage.getItem('theme_preference') || 'dark';
+  if (currentTheme === 'light') {
+    document.body.classList.add('light-theme');
+    themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i> Karanlık Mod';
+  } else {
+    document.body.classList.remove('light-theme');
+    themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i> Aydınlık Mod';
+  }
+
+  themeToggleBtn.addEventListener('click', () => {
+    const isLight = document.body.classList.toggle('light-theme');
+    localStorage.setItem('theme_preference', isLight ? 'light' : 'dark');
+    themeToggleBtn.innerHTML = isLight ? '<i class="fa-solid fa-moon"></i> Karanlık Mod' : '<i class="fa-solid fa-sun"></i> Aydınlık Mod';
+  });
+}
+
+// 13. PWA Service Worker & Mobil Uygulama Kurulum Desteği
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+});
+
+const triggerPwaBtn = document.getElementById('trigger-pwa-install-btn');
+if (triggerPwaBtn) {
+  triggerPwaBtn.addEventListener('click', async () => {
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+    } else {
+      alert('📱 Telefona Kurulum:\n\n• iPhone / iPad (Safari): Alt bardaki Paylaş (⬆️) butonuna basıp "Ana Ekrana Ekle" seçeneğine dokunun.\n• Android (Chrome): Sağ üstteki 3 nokta menüsünden "Uygulamayı Yükle / Ana ekrana ekle" seçeneğine dokunun.');
+    }
+  });
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  renderAllViews();
+  initTheme();
+  syncLoanStateFromPortal();
+});
+
+// D-Pro Üst Bar Alt Başlık (Submodule) Köprüsü
+window.addEventListener('message', (ev) => {
+  const d = ev.data || {};
+  if (d.type === 'DPRO_SWITCH_SUBMODULE' && d.targetTab) {
+    switchView(d.targetTab);
+  }
+});
+
+</script>
+  <script>
+/**
+ * ============================================================================
+ * DİZSAN EVRENSEL GERİ TUŞU & ÇIKIŞ ÖNLEME MOTORU (dizsan-back-navigation.js)
+ * Antigravity AI - Dizsan Ekosistemi v2.0.0
+ * 
+ * Özellikler:
+ * 1. Telefon donanım / kaydırma geri tuşu (Android Back / iOS swipe) basıldığında
+ *    uygulamadan komple çıkmayı %100 engeller.
+ * 2. Gerçek LIFO Navigasyon Yığını (Tab History Stack):
+ *    Sayfalar arası gezinti geçmişini hatırlar ve her geri basışta bir önceki sayfaya döner.
+ * 3. Açık modal (ziyaret, toplantı, aksiyon, müşteri detayı vb.) varsa önce modalı kapatır.
+ * 4. Açık mobil yan menü/sidebar varsa önce menüyü kapatır.
+ * 5. Ana ekrandayken (Kokpit) geri tuşuna basıldığında uygulamadan atmaz;
+ *    "DİZSAN Ana Sayfasındasınız" uyarısı verir ve ekranda kalır.
+ * 6. Tüm uygulamaların üst çubuğuna (navbar) ve tüm modal başlıklarına şık, 
+ *    dokunmatik dostu "← Geri" butonu ekler.
+ * ============================================================================
+ */
+
+(function () {
+    'use strict';
+
+    if (window.DizsanBackNav && window.DizsanBackNav.version === '2.0.0') {
+        return;
+    }
+
+    const tabHistoryStack = [];
+    let isInternalTabSwitch = false;
+    let visibilityCheckTimer = null;
+    let toastTimer = null;
+
+    // 1. Gerekli CSS Stilleri
+    function injectStyles() {
+        if (document.getElementById('dizsan-back-nav-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'dizsan-back-nav-styles';
+        style.textContent = `
+            /* Üst Çubuk Evrensel Geri Tuşu */
+            .dizsan-global-back-btn {
+                display: none;
+                align-items: center;
+                gap: 6px;
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.16);
+                color: #ffffff;
+                padding: 0.38rem 0.72rem;
+                border-radius: 9px;
+                font-size: 0.82rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition: background 0.15s ease, transform 0.1s ease;
+                margin-right: 0.45rem;
+                flex-shrink: 0;
+                -webkit-tap-highlight-color: transparent;
+                user-select: none;
+                -webkit-user-select: none;
+            }
+            .dizsan-global-back-btn:active {
+                transform: scale(0.92);
+                background: rgba(56, 189, 248, 0.25);
+            }
+            .dizsan-global-back-btn.visible {
+                display: inline-flex !important;
+            }
+
+            /* Modal Başlığı İçi Geri Tuşu */
+            .dizsan-modal-back-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.18);
+                color: #e2e8f0;
+                padding: 0.32rem 0.65rem;
+                border-radius: 8px;
+                font-size: 0.78rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background 0.15s ease;
+                margin-right: 0.65rem;
+                flex-shrink: 0;
+                -webkit-tap-highlight-color: transparent;
+                user-select: none;
+            }
+            .dizsan-modal-back-btn:active {
+                transform: scale(0.92);
+            }
+
+            /* Bilgilendirme Toastı */
+            #dizsan-back-toast {
+                position: fixed;
+                bottom: 85px;
+                left: 50%;
+                transform: translateX(-50%) translateY(30px);
+                background: rgba(15, 23, 42, 0.96);
+                border: 1px solid rgba(56, 189, 248, 0.45);
+                color: #f8fafc;
+                padding: 0.65rem 1.25rem;
+                border-radius: 25px;
+                font-size: 0.82rem;
+                font-weight: 600;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75);
+                z-index: 100000;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.2s ease, transform 0.2s ease;
+                white-space: nowrap;
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+            }
+            #dizsan-back-toast.show {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // 2. Toast Bildirimi
+    function showBackToast(text) {
+        let toast = document.getElementById('dizsan-back-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'dizsan-back-toast';
+            document.body.appendChild(toast);
+        }
+        toast.innerHTML = `<i class="fa-solid fa-arrow-left" style="color:#38bdf8; margin-right:6px;"></i> ${text}`;
+        toast.classList.add('show');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+            toast.classList.remove('show');
+            toastTimer = null;
+        }, 1800);
+    }
+
+    // 3. Açık Modal Tespiti
+    function isModalElementOpen(el) {
+        if (!el) return false;
+        if (el.classList.contains('open') || el.classList.contains('active')) return true;
+        if (el.style.display && el.style.display !== 'none') return true;
+        return false;
+    }
+
+    function getActiveModal() {
+        const modalOrder = [
+            'mobile-pwa-prompt-modal',
+            'approval-request-modal',
+            'task-action-modal',
+            'manager-approval-modal',
+            'urgent-departure-modal',
+            'attachment-preview-modal',
+            'meeting-modal',
+            'action-modal',
+            'announcement-modal',
+            'visit-modal',
+            'customer-detail-modal',
+            'customer-modal',
+            'task-modal',
+            'user-modal',
+            'version-modal',
+            'push-test-modal',
+            'install-guide-modal',
+            'change-password-modal',
+            'forgot-password-modal',
+            'new-card-modal',
+            'new-payment-modal'
+        ];
+
+        for (const id of modalOrder) {
+            const el = document.getElementById(id);
+            if (el && isModalElementOpen(el)) return el;
+        }
+
+        const openBackdrops = document.querySelectorAll('.modal-backdrop.open, .modal-backdrop.active, .modal.open, .modal.active');
+        if (openBackdrops.length > 0) {
+            return openBackdrops[openBackdrops.length - 1];
+        }
+
+        return null;
+    }
+
+    // 4. Modalı Kapatma
+    function closeModal(modalEl) {
+        if (!modalEl) return false;
+        const id = modalEl.id;
+
+        const closeFnMap = {
+            'mobile-pwa-prompt-modal': 'closePwaPromptModal',
+            'approval-request-modal': 'closeApprovalRequestModal',
+            'task-action-modal': 'closeTaskActionModal',
+            'manager-approval-modal': 'closeApprovalCenterModal',
+            'urgent-departure-modal': 'closeUrgentDepartureModal',
+            'attachment-preview-modal': 'closeAttachmentPreviewModal',
+            'meeting-modal': 'closeMeetingModal',
+            'action-modal': 'closeActionModal',
+            'announcement-modal': 'closeAnnouncementModal',
+            'visit-modal': 'closeVisitModal',
+            'customer-detail-modal': 'closeCustomerDetailModal',
+            'customer-modal': 'closeCustomerModal',
+            'task-modal': 'closeTaskModal',
+            'user-modal': 'closeUserModal',
+            'version-modal': 'closeVersionModal',
+            'push-test-modal': 'closePushTestCenterModal',
+            'install-guide-modal': 'closeInstallGuideModal',
+            'change-password-modal': 'closeChangePasswordModal',
+            'forgot-password-modal': 'closeForgotPasswordModal'
+        };
+
+        const fnName = closeFnMap[id];
+        if (fnName && typeof window[fnName] === 'function') {
+            window[fnName]();
+            return true;
+        }
+
+        const closeBtn = modalEl.querySelector('.modal-close, .close, [data-dismiss="modal"], button.btn-secondary');
+        if (closeBtn && typeof closeBtn.click === 'function') {
+            closeBtn.click();
+            return true;
+        }
+
+        modalEl.classList.remove('open', 'active');
+        modalEl.style.display = 'none';
+        return true;
+    }
+
+    // 5. Mobil Yan Menü Kontrolü
+    function getActiveSidebar() {
+        const sidebar = document.querySelector('.sidebar.mobile-open, .sidebar.active, .mobile-sidebar.open');
+        return (sidebar && (sidebar.classList.contains('mobile-open') || sidebar.classList.contains('active') || sidebar.classList.contains('open'))) ? sidebar : null;
+    }
+
+    function closeSidebar(sidebarEl) {
+        if (!sidebarEl) return false;
+        if (typeof window.toggleMobileSidebar === 'function') {
+            window.toggleMobileSidebar();
+            return true;
+        }
+        if (typeof window.toggleSidebar === 'function') {
+            window.toggleSidebar();
+            return true;
+        }
+        sidebarEl.classList.remove('mobile-open', 'active', 'open');
+        return true;
+    }
+
+    // 6. Mevcut Sekme Kontrolü
+    function getActiveTabId() {
+        const activeSection = document.querySelector('.tab-section.active, .tab-pane.active, .page-section.active');
+        return activeSection ? activeSection.id : '';
+    }
+
+    function isHomeTab(tabId) {
+        if (!tabId) return true;
+        const homeIds = ['dashboard-tab', 'tab-dashboard', 'kokpit-tab', 'home-tab', 'main-tab', 'summary-tab'];
+        return homeIds.includes(tabId);
+    }
+
+    // 7. Geri Tuşu Karar Motoru (Hierarchical Navigation)
+    function handleBackNavigation() {
+        // 1. Aşama: Açık modal var mı?
+        const modal = getActiveModal();
+        if (modal) {
+            closeModal(modal);
+            scheduleVisibilityCheck();
+            return true;
+        }
+
+        // 2. Aşama: Açık yan menü var mı?
+        const sidebar = getActiveSidebar();
+        if (sidebar) {
+            closeSidebar(sidebar);
+            scheduleVisibilityCheck();
+            return true;
+        }
+
+        // 3. Aşama: Sekme geçmişinde bir önceki sayfa var mı?
+        while (tabHistoryStack.length > 0) {
+            const prevTab = tabHistoryStack.pop();
+            const curTab = getActiveTabId();
+            if (prevTab && prevTab !== curTab && document.getElementById(prevTab)) {
+                isInternalTabSwitch = true;
+                if (typeof window.switchTab === 'function') {
+                    window.switchTab(prevTab);
+                } else {
+                    const btn = document.querySelector(`[data-tab="${prevTab}"], [onclick*="${prevTab}"]`);
+                    if (btn) btn.click();
+                }
+                isInternalTabSwitch = false;
+                scheduleVisibilityCheck();
+                return true;
+            }
+        }
+
+        // 4. Aşama: Eğer geçmiş boş ama ana sekmede değilsek, ana sekmeye dön
+        const curTab = getActiveTabId();
+        if (curTab && !isHomeTab(curTab)) {
+            isInternalTabSwitch = true;
+            if (typeof window.switchTab === 'function') {
+                window.switchTab('dashboard-tab');
+            } else {
+                const homeBtn = document.querySelector('[data-tab="dashboard-tab"], [onclick*="dashboard-tab"]');
+                if (homeBtn) homeBtn.click();
+            }
+            isInternalTabSwitch = false;
+            scheduleVisibilityCheck();
+            return true;
+        }
+
+        // 5. Aşama: Zaten ana sekmedeyiz. D-Pro içindeysek D-Pro Ana Menüsüne dön!
+        if (window.parent && window.parent !== window) {
+            try {
+                window.parent.postMessage({ type: 'DPRO_BACK_TO_MAIN' }, '*');
+                return true;
+            } catch (e) {}
+        }
+        showBackToast('DİZSAN Ana Sayfasındasınız');
+        scheduleVisibilityCheck();
+        return false;
+    }
+
+    // 8. Uygulama İçi "← Geri" Butonuna Basıldığında
+    function handleInAppBack() {
+        handleBackNavigation();
+    }
+
+    // 9. Donanım / Tarayıcı Popstate Kalkanı (Anti-Exit Guard)
+    function pushGuard() {
+        try {
+            history.pushState({ dizsanGuard: true, timestamp: Date.now() }, '', location.href);
+        } catch (e) {}
+    }
+
+    function initPopStateGuard() {
+        pushGuard();
+        pushGuard();
+
+        window.addEventListener('popstate', function (e) {
+            // Tarayıcı geri tuşuna basıldığında geçmiş havuzunu anında tekrar doldur
+            pushGuard();
+
+            // Uygulama içi önceki sayfaya veya modala dön
+            handleBackNavigation();
+        });
+    }
+
+    // 10. Geri Butonlarını DOM'a Enjekte Et
+    function injectTopNavbarBackButton() {
+        let btn = document.getElementById('dizsan-global-back-btn');
+        if (!btn) {
+            const targetContainer = document.querySelector('.navbar-left, .topbar-left, .header-left');
+            if (targetContainer) {
+                btn = document.createElement('button');
+                btn.type = 'button';
+                btn.id = 'dizsan-global-back-btn';
+                btn.className = 'dizsan-global-back-btn visible';
+                btn.title = 'Geri Dön';
+                btn.innerHTML = '<i class="fa-solid fa-arrow-left"></i> <span>Geri</span>';
+                btn.onclick = handleInAppBack;
+                targetContainer.insertBefore(btn, targetContainer.firstChild);
+            }
+        }
+        updateBackButtonVisibility();
+    }
+
+    function injectModalBackButtons() {
+        const headers = document.querySelectorAll('.modal-header');
+        headers.forEach(hdr => {
+            if (hdr.querySelector('.dizsan-modal-back-btn')) return;
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'dizsan-modal-back-btn';
+            btn.innerHTML = '<i class="fa-solid fa-arrow-left"></i> Geri';
+            btn.onclick = function (e) {
+                e.stopPropagation();
+                handleInAppBack();
+            };
+            hdr.insertBefore(btn, hdr.firstChild);
+        });
+    }
+
+    // 11. Geri Butonunun Görünürlüğünü Güncelle
+    function updateBackButtonVisibility() {
+        const btn = document.getElementById('dizsan-global-back-btn');
+        if (!btn) return;
+
+        const isEmbedded = (window.parent && window.parent !== window);
+        const hasModal = !!getActiveModal();
+        const hasSidebar = !!getActiveSidebar();
+        const curTab = getActiveTabId();
+        const hasHistory = tabHistoryStack.length > 0;
+        const isNotHome = curTab && !isHomeTab(curTab);
+        const shouldBeVisible = !!(isEmbedded || hasModal || hasSidebar || hasHistory || isNotHome || true);
+
+        if (btn.classList.contains('visible') !== shouldBeVisible) {
+            btn.classList.toggle('visible', shouldBeVisible);
+        }
+    }
+
+    function scheduleVisibilityCheck() {
+        if (visibilityCheckTimer) return;
+        visibilityCheckTimer = setTimeout(() => {
+            visibilityCheckTimer = null;
+            updateBackButtonVisibility();
+        }, 100);
+    }
+
+    // 12. Sekme Değişikliklerini İzleme (Tab History Tracking)
+    function trackTabSwitch(newTabId) {
+        if (isInternalTabSwitch || !newTabId) return;
+        const curTab = getActiveTabId();
+        if (curTab && curTab !== newTabId) {
+            if (tabHistoryStack.length === 0 || tabHistoryStack[tabHistoryStack.length - 1] !== curTab) {
+                tabHistoryStack.push(curTab);
+                if (tabHistoryStack.length > 30) {
+                    tabHistoryStack.shift();
+                }
+            }
+        }
+        scheduleVisibilityCheck();
+    }
+
+    // 13. Global API Tanımlaması
+    window.DizsanBackNav = {
+        version: '2.0.0',
+        handleInAppBack: handleInAppBack,
+        getActiveModal: getActiveModal,
+        updateBackButtonVisibility: updateBackButtonVisibility,
+        showToast: showBackToast,
+        pushGuard: pushGuard
+    };
+
+    // 14. Başlatıcı
+    function init() {
+        injectStyles();
+        initPopStateGuard();
+        injectTopNavbarBackButton();
+        injectModalBackButtons();
+
+        // switchTab kancası
+        if (typeof window.switchTab === 'function') {
+            const originalSwitchTab = window.switchTab;
+            window.switchTab = function (tabId) {
+                trackTabSwitch(tabId);
+                const res = originalSwitchTab.apply(this, arguments);
+                scheduleVisibilityCheck();
+                return res;
+            };
+        }
+
+        // Tıklamaları dinle ve görünürlüğü güncelle
+        document.addEventListener('click', function (e) {
+            scheduleVisibilityCheck();
+            // Herhangi bir kullanıcı etkileşiminde geçmiş kalkanını tazele
+            pushGuard();
+        }, { passive: true });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+
+</script>
+</body>
+</html>

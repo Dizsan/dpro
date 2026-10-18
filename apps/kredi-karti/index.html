@@ -1,0 +1,3058 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<script id="dpro-omer-exclusive-guard">
+(function(){
+  try {
+    var u = (localStorage.getItem("dizsan_dpro_active_session_v1") || sessionStorage.getItem("dizsan_dpro_active_session_v1") || "").toLowerCase();
+    var zRaw = localStorage.getItem("dizsan_ziyaret_session_v2") || sessionStorage.getItem("dizsan_ziyaret_session_v2") || "";
+    var isOmer = (u === "ömer" || u === "omer" || zRaw.toLowerCase().indexOf("ömer") !== -1 || zRaw.toLowerCase().indexOf("omer") !== -1);
+    if (!isOmer && window.self === window.top) {
+      window.location.replace("../../index.html");
+    }
+  } catch(e) {}
+})();
+</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CardFlow // Çoklu Kredi Kartı Takip Dashboard</title>
+  <!-- SEO Tags -->
+  <meta name="description" content="Tüm şahsi ve şirket kredi kartlarınızın güncel borç, limit ve son ödeme tarihlerini tek bir şık ekranda takip edin.">
+  <!-- Stylesheets -->
+  <style>
+/* CardFlow Premium Styling */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg-main: #060913;
+  --bg-sidebar: #0b0f19;
+  --bg-card: rgba(17, 24, 39, 0.7);
+  --bg-glass: rgba(17, 24, 39, 0.4);
+  --border-glass: rgba(255, 255, 255, 0.06);
+  --border-glass-hover: rgba(255, 255, 255, 0.12);
+  
+  --text-primary: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  
+  --primary: #6366f1;
+  --primary-rgb: 99, 102, 241;
+  --secondary: #a855f7;
+  --secondary-rgb: 168, 85, 247;
+  
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  
+  --card-personal-grad: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #d946ef 100%);
+  --card-corporate-grad: linear-gradient(135deg, #1f2937 0%, #111827 40%, #b45309 100%);
+  --card-glow-personal: 0 10px 30px -10px rgba(59, 130, 246, 0.5);
+  --card-glow-corporate: 0 10px 30px -10px rgba(180, 83, 9, 0.4);
+  
+  --shadow-main: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  display: flex;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 40%);
+}
+
+/* Layout */
+.app-container {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+aside {
+  background-color: var(--bg-sidebar);
+  border-right: 1px solid var(--border-glass);
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: 10;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 3rem;
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+}
+
+.logo-icon i {
+  font-size: 1.25rem;
+  color: white;
+}
+
+.logo-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(to right, #ffffff, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.nav-links li a {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+  font-weight: 500;
+}
+
+.nav-links li.active a, .nav-links li a:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.04);
+  border-left: 3px solid var(--primary);
+  padding-left: calc(1rem - 3px);
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--border-glass-hover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--primary);
+}
+
+.user-info .name {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.user-info .role {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Main Content Area */
+main {
+  padding: 2rem 2.5rem;
+  overflow-y: auto;
+  max-height: 100vh;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.header-title h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.header-title p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  border: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+}
+
+.btn-glass {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary);
+}
+
+.btn-glass:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--border-glass-hover);
+}
+
+.btn-danger-glass {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.btn-danger-glass:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+/* KPI Summary Cards */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
+.kpi-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: var(--transition);
+}
+
+.kpi-card:hover {
+  border-color: var(--border-glass-hover);
+  transform: translateY(-2px);
+}
+
+.kpi-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.kpi-icon.blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+.kpi-icon.red { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+.kpi-icon.green { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+.kpi-icon.amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+
+.kpi-details .kpi-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.kpi-details .kpi-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+/* Visual Credit Cards Section */
+.section-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.section-title span {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.cards-scroll-container {
+  display: flex;
+  gap: 1.5rem;
+  padding: 0.5rem 0.5rem 1.5rem 0.5rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  margin-bottom: 2.5rem;
+}
+
+/* Custom Scrollbar for Cards Container */
+.cards-scroll-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.cards-scroll-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+}
+
+.cards-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.cards-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Realistic Credit Card */
+.credit-card {
+  flex: 0 0 340px;
+  height: 210px;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.credit-card.personal {
+  background: var(--card-personal-grad);
+}
+
+.credit-card.personal::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  right: -20%;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+  border-radius: 50%;
+}
+
+.credit-card.corporate {
+  background: var(--card-corporate-grad);
+  border: 1px solid rgba(245, 158, 11, 0.15);
+}
+
+.credit-card.corporate::before {
+  content: '';
+  position: absolute;
+  bottom: -20%;
+  left: -20%;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.credit-card:hover {
+  transform: translateY(-8px) rotate(1deg);
+}
+
+.credit-card.personal:hover { box-shadow: var(--card-glow-personal); }
+.credit-card.corporate:hover { box-shadow: var(--card-glow-corporate); }
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  z-index: 2;
+}
+
+.card-bank {
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: 0.5px;
+}
+
+.card-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(4px);
+}
+
+.card-mid {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 2;
+  margin-top: 1rem;
+}
+
+.card-chip {
+  width: 40px;
+  height: 30px;
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+  border-radius: 6px;
+  position: relative;
+}
+
+.card-chip::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 10px;
+  width: 20px;
+  height: 20px;
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 4px;
+}
+
+.card-type-icon {
+  font-size: 1.8rem;
+  opacity: 0.9;
+}
+
+.card-number {
+  font-size: 1.25rem;
+  font-family: monospace;
+  letter-spacing: 2px;
+  word-spacing: 4px;
+  z-index: 2;
+  margin-top: 1rem;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  z-index: 2;
+}
+
+.card-holder {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-holder-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.card-holder-name {
+  font-weight: 500;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-meta {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.card-meta-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.card-meta-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.card-meta-val {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Empty Card Placeholder */
+.add-card-placeholder {
+  flex: 0 0 340px;
+  height: 210px;
+  border: 2px dashed rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.add-card-placeholder:hover {
+  border-color: var(--primary);
+  color: var(--text-primary);
+  background: rgba(99, 102, 241, 0.03);
+}
+
+.add-card-placeholder i {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Dashboard Analytics Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.analytics-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.analytics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.analytics-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Upcoming Payments List */
+.payments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.payments-list::-webkit-scrollbar {
+  width: 6px;
+}
+.payments-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.payments-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.payment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  transition: var(--transition);
+}
+
+.payment-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.payment-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.payment-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-dot-danger { background-color: var(--danger); box-shadow: 0 0 8px var(--danger); }
+.status-dot-warning { background-color: var(--warning); box-shadow: 0 0 8px var(--warning); }
+.status-dot-success { background-color: var(--success); box-shadow: 0 0 8px var(--success); }
+
+.payment-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.payment-meta {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.15rem;
+}
+
+.payment-right {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: flex-end;
+}
+
+.payment-amount {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.badge-days {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 20px;
+}
+
+.badge-days.danger { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+.badge-days.warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+.badge-days.success { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+/* Quick Import Widget */
+.quick-import-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.quick-import-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.quick-import-textarea {
+  width: 100%;
+  height: 90px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  padding: 0.75rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+  resize: none;
+  margin-bottom: 0.75rem;
+  transition: var(--transition);
+}
+
+.quick-import-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.15);
+}
+
+.quick-import-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.import-presets {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.preset-btn {
+  font-size: 0.75rem;
+  padding: 0.35rem 0.65rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.preset-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+/* Modals */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: var(--transition);
+}
+
+.modal-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-container {
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border-glass-hover);
+  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 480px;
+  padding: 2rem;
+  box-shadow: 0 15px 50px rgba(0,0,0,0.5);
+  transform: translateY(20px);
+  transition: var(--transition);
+}
+
+.modal-backdrop.show .modal-container {
+  transform: translateY(0);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 0.75rem;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.modal-close:hover {
+  color: var(--text-primary);
+}
+
+/* Forms */
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.15);
+}
+
+.radio-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.25rem;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.radio-input {
+  accent-color: var(--primary);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+/* Monthly Calendar Styles */
+.calendar-wrapper {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
+  border: 1px solid var(--border-glass);
+}
+
+.calendar-days-grid {
+  min-height: 380px;
+}
+
+.calendar-day {
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem;
+  min-height: 72px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  position: relative;
+  transition: var(--transition);
+}
+
+.calendar-day:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.calendar-day.today {
+  border-color: var(--primary);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+  background: rgba(99, 102, 241, 0.03);
+}
+
+.calendar-day.other-month {
+  opacity: 0.25;
+}
+
+.calendar-day-num {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  align-self: flex-end;
+  margin-bottom: 0.25rem;
+}
+
+.calendar-day.today .calendar-day-num {
+  color: #fff;
+  font-weight: 700;
+  background: var(--primary);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+}
+
+.calendar-events-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow-y: auto;
+  max-height: 52px;
+}
+
+.calendar-events-container::-webkit-scrollbar {
+  width: 2px;
+}
+
+.calendar-event-item {
+  font-size: 0.6rem;
+  font-weight: 500;
+  padding: 1px 3px;
+  border-radius: 3px;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: var(--transition);
+}
+
+.calendar-event-item:hover {
+  transform: scale(1.02);
+}
+
+.calendar-event-item.personal {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.4) 0%, rgba(139, 92, 246, 0.4) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.5);
+}
+
+.calendar-event-item.corporate {
+  background: linear-gradient(135deg, rgba(31, 41, 55, 0.7) 0%, rgba(180, 83, 9, 0.4) 100%);
+  border: 1px solid rgba(180, 83, 9, 0.5);
+}
+
+}
+
+/* Rich Calendar Hover Tooltip Styles */
+.custom-tooltip {
+  position: absolute;
+  background: rgba(11, 15, 25, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  color: var(--text-primary);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 20px rgba(99, 102, 241, 0.15);
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1), transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 320px;
+  font-family: 'Outfit', sans-serif;
+  border-left: 3px solid var(--primary);
+}
+
+.custom-tooltip.show {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.tooltip-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #fff;
+}
+
+.tooltip-card-item {
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+  padding-bottom: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.tooltip-card-item:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.tooltip-card-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 0.35rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #f3f4f6;
+}
+
+.tooltip-card-name span.type-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tooltip-card-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.tooltip-card-details div span {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.tooltip-summary {
+  background: rgba(99, 102, 241, 0.06);
+  border-top: 1px solid rgba(99, 102, 241, 0.15);
+  margin-top: 0.75rem;
+  padding: 0.6rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.tooltip-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-secondary);
+}
+
+.tooltip-summary-row.total-row {
+  font-weight: 700;
+  color: #fff;
+  font-size: 0.8rem;
+  border-bottom: 1px dashed rgba(255,255,255,0.05);
+  padding-bottom: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.tooltip-summary-row.total-row span:last-child {
+  color: #f87171; /* Accentuate debt total */
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .app-container {
+    grid-template-columns: 1fr;
+  }
+  
+  aside {
+    display: none; /* In production, we'd make a burger menu, but keeping it simple for the desktop workspace */
+  }
+  
+  .kpi-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+</style>
+  <!-- FontAwesome Icons & Google Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js for data visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside>
+      <div class="sidebar-top">
+        <div class="logo-container">
+          <div class="logo-icon">
+            <i class="fa-solid fa-wallet"></i>
+          </div>
+          <span class="logo-text">CardFlow</span>
+        </div>
+        
+        <ul class="nav-links">
+          <li class="active"><a href="#" id="nav-dashboard"><i class="fa-solid fa-chart-pie"></i> Kontrol Paneli</a></li>
+          <li><a href="#" id="nav-cards-btn"><i class="fa-solid fa-credit-card"></i> Kartlarım</a></li>
+          <li><a href="#" id="nav-settings"><i class="fa-solid fa-sliders"></i> Ayarlar</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="user-avatar">
+            <i class="fa-solid fa-user-tie"></i>
+          </div>
+          <div class="user-info">
+            <div class="name">Ömer Eren</div>
+            <div class="role">Yönetici / Finans</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main>
+      <!-- Header -->
+      <header>
+        <div class="header-title">
+          <h1 id="page-title">Kartlarım ve Nakit Akışı</h1>
+          <p id="page-subtitle">Şahsi ve Şirket kredi kartlarınızın güncel durumu.</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-glass" id="filter-all-btn"><i class="fa-solid fa-filter"></i> Hepsi</button>
+          <button class="btn btn-glass" id="filter-personal-btn"><i class="fa-solid fa-user"></i> Şahsi</button>
+          <button class="btn btn-glass" id="filter-corporate-btn"><i class="fa-solid fa-building"></i> Şirket</button>
+          <button class="btn btn-primary" id="add-card-btn"><i class="fa-solid fa-plus"></i> Yeni Kart Ekle</button>
+        </div>
+      </header>
+
+      <!-- KPI Summary Cards -->
+      <section class="kpi-grid">
+        <div class="kpi-card" id="kpi-total-debt">
+          <div class="kpi-icon red">
+            <i class="fa-solid fa-arrow-trend-up"></i>
+          </div>
+          <div class="kpi-details">
+            <div class="kpi-label">Toplam Dönem Borcu</div>
+            <div class="kpi-value" id="val-total-debt">0.00 ₺</div>
+          </div>
+        </div>
+
+        <div class="kpi-card" id="kpi-total-limit">
+          <div class="kpi-icon blue">
+            <i class="fa-solid fa-credit-card"></i>
+          </div>
+          <div class="kpi-details">
+            <div class="kpi-label">Toplam Kart Limiti</div>
+            <div class="kpi-value" id="val-total-limit">0.00 ₺</div>
+          </div>
+        </div>
+
+        <div class="kpi-card" id="kpi-available-limit">
+          <div class="kpi-icon green">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div class="kpi-details">
+            <div class="kpi-label">Toplam Kullanılabilir Limit</div>
+            <div class="kpi-value" id="val-available-limit">0.00 ₺</div>
+          </div>
+        </div>
+
+        <div class="kpi-card" id="kpi-upcoming-payments">
+          <div class="kpi-icon amber">
+            <i class="fa-solid fa-clock"></i>
+          </div>
+          <div class="kpi-details">
+            <div class="kpi-label">Bu Ay Yaklaşan Ödemeler</div>
+            <div class="kpi-value" id="val-upcoming-payments">0.00 ₺</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Credit Cards Horizontal Scroll -->
+      <section class="cards-section">
+        <div class="section-title">
+          Kredi Kartlarım <span>(Sağa/Sola Kaydırın)</span>
+        </div>
+        <div class="cards-scroll-container" id="cards-container">
+          <!-- Dynamic cards list will render here -->
+          
+          <!-- Add Card Placeholder -->
+          <div class="add-card-placeholder" id="add-card-placeholder-btn">
+            <i class="fa-solid fa-circle-plus"></i>
+            <span>Yeni Kredi Kartı Tanımla</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Lower Grid: Analytics & Payment Dates -->
+      <section class="dashboard-grid">
+        <!-- Monthly Payment Calendar -->
+        <div class="analytics-card" style="display: flex; flex-direction: column;">
+          <div class="analytics-header">
+            <h3 class="analytics-title"><i class="fa-solid fa-calendar-days" style="color: var(--warning)"></i> Aylık Ödeme Takvimi</h3>
+            <div class="calendar-controls" style="display: flex; align-items: center; gap: 0.5rem;">
+              <button class="preset-btn" id="calendar-prev-btn" type="button"><i class="fa-solid fa-chevron-left"></i></button>
+              <span id="calendar-month-year" style="font-weight: 600; font-size: 0.95rem; min-width: 120px; text-align: center; display: inline-block;">Temmuz 2026</span>
+              <button class="preset-btn" id="calendar-next-btn" type="button"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+          </div>
+          <div class="calendar-wrapper" style="margin-top: 0.5rem; flex-grow: 1;">
+            <div class="calendar-weekdays" style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <div>Pzt</div>
+              <div>Sal</div>
+              <div>Çar</div>
+              <div>Per</div>
+              <div>Cum</div>
+              <div>Cmt</div>
+              <div>Paz</div>
+            </div>
+            <div class="calendar-days-grid" id="calendar-days-container" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 0.5rem;">
+              <!-- Calendar day cells will render here dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Limit and Debt Distribution Chart -->
+        <div class="analytics-card">
+          <div class="analytics-header">
+            <h3 class="analytics-title"><i class="fa-solid fa-chart-donut" style="color: var(--primary)"></i> Borç Dağılımı (Kart Bazlı)</h3>
+          </div>
+          <div style="position: relative; height: 260px; display: flex; align-items: center; justify-content: center;">
+            <canvas id="debtChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- Smart/Quick Import Panel -->
+      <section class="quick-import-panel">
+        <h3 class="analytics-title"><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--secondary)"></i> Ekstre Akıllı Okuma (Fast-Import)</h3>
+        <p class="quick-import-desc">Banka mobil uygulamasından gelen SMS/Bildirim metinlerini veya ekstre e-postalarındaki borç satırlarını kopyalayıp buraya yapıştırarak kart borcunuzu anında güncelleyebilirsiniz.</p>
+        <textarea class="quick-import-textarea" id="import-text" placeholder="Örn: Garanti Bonus ekstre borcunuz 12,500.00 TL, Son ödeme tarihi: 15.07.2026. veya Axess kartınızın borcu 4,200 TL"></textarea>
+        <div class="quick-import-actions">
+          <div class="import-presets">
+            <button class="preset-btn" onclick="setPresetText('garanti')">Garanti SMS Örneği</button>
+            <button class="preset-btn" onclick="setPresetText('yapi')">Yapı Kredi Örneği</button>
+            <button class="preset-btn" onclick="setPresetText('akbank')">Akbank Örneği</button>
+          </div>
+          <button class="btn btn-primary" id="run-import-btn"><i class="fa-solid fa-bolt"></i> Analiz Et ve Güncelle</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Add/Edit Card Modal Backdrop -->
+  <div class="modal-backdrop" id="card-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title-text">Yeni Kredi Kartı Ekle</h3>
+        <button class="modal-close" id="modal-close-btn">&times;</button>
+      </div>
+      <form id="card-form">
+        <!-- Hidden input for edit mode -->
+        <input type="hidden" id="card-id">
+
+        <div class="form-group">
+          <label class="form-label" for="card-bank-input">Banka Adı</label>
+          <input class="form-control" type="text" id="card-bank-input" placeholder="Örn: Garanti BBVA, Akbank" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="card-name-input">Kart Adı (Ürün Tipi)</label>
+          <input class="form-control" type="text" id="card-name-input" placeholder="Örn: Bonus, Axess, World" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="card-holder-input">Kart Sahibi / Unvan</label>
+          <input class="form-control" type="text" id="card-holder-input" placeholder="Örn: Ömer Eren veya Akme Yazılım Ltd." required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="card-number-input">Kart No (Son 4 Hane)</label>
+            <input class="form-control" type="text" id="card-number-input" placeholder="Örn: 5412" maxlength="4" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Kart Sahibi Türü</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" name="card-type" value="personal" class="radio-input" checked> Şahsi
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="card-type" value="corporate" class="radio-input"> Şirket
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="card-limit-input">Kredi Limiti (TL)</label>
+            <input class="form-control" type="number" id="card-limit-input" placeholder="0" min="0" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="card-debt-input">Güncel Ekstre Borcu (TL)</label>
+            <input class="form-control" type="number" id="card-debt-input" placeholder="0" min="0" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="card-cutoff-input">Hesap Kesim Günü (1-31)</label>
+            <input class="form-control" type="number" id="card-cutoff-input" placeholder="15" min="1" max="31" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="card-due-offset-input">Son Ödeme Günü Payı (Gün)</label>
+            <input class="form-control" type="number" id="card-due-offset-input" placeholder="10" min="1" max="20" required>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">Kesim tarihinden kaç gün sonra?</span>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-danger-glass" id="delete-card-btn" style="display: none; margin-right: auto;"><i class="fa-solid fa-trash"></i> Kartı Sil</button>
+          <button type="button" class="btn btn-glass" id="cancel-card-btn">İptal</button>
+          <button type="submit" class="btn btn-primary" id="save-card-btn">Kaydet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+/**
+ * ============================================================================
+ * DİZSAN EVRENSEL GERİ TUŞU & ÇIKIŞ ÖNLEME MOTORU (dizsan-back-navigation.js)
+ * Antigravity AI - Dizsan Ekosistemi v2.0.0
+ * 
+ * Özellikler:
+ * 1. Telefon donanım / kaydırma geri tuşu (Android Back / iOS swipe) basıldığında
+ *    uygulamadan komple çıkmayı %100 engeller.
+ * 2. Gerçek LIFO Navigasyon Yığını (Tab History Stack):
+ *    Sayfalar arası gezinti geçmişini hatırlar ve her geri basışta bir önceki sayfaya döner.
+ * 3. Açık modal (ziyaret, toplantı, aksiyon, müşteri detayı vb.) varsa önce modalı kapatır.
+ * 4. Açık mobil yan menü/sidebar varsa önce menüyü kapatır.
+ * 5. Ana ekrandayken (Kokpit) geri tuşuna basıldığında uygulamadan atmaz;
+ *    "DİZSAN Ana Sayfasındasınız" uyarısı verir ve ekranda kalır.
+ * 6. Tüm uygulamaların üst çubuğuna (navbar) ve tüm modal başlıklarına şık, 
+ *    dokunmatik dostu "← Geri" butonu ekler.
+ * ============================================================================
+ */
+
+(function () {
+    'use strict';
+
+    if (window.DizsanBackNav && window.DizsanBackNav.version === '2.0.0') {
+        return;
+    }
+
+    const tabHistoryStack = [];
+    let isInternalTabSwitch = false;
+    let visibilityCheckTimer = null;
+    let toastTimer = null;
+
+    // 1. Gerekli CSS Stilleri
+    function injectStyles() {
+        if (document.getElementById('dizsan-back-nav-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'dizsan-back-nav-styles';
+        style.textContent = `
+            /* Üst Çubuk Evrensel Geri Tuşu */
+            .dizsan-global-back-btn {
+                display: none;
+                align-items: center;
+                gap: 6px;
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.16);
+                color: #ffffff;
+                padding: 0.38rem 0.72rem;
+                border-radius: 9px;
+                font-size: 0.82rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition: background 0.15s ease, transform 0.1s ease;
+                margin-right: 0.45rem;
+                flex-shrink: 0;
+                -webkit-tap-highlight-color: transparent;
+                user-select: none;
+                -webkit-user-select: none;
+            }
+            .dizsan-global-back-btn:active {
+                transform: scale(0.92);
+                background: rgba(56, 189, 248, 0.25);
+            }
+            .dizsan-global-back-btn.visible {
+                display: inline-flex !important;
+            }
+
+            /* Modal Başlığı İçi Geri Tuşu */
+            .dizsan-modal-back-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.18);
+                color: #e2e8f0;
+                padding: 0.32rem 0.65rem;
+                border-radius: 8px;
+                font-size: 0.78rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background 0.15s ease;
+                margin-right: 0.65rem;
+                flex-shrink: 0;
+                -webkit-tap-highlight-color: transparent;
+                user-select: none;
+            }
+            .dizsan-modal-back-btn:active {
+                transform: scale(0.92);
+            }
+
+            /* Bilgilendirme Toastı */
+            #dizsan-back-toast {
+                position: fixed;
+                bottom: 85px;
+                left: 50%;
+                transform: translateX(-50%) translateY(30px);
+                background: rgba(15, 23, 42, 0.96);
+                border: 1px solid rgba(56, 189, 248, 0.45);
+                color: #f8fafc;
+                padding: 0.65rem 1.25rem;
+                border-radius: 25px;
+                font-size: 0.82rem;
+                font-weight: 600;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75);
+                z-index: 100000;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.2s ease, transform 0.2s ease;
+                white-space: nowrap;
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+            }
+            #dizsan-back-toast.show {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // 2. Toast Bildirimi
+    function showBackToast(text) {
+        let toast = document.getElementById('dizsan-back-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'dizsan-back-toast';
+            document.body.appendChild(toast);
+        }
+        toast.innerHTML = `<i class="fa-solid fa-arrow-left" style="color:#38bdf8; margin-right:6px;"></i> ${text}`;
+        toast.classList.add('show');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+            toast.classList.remove('show');
+            toastTimer = null;
+        }, 1800);
+    }
+
+    // 3. Açık Modal Tespiti
+    function isModalElementOpen(el) {
+        if (!el) return false;
+        if (el.classList.contains('open') || el.classList.contains('active')) return true;
+        if (el.style.display && el.style.display !== 'none') return true;
+        return false;
+    }
+
+    function getActiveModal() {
+        const modalOrder = [
+            'mobile-pwa-prompt-modal',
+            'approval-request-modal',
+            'task-action-modal',
+            'manager-approval-modal',
+            'urgent-departure-modal',
+            'attachment-preview-modal',
+            'meeting-modal',
+            'action-modal',
+            'announcement-modal',
+            'visit-modal',
+            'customer-detail-modal',
+            'customer-modal',
+            'task-modal',
+            'user-modal',
+            'version-modal',
+            'push-test-modal',
+            'install-guide-modal',
+            'change-password-modal',
+            'forgot-password-modal',
+            'new-card-modal',
+            'new-payment-modal'
+        ];
+
+        for (const id of modalOrder) {
+            const el = document.getElementById(id);
+            if (el && isModalElementOpen(el)) return el;
+        }
+
+        const openBackdrops = document.querySelectorAll('.modal-backdrop.open, .modal-backdrop.active, .modal.open, .modal.active');
+        if (openBackdrops.length > 0) {
+            return openBackdrops[openBackdrops.length - 1];
+        }
+
+        return null;
+    }
+
+    // 4. Modalı Kapatma
+    function closeModal(modalEl) {
+        if (!modalEl) return false;
+        const id = modalEl.id;
+
+        const closeFnMap = {
+            'mobile-pwa-prompt-modal': 'closePwaPromptModal',
+            'approval-request-modal': 'closeApprovalRequestModal',
+            'task-action-modal': 'closeTaskActionModal',
+            'manager-approval-modal': 'closeApprovalCenterModal',
+            'urgent-departure-modal': 'closeUrgentDepartureModal',
+            'attachment-preview-modal': 'closeAttachmentPreviewModal',
+            'meeting-modal': 'closeMeetingModal',
+            'action-modal': 'closeActionModal',
+            'announcement-modal': 'closeAnnouncementModal',
+            'visit-modal': 'closeVisitModal',
+            'customer-detail-modal': 'closeCustomerDetailModal',
+            'customer-modal': 'closeCustomerModal',
+            'task-modal': 'closeTaskModal',
+            'user-modal': 'closeUserModal',
+            'version-modal': 'closeVersionModal',
+            'push-test-modal': 'closePushTestCenterModal',
+            'install-guide-modal': 'closeInstallGuideModal',
+            'change-password-modal': 'closeChangePasswordModal',
+            'forgot-password-modal': 'closeForgotPasswordModal'
+        };
+
+        const fnName = closeFnMap[id];
+        if (fnName && typeof window[fnName] === 'function') {
+            window[fnName]();
+            return true;
+        }
+
+        const closeBtn = modalEl.querySelector('.modal-close, .close, [data-dismiss="modal"], button.btn-secondary');
+        if (closeBtn && typeof closeBtn.click === 'function') {
+            closeBtn.click();
+            return true;
+        }
+
+        modalEl.classList.remove('open', 'active');
+        modalEl.style.display = 'none';
+        return true;
+    }
+
+    // 5. Mobil Yan Menü Kontrolü
+    function getActiveSidebar() {
+        const sidebar = document.querySelector('.sidebar.mobile-open, .sidebar.active, .mobile-sidebar.open');
+        return (sidebar && (sidebar.classList.contains('mobile-open') || sidebar.classList.contains('active') || sidebar.classList.contains('open'))) ? sidebar : null;
+    }
+
+    function closeSidebar(sidebarEl) {
+        if (!sidebarEl) return false;
+        if (typeof window.toggleMobileSidebar === 'function') {
+            window.toggleMobileSidebar();
+            return true;
+        }
+        if (typeof window.toggleSidebar === 'function') {
+            window.toggleSidebar();
+            return true;
+        }
+        sidebarEl.classList.remove('mobile-open', 'active', 'open');
+        return true;
+    }
+
+    // 6. Mevcut Sekme Kontrolü
+    function getActiveTabId() {
+        const activeSection = document.querySelector('.tab-section.active, .tab-pane.active, .page-section.active');
+        return activeSection ? activeSection.id : '';
+    }
+
+    function isHomeTab(tabId) {
+        if (!tabId) return true;
+        const homeIds = ['dashboard-tab', 'tab-dashboard', 'kokpit-tab', 'home-tab', 'main-tab', 'summary-tab'];
+        return homeIds.includes(tabId);
+    }
+
+    // 7. Geri Tuşu Karar Motoru (Hierarchical Navigation)
+    function handleBackNavigation() {
+        // 1. Aşama: Açık modal var mı?
+        const modal = getActiveModal();
+        if (modal) {
+            closeModal(modal);
+            scheduleVisibilityCheck();
+            return true;
+        }
+
+        // 2. Aşama: Açık yan menü var mı?
+        const sidebar = getActiveSidebar();
+        if (sidebar) {
+            closeSidebar(sidebar);
+            scheduleVisibilityCheck();
+            return true;
+        }
+
+        // 3. Aşama: Sekme geçmişinde bir önceki sayfa var mı?
+        while (tabHistoryStack.length > 0) {
+            const prevTab = tabHistoryStack.pop();
+            const curTab = getActiveTabId();
+            if (prevTab && prevTab !== curTab && document.getElementById(prevTab)) {
+                isInternalTabSwitch = true;
+                if (typeof window.switchTab === 'function') {
+                    window.switchTab(prevTab);
+                } else {
+                    const btn = document.querySelector(`[data-tab="${prevTab}"], [onclick*="${prevTab}"]`);
+                    if (btn) btn.click();
+                }
+                isInternalTabSwitch = false;
+                scheduleVisibilityCheck();
+                return true;
+            }
+        }
+
+        // 4. Aşama: Eğer geçmiş boş ama ana sekmede değilsek, ana sekmeye dön
+        const curTab = getActiveTabId();
+        if (curTab && !isHomeTab(curTab)) {
+            isInternalTabSwitch = true;
+            if (typeof window.switchTab === 'function') {
+                window.switchTab('dashboard-tab');
+            } else {
+                const homeBtn = document.querySelector('[data-tab="dashboard-tab"], [onclick*="dashboard-tab"]');
+                if (homeBtn) homeBtn.click();
+            }
+            isInternalTabSwitch = false;
+            scheduleVisibilityCheck();
+            return true;
+        }
+
+        // 5. Aşama: Zaten ana sekmedeyiz. D-Pro içindeysek D-Pro Ana Menüsüne dön!
+        if (window.parent && window.parent !== window) {
+            try {
+                window.parent.postMessage({ type: 'DPRO_BACK_TO_MAIN' }, '*');
+                return true;
+            } catch (e) {}
+        }
+        showBackToast('DİZSAN Ana Sayfasındasınız');
+        scheduleVisibilityCheck();
+        return false;
+    }
+
+    // 8. Uygulama İçi "← Geri" Butonuna Basıldığında
+    function handleInAppBack() {
+        handleBackNavigation();
+    }
+
+    // 9. Donanım / Tarayıcı Popstate Kalkanı (Anti-Exit Guard)
+    function pushGuard() {
+        try {
+            history.pushState({ dizsanGuard: true, timestamp: Date.now() }, '', location.href);
+        } catch (e) {}
+    }
+
+    function initPopStateGuard() {
+        pushGuard();
+        pushGuard();
+
+        window.addEventListener('popstate', function (e) {
+            // Tarayıcı geri tuşuna basıldığında geçmiş havuzunu anında tekrar doldur
+            pushGuard();
+
+            // Uygulama içi önceki sayfaya veya modala dön
+            handleBackNavigation();
+        });
+    }
+
+    // 10. Geri Butonlarını DOM'a Enjekte Et
+    function injectTopNavbarBackButton() {
+        let btn = document.getElementById('dizsan-global-back-btn');
+        if (!btn) {
+            const targetContainer = document.querySelector('.navbar-left, .topbar-left, .header-left');
+            if (targetContainer) {
+                btn = document.createElement('button');
+                btn.type = 'button';
+                btn.id = 'dizsan-global-back-btn';
+                btn.className = 'dizsan-global-back-btn visible';
+                btn.title = 'Geri Dön';
+                btn.innerHTML = '<i class="fa-solid fa-arrow-left"></i> <span>Geri</span>';
+                btn.onclick = handleInAppBack;
+                targetContainer.insertBefore(btn, targetContainer.firstChild);
+            }
+        }
+        updateBackButtonVisibility();
+    }
+
+    function injectModalBackButtons() {
+        const headers = document.querySelectorAll('.modal-header');
+        headers.forEach(hdr => {
+            if (hdr.querySelector('.dizsan-modal-back-btn')) return;
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'dizsan-modal-back-btn';
+            btn.innerHTML = '<i class="fa-solid fa-arrow-left"></i> Geri';
+            btn.onclick = function (e) {
+                e.stopPropagation();
+                handleInAppBack();
+            };
+            hdr.insertBefore(btn, hdr.firstChild);
+        });
+    }
+
+    // 11. Geri Butonunun Görünürlüğünü Güncelle
+    function updateBackButtonVisibility() {
+        const btn = document.getElementById('dizsan-global-back-btn');
+        if (!btn) return;
+
+        const isEmbedded = (window.parent && window.parent !== window);
+        const hasModal = !!getActiveModal();
+        const hasSidebar = !!getActiveSidebar();
+        const curTab = getActiveTabId();
+        const hasHistory = tabHistoryStack.length > 0;
+        const isNotHome = curTab && !isHomeTab(curTab);
+        const shouldBeVisible = !!(isEmbedded || hasModal || hasSidebar || hasHistory || isNotHome || true);
+
+        if (btn.classList.contains('visible') !== shouldBeVisible) {
+            btn.classList.toggle('visible', shouldBeVisible);
+        }
+    }
+
+    function scheduleVisibilityCheck() {
+        if (visibilityCheckTimer) return;
+        visibilityCheckTimer = setTimeout(() => {
+            visibilityCheckTimer = null;
+            updateBackButtonVisibility();
+        }, 100);
+    }
+
+    // 12. Sekme Değişikliklerini İzleme (Tab History Tracking)
+    function trackTabSwitch(newTabId) {
+        if (isInternalTabSwitch || !newTabId) return;
+        const curTab = getActiveTabId();
+        if (curTab && curTab !== newTabId) {
+            if (tabHistoryStack.length === 0 || tabHistoryStack[tabHistoryStack.length - 1] !== curTab) {
+                tabHistoryStack.push(curTab);
+                if (tabHistoryStack.length > 30) {
+                    tabHistoryStack.shift();
+                }
+            }
+        }
+        scheduleVisibilityCheck();
+    }
+
+    // 13. Global API Tanımlaması
+    window.DizsanBackNav = {
+        version: '2.0.0',
+        handleInAppBack: handleInAppBack,
+        getActiveModal: getActiveModal,
+        updateBackButtonVisibility: updateBackButtonVisibility,
+        showToast: showBackToast,
+        pushGuard: pushGuard
+    };
+
+    // 14. Başlatıcı
+    function init() {
+        injectStyles();
+        initPopStateGuard();
+        injectTopNavbarBackButton();
+        injectModalBackButtons();
+
+        // switchTab kancası
+        if (typeof window.switchTab === 'function') {
+            const originalSwitchTab = window.switchTab;
+            window.switchTab = function (tabId) {
+                trackTabSwitch(tabId);
+                const res = originalSwitchTab.apply(this, arguments);
+                scheduleVisibilityCheck();
+                return res;
+            };
+        }
+
+        // Tıklamaları dinle ve görünürlüğü güncelle
+        document.addEventListener('click', function (e) {
+            scheduleVisibilityCheck();
+            // Herhangi bir kullanıcı etkileşiminde geçmiş kalkanını tazele
+            pushGuard();
+        }, { passive: true });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+
+</script>
+  <script>
+// CardFlow Application Logic
+
+// Initial Mock Data to populate the dashboard if localStorage is empty
+const INITIAL_CARDS = [
+  { id: "card-1",  bank: "Garanti BBVA",   name: "Bonus Trink (Dizsan Lojistik)",      holder: "Ömer Eren (Dizsan Lojistik)", number: "6010", type: "corporate", limit: 150000, debt: 0, cutOffDay: 1,  dueDay: 7,  dueOffset: 6  },
+  { id: "card-2",  bank: "Akbank",         name: "Axess (Dizsan Lojistik)",            holder: "Ömer Eren (Dizsan Lojistik)", number: "3481", type: "corporate", limit: 250000, debt: 0, cutOffDay: 7,  dueDay: 12, dueOffset: 5  },
+  { id: "card-3",  bank: "Akbank",         name: "Axess (Dizsan Otomotiv)",            holder: "Ömer Eren (Dizsan Otomotiv)", number: "6539", type: "corporate", limit: 300000, debt: 0, cutOffDay: 7,  dueDay: 12, dueOffset: 5  },
+  { id: "card-4",  bank: "TEB",            name: "Bonus (Şahsi)",                      holder: "Ömer Eren (Şahsi)",           number: "9097", type: "personal",  limit: 80000,  debt: 0, cutOffDay: 7,  dueDay: 17, dueOffset: 10 },
+  { id: "card-5",  bank: "Halkbank",       name: "Paraf (Şahsi)",                      holder: "Ömer Eren (Şahsi)",           number: "8765", type: "personal",  limit: 120000, debt: 0, cutOffDay: 15, dueDay: 25, dueOffset: 10 },
+  { id: "card-6",  bank: "Ziraat Bankası", name: "Combo (Şahsi)",                      holder: "Ömer Eren (Şahsi)",           number: "7265", type: "personal",  limit: 150000, debt: 0, cutOffDay: 22, dueDay: 3,  dueOffset: 11 },
+  { id: "card-7",  bank: "Garanti BBVA",   name: "Bonus Platinum (Şahsi)",             holder: "Ömer Eren (Şahsi)",           number: "0031", type: "personal",  limit: 500000, debt: 0, cutOffDay: 23, dueDay: 2,  dueOffset: 10 },
+  { id: "card-8",  bank: "Garanti BBVA",   name: "Corporate (Dizsan Otomotiv)",        holder: "Ömer Eren (Dizsan Otomotiv)", number: "4360", type: "corporate", limit: 750000, debt: 0, cutOffDay: 21, dueDay: 31, dueOffset: 10 },
+  { id: "card-9",  bank: "Garanti BBVA",   name: "Corporate (Dizsan Lojistik)",        holder: "Ömer Eren (Dizsan Lojistik)", number: "4352", type: "corporate", limit: 600000, debt: 0, cutOffDay: 21, dueDay: 30, dueOffset: 9  },
+  { id: "card-10", bank: "Garanti BBVA",   name: "Bonus Trink (Dizsan Otomotiv)",      holder: "Ömer Eren (Dizsan Otomotiv)", number: "3017", type: "corporate", limit: 90000,  debt: 0, cutOffDay: 26, dueDay: 1,  dueOffset: 5  },
+  { id: "card-11", bank: "Vakıfbank",      name: "World (Dizsan Lojistik)",            holder: "Ömer Eren (Dizsan Lojistik)", number: "1634", type: "corporate", limit: 200000, debt: 0, cutOffDay: 28, dueDay: 4,  dueOffset: 6  },
+  { id: "card-12", bank: "Ziraat Bankası", name: "Başak (Dizsan Otomotiv)",            holder: "Ömer Eren (Dizsan Otomotiv)", number: "3232", type: "corporate", limit: 400000, debt: 0, cutOffDay: 28, dueDay: 7,  dueOffset: 9  },
+  { id: "card-13", bank: "İş Bankası",     name: "Maximum Business (Dizsan Otomotiv)", holder: "İsimsiz (Dizsan Otomotiv)",   number: "4635", type: "corporate", limit: 350000, debt: 0, cutOffDay: 29, dueDay: 7,  dueOffset: 8  },
+  { id: "card-14", bank: "İş Bankası",     name: "Maximum Business (Dizsan Lojistik)", holder: "İsimsiz (Dizsan Lojistik)",   number: "6298", type: "corporate", limit: 350000, debt: 0, cutOffDay: 29, dueDay: 7,  dueOffset: 8  },
+  { id: "card-15", bank: "İş Bankası",     name: "Maximum Business (DsMot)",           holder: "İsimsiz (DsMot)",             number: "4593", type: "corporate", limit: 250000, debt: 0, cutOffDay: 29, dueDay: 7,  dueOffset: 8  },
+  { id: "card-16", bank: "İş Bankası",     name: "Maximiles Black (Şahsi)",            holder: "Ömer Eren (Şahsi)",           number: "8815", type: "personal",  limit: 450000, debt: 0, cutOffDay: 3,  dueDay: 7,  dueOffset: 4  }
+];
+
+// Application State
+let state = {
+  cards: [],
+  currentFilter: 'all', // 'all', 'personal', 'corporate'
+  chartInstance: null,
+  calendarDate: new Date()
+};
+
+// Initialization
+document.addEventListener("DOMContentLoaded", () => {
+  loadData();
+  setupEventListeners();
+  createTooltipElement();
+  renderDashboard();
+});
+
+// Load data from localStorage or load mock data
+function loadData() {
+  const savedCards = localStorage.getItem("cardflow_cards_v3");
+  if (savedCards) {
+    state.cards = JSON.parse(savedCards);
+  } else {
+    state.cards = [...INITIAL_CARDS];
+    saveData();
+  }
+}
+
+// Save data to localStorage
+function saveData() {
+  localStorage.setItem("cardflow_cards_v3", JSON.stringify(state.cards));
+}
+
+// Set up UI Event Listeners
+function setupEventListeners() {
+  // Modal toggle buttons
+  document.getElementById("add-card-btn").addEventListener("click", () => openCardModal());
+  document.getElementById("add-card-placeholder-btn").addEventListener("click", () => openCardModal());
+  document.getElementById("modal-close-btn").addEventListener("click", closeCardModal);
+  document.getElementById("cancel-card-btn").addEventListener("click", closeCardModal);
+  
+  // Card Form Submission
+  document.getElementById("card-form").addEventListener("submit", handleCardSubmit);
+  
+  // Delete Card Button
+  document.getElementById("delete-card-btn").addEventListener("click", handleDeleteCard);
+
+  // Filters
+  document.getElementById("filter-all-btn").addEventListener("click", () => setFilter('all'));
+  document.getElementById("filter-personal-btn").addEventListener("click", () => setFilter('personal'));
+  document.getElementById("filter-corporate-btn").addEventListener("click", () => setFilter('corporate'));
+
+  // Sidebar Links
+  document.getElementById("nav-dashboard").addEventListener("click", (e) => {
+    e.preventDefault();
+    setFilter('all');
+  });
+  document.getElementById("nav-cards-btn").addEventListener("click", (e) => {
+    e.preventDefault();
+    const scrollContainer = document.getElementById("cards-container");
+    scrollContainer.scrollIntoView({ behavior: 'smooth' });
+  });
+  document.getElementById("nav-settings").addEventListener("click", (e) => {
+    e.preventDefault();
+    alert("Ayarlar bölümü prototip aşamasındadır. Kredi kartı ekleme/silme ve veri saklama özellikleri tamamen aktiftir.");
+  });
+
+  // Fast Import Button
+  document.getElementById("run-import-btn").addEventListener("click", handleFastImport);
+
+  // Calendar Navigation
+  document.getElementById("calendar-prev-btn").addEventListener("click", () => changeCalendarMonth(-1));
+  document.getElementById("calendar-next-btn").addEventListener("click", () => changeCalendarMonth(1));
+}
+
+// Open modal for add or edit
+function openCardModal(cardId = null) {
+  const modal = document.getElementById("card-modal");
+  const form = document.getElementById("card-form");
+  const titleText = document.getElementById("modal-title-text");
+  const deleteBtn = document.getElementById("delete-card-btn");
+
+  form.reset();
+
+  if (cardId) {
+    // Edit mode
+    const card = state.cards.find(c => c.id === cardId);
+    if (!card) return;
+
+    titleText.textContent = "Kredi Kartını Düzenle";
+    document.getElementById("card-id").value = card.id;
+    document.getElementById("card-bank-input").value = card.bank;
+    document.getElementById("card-name-input").value = card.name;
+    document.getElementById("card-holder-input").value = card.holder;
+    document.getElementById("card-number-input").value = card.number;
+    document.querySelector(`input[name="card-type"][value="${card.type}"]`).checked = true;
+    document.getElementById("card-limit-input").value = card.limit;
+    document.getElementById("card-debt-input").value = card.debt;
+    document.getElementById("card-cutoff-input").value = card.cutOffDay;
+    document.getElementById("card-due-offset-input").value = card.dueOffset || 10;
+
+    deleteBtn.style.display = "block";
+  } else {
+    // Add mode
+    titleText.textContent = "Yeni Kredi Kartı Ekle";
+    document.getElementById("card-id").value = "";
+    deleteBtn.style.display = "none";
+  }
+
+  modal.classList.add("show");
+}
+
+// Close Modal
+function closeCardModal() {
+  document.getElementById("card-modal").classList.remove("show");
+}
+
+// Handle Add/Edit Card Form Submit
+function handleCardSubmit(e) {
+  e.preventDefault();
+
+  const id = document.getElementById("card-id").value;
+  const bank = document.getElementById("card-bank-input").value.trim();
+  const name = document.getElementById("card-name-input").value.trim();
+  const holder = document.getElementById("card-holder-input").value.trim();
+  const number = document.getElementById("card-number-input").value.trim();
+  const type = document.querySelector('input[name="card-type"]:checked').value;
+  const limit = parseFloat(document.getElementById("card-limit-input").value);
+  const debt = parseFloat(document.getElementById("card-debt-input").value);
+  const cutOffDay = parseInt(document.getElementById("card-cutoff-input").value);
+  const dueOffset = parseInt(document.getElementById("card-due-offset-input").value) || 10;
+
+  if (id) {
+    // Update existing
+    const cardIndex = state.cards.findIndex(c => c.id === id);
+    if (cardIndex !== -1) {
+      state.cards[cardIndex] = { ...state.cards[cardIndex], bank, name, holder, number, type, limit, debt, cutOffDay, dueOffset };
+    }
+  } else {
+    // Add new
+    const newCard = {
+      id: 'card-' + Date.now(),
+      bank,
+      name,
+      holder,
+      number,
+      type,
+      limit,
+      debt,
+      cutOffDay,
+      dueOffset
+    };
+    state.cards.push(newCard);
+  }
+
+  saveData();
+  closeCardModal();
+  renderDashboard();
+}
+
+// Handle Delete Card
+function handleDeleteCard() {
+  const id = document.getElementById("card-id").value;
+  if (!id) return;
+
+  if (confirm("Bu kredi kartını silmek istediğinize emin misiniz?")) {
+    state.cards = state.cards.filter(c => c.id !== id);
+    saveData();
+    closeCardModal();
+    renderDashboard();
+  }
+}
+
+// Change filtering mode
+function setFilter(filterMode) {
+  state.currentFilter = filterMode;
+  
+  // Update button active state styling
+  const buttons = {
+    all: document.getElementById("filter-all-btn"),
+    personal: document.getElementById("filter-personal-btn"),
+    corporate: document.getElementById("filter-corporate-btn")
+  };
+
+  Object.keys(buttons).forEach(key => {
+    if (key === filterMode) {
+      buttons[key].classList.add("btn-primary");
+      buttons[key].classList.remove("btn-glass");
+    } else {
+      buttons[key].classList.remove("btn-primary");
+      buttons[key].classList.add("btn-glass");
+    }
+  });
+
+  renderDashboard();
+}
+
+// Format Currency Utility
+function formatCurrency(val) {
+  return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(val);
+}
+
+// Date Calculations logic for Statement & Due Dates
+function calculateCardDates(card) {
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth();
+  
+  // Calculate cut-off date for this cycle
+  let cutOffDate = new Date(currentYear, currentMonth, card.cutOffDay);
+  
+  // If the cut-off day has already passed in this month, project to the next month's cut-off
+  if (today.getDate() > card.cutOffDay) {
+    cutOffDate = new Date(currentYear, currentMonth + 1, card.cutOffDay);
+  }
+
+  // Due date is X days after cut-off
+  const dueDate = new Date(cutOffDate.getTime());
+  dueDate.setDate(dueDate.getDate() + (card.dueOffset || 10));
+
+  // Diff in days (using UTC to avoid daylight savings discrepancies)
+  const utcToday = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+  const utcDue = Date.UTC(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+  const diffDays = Math.ceil((utcDue - utcToday) / (1000 * 60 * 60 * 24));
+
+  return {
+    cutOffDate,
+    dueDate,
+    diffDays
+  };
+}
+
+// Main Render Function
+function renderDashboard() {
+  const filteredCards = state.cards.filter(card => {
+    if (state.currentFilter === 'all') return true;
+    return card.type === state.currentFilter;
+  });
+
+  // 1. Calculate KPI Metrics
+  let totalDebt = 0;
+  let totalLimit = 0;
+  let totalAvailable = 0;
+  let upcomingPayments = 0;
+
+  filteredCards.forEach(card => {
+    totalDebt += card.debt;
+    totalLimit += card.limit;
+    totalAvailable += Math.max(0, card.limit - card.debt);
+    
+    // If due date is within this billing cycle (this month/next few days) and has debt
+    if (card.debt > 0) {
+      upcomingPayments += card.debt;
+    }
+  });
+
+  // Update KPI displays
+  document.getElementById("val-total-debt").textContent = formatCurrency(totalDebt);
+  document.getElementById("val-total-limit").textContent = formatCurrency(totalLimit);
+  document.getElementById("val-available-limit").textContent = formatCurrency(totalAvailable);
+  document.getElementById("val-upcoming-payments").textContent = formatCurrency(upcomingPayments);
+
+  // Update Page Title description based on filters
+  const pageSub = document.getElementById("page-subtitle");
+  if (state.currentFilter === 'personal') {
+    pageSub.textContent = "Sadece şahsi kredi kartlarınızın güncel mali durumu listeleniyor.";
+  } else if (state.currentFilter === 'corporate') {
+    pageSub.textContent = "Sadece şirketinize tanımlı ticari kredi kartlarının güncel mali durumu listeleniyor.";
+  } else {
+    pageSub.textContent = "Tüm şahsi ve şirket kredi kartlarınızın güncel durumu.";
+  }
+
+  // 2. Render Cards Grid
+  renderCardsGrid(filteredCards);
+
+  // 3. Render Upcoming Payments Calendar
+  renderCalendar(filteredCards);
+
+  // 4. Render Chart
+  renderChart(filteredCards);
+}
+
+// Render the credit card visual items
+function renderCardsGrid(cardsList) {
+  const container = document.getElementById("cards-container");
+  
+  // Clear all except the placeholders
+  const placeholders = Array.from(container.querySelectorAll('.add-card-placeholder'));
+  container.innerHTML = '';
+
+  cardsList.forEach(card => {
+    const cardEl = document.createElement("div");
+    cardEl.className = `credit-card ${card.type}`;
+    cardEl.innerHTML = `
+      <div class="card-header">
+        <span class="card-bank">${card.bank}</span>
+        <span class="card-badge">${card.type === 'personal' ? 'Şahsi' : 'Şirket'}</span>
+      </div>
+      <div class="card-mid">
+        <div class="card-chip"></div>
+        <i class="card-type-icon fa-brands fa-cc-${card.name.toLowerCase().includes('visa') ? 'visa' : 'mastercard'}"></i>
+      </div>
+      <div class="card-number">•••• •••• •••• ${card.number || '0000'}</div>
+      <div class="card-footer">
+        <div class="card-holder">
+          <span class="card-holder-label">Kart Sahibi</span>
+          <span class="card-holder-name">${card.holder}</span>
+        </div>
+        <div class="card-meta">
+          <div class="card-meta-item">
+            <span class="card-meta-label">Güncel Borç</span>
+            <span class="card-meta-val">${formatCurrency(card.debt)}</span>
+          </div>
+          <div class="card-meta-item">
+            <span class="card-meta-label">Kart Adı</span>
+            <span class="card-meta-val">${card.name}</span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Click to Edit
+    cardEl.addEventListener("click", () => openCardModal(card.id));
+    container.appendChild(cardEl);
+  });
+
+  // Re-append placeholders
+  placeholders.forEach(p => container.appendChild(p));
+}
+
+// Change Calendar Month Navigation Handler
+function changeCalendarMonth(offset) {
+  const current = state.calendarDate;
+  state.calendarDate = new Date(current.getFullYear(), current.getMonth() + offset, 1);
+  renderDashboard();
+}
+
+// Check which card payments are due on a specific day of the displayed calendar month/year
+function getCardPaymentsForDay(cards, day, month, year) {
+  const events = [];
+  const totalDaysInMonth = new Date(year, month + 1, 0).getDate();
+  cards.forEach(card => {
+    if (card.dueDay) {
+      const effectiveDueDay = Math.min(card.dueDay, totalDaysInMonth);
+      if (effectiveDueDay === day) {
+        events.push({
+          card,
+          dueDate: new Date(year, month, effectiveDueDay)
+        });
+      }
+      return;
+    }
+    // Fallback for custom cards without explicit dueDay
+    [-1, 0, 1].forEach(offsetMonth => {
+      const cutoff = new Date(year, month + offsetMonth, card.cutOffDay);
+      const due = new Date(cutoff.getTime());
+      due.setDate(due.getDate() + (card.dueOffset || 10));
+
+      if (due.getFullYear() === year && due.getMonth() === month && due.getDate() === day) {
+        events.push({
+          card,
+          dueDate: due
+        });
+      }
+    });
+  });
+  return events;
+}
+
+// Render the Monthly Payment Calendar Grid
+function renderCalendar(cardsList) {
+  const container = document.getElementById("calendar-days-container");
+  const monthYearLabel = document.getElementById("calendar-month-year");
+  
+  if (!container || !monthYearLabel) return;
+
+  const date = state.calendarDate;
+  const year = date.getFullYear();
+  const month = date.getMonth();
+
+  // Set header month name
+  const monthNames = [
+    "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
+    "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"
+  ];
+  monthYearLabel.textContent = `${monthNames[month]} ${year}`;
+
+  container.innerHTML = '';
+
+  // Get index of first day of the month (Monday start mapping: Mon=0, Tue=1 ... Sun=6)
+  const firstDayOfWeek = new Date(year, month, 1).getDay();
+  const startDayIndex = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+
+  // Days in current and previous months
+  const totalDays = new Date(year, month + 1, 0).getDate();
+  const prevTotalDays = new Date(year, month, 0).getDate();
+
+  const today = new Date();
+  let daysHTML = '';
+
+  // 1. Render previous month's overlapping days
+  for (let i = startDayIndex - 1; i >= 0; i--) {
+    const prevDay = prevTotalDays - i;
+    daysHTML += `
+      <div class="calendar-day other-month">
+        <span class="calendar-day-num">${prevDay}</span>
+      </div>
+    `;
+  }
+
+  // 2. Render current month's days
+  for (let d = 1; d <= totalDays; d++) {
+    const isToday = today.getDate() === d && today.getMonth() === month && today.getFullYear() === year;
+    const dayEvents = getCardPaymentsForDay(cardsList, d, month, year);
+
+    let eventsHTML = '';
+    if (dayEvents.length > 0) {
+      eventsHTML = `<div class="calendar-events-container">`;
+      dayEvents.forEach(evt => {
+        const card = evt.card;
+        const displayAmount = card.debt > 0 ? (card.debt >= 1000 ? (card.debt / 1000).toFixed(0) + 'k₺' : card.debt + '₺') : `*${card.number}`;
+        const eventClass = `${card.type}`;
+        
+        eventsHTML += `
+          <div class="calendar-event-item ${eventClass}" 
+               title="${card.bank} - ${card.name}\nSon 4 Hane: *${card.number}\nKart Sahibi: ${card.holder}${card.debt > 0 ? '\nBorç: ' + formatCurrency(card.debt) : ''}"
+               onclick="event.stopPropagation(); openCardModal('${card.id}')">
+            <span>${card.bank.split(' ')[0]} *${card.number}</span>
+            <span style="font-size:0.65rem; opacity:0.9;">${card.debt > 0 ? displayAmount : card.holder.split(' ')[0]}</span>
+          </div>
+        `;
+      });
+      eventsHTML += `</div>`;
+    }
+
+    daysHTML += `
+      <div class="calendar-day ${isToday ? 'today' : ''}" onclick="openAddCardForDay(${d})">
+        <span class="calendar-day-num">${d}</span>
+        ${eventsHTML}
+      </div>
+    `;
+  }
+
+  // 3. Render next month's overlapping days to align grid
+  const totalCellsSoFar = startDayIndex + totalDays;
+  const totalCellsRequired = Math.ceil(totalCellsSoFar / 7) * 7;
+  const nextMonthCells = totalCellsRequired - totalCellsSoFar;
+
+  for (let i = 1; i <= nextMonthCells; i++) {
+    daysHTML += `
+      <div class="calendar-day other-month">
+        <span class="calendar-day-num">${i}</span>
+      </div>
+    `;
+  }
+
+  container.innerHTML = daysHTML;
+
+  // Bind custom hover popovers for cells that contain card payments
+  const cells = container.querySelectorAll('.calendar-day');
+  cells.forEach(cell => {
+    if (cell.classList.contains('other-month')) return;
+
+    const dayNumEl = cell.querySelector('.calendar-day-num');
+    if (!dayNumEl) return;
+
+    const dayNum = parseInt(dayNumEl.textContent);
+    const dayEvents = getCardPaymentsForDay(cardsList, dayNum, month, year);
+
+    if (dayEvents.length > 0) {
+      cell.addEventListener('mouseenter', (e) => showTooltip(e, dayEvents, dayNum, month, year));
+      cell.addEventListener('mouseleave', hideTooltip);
+      cell.addEventListener('mousemove', moveTooltip);
+    }
+  });
+}
+
+// Pre-fill cutoff day when user clicks empty space on calendar day cell
+window.openAddCardForDay = function(day) {
+  openCardModal();
+  document.getElementById("card-cutoff-input").value = day;
+};
+
+// Render Chart JS Distribution chart
+function renderChart(cardsList) {
+  const ctx = document.getElementById('debtChart').getContext('2d');
+  
+  // Destroy old instance if exists
+  if (state.chartInstance) {
+    state.chartInstance.destroy();
+  }
+
+  // Filter cards with positive debt
+  const cardsWithDebt = cardsList.filter(c => c.debt > 0);
+
+  if (cardsWithDebt.length === 0) {
+    // Render placeholder chart
+    state.chartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Borçsuz Dönem 🎉'],
+        datasets: [{
+          data: [100],
+          backgroundColor: ['rgba(16, 185, 129, 0.2)'],
+          borderColor: ['#10b981'],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: '#f3f4f6', font: { family: 'Outfit' } }
+          }
+        }
+      }
+    });
+    return;
+  }
+
+  const labels = cardsWithDebt.map(c => `${c.bank} (${c.name})`);
+  const data = cardsWithDebt.map(c => c.debt);
+  
+  // Generate random cohesive colors
+  const colors = [
+    '#6366f1', '#8b5cf6', '#d946ef', '#ec4899', '#f43f5e', 
+    '#3b82f6', '#06b6d4', '#10b981', '#fbbf24', '#f97316'
+  ];
+
+  state.chartInstance = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: data,
+        backgroundColor: colors.slice(0, cardsWithDebt.length).map(c => c + 'cc'), // Add opacity
+        borderColor: colors.slice(0, cardsWithDebt.length),
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: '#f3f4f6',
+            boxWidth: 12,
+            font: { family: 'Outfit', size: 11 }
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return ` Borç: ${formatCurrency(context.raw)}`;
+            }
+          }
+        }
+      },
+      cutout: '65%'
+    }
+  });
+}
+
+// Preset SMS template helper
+window.setPresetText = function(bankType) {
+  const textarea = document.getElementById("import-text");
+  
+  const presets = {
+    garanti: "Garanti BBVA: Sayin OMER EREN, sonu 4251 ile biten Bonus Gold kartinizin ekstre borcu 34.200,00 TL'dir. Son odeme tarihi: 25.07.2026. Asgari tutar: 13.680 TL.",
+    yapi: "Yapi Kredi: Sonu 8832 ile biten Maximum Business kartinizdan bagimsiz olarak World kartiniz icin donem borcunuz 12.300 TL'dir. Son odeme: 20.07.2026.",
+    akbank: "Akbank: Axess Business ticari kartiniz (Son hanesi 7115) ekstre borcu 4.200,00 TL son odeme gunu 08.07.2026."
+  };
+
+  textarea.value = presets[bankType] || '';
+};
+
+// Fast Text Parser Engine
+function handleFastImport() {
+  const text = document.getElementById("import-text").value.trim();
+  if (!text) {
+    alert("Lütfen önce analiz edilecek bir metin yapıştırın.");
+    return;
+  }
+
+  const lowercaseText = text.toLowerCase();
+  
+  // 1. Find matching card
+  let matchedCard = null;
+
+  // Search by card digits (e.g. "sonu 4251 ile biten")
+  const digitsMatch = text.match(/\b\d{4}\b/);
+  if (digitsMatch) {
+    const digits = digitsMatch[0];
+    matchedCard = state.cards.find(c => c.number === digits);
+  }
+
+  // If not matched by card numbers, search by bank and product names
+  if (!matchedCard) {
+    for (const card of state.cards) {
+      const bankKeyword = card.bank.toLowerCase().split(' ')[0]; // E.g. "garanti", "iş"
+      const nameKeyword = card.name.toLowerCase().split(' ')[0]; // E.g. "bonus", "maximum"
+
+      if (lowercaseText.includes(bankKeyword) || lowercaseText.includes(nameKeyword)) {
+        matchedCard = card;
+        break;
+      }
+    }
+  }
+
+  if (!matchedCard) {
+    alert("Üzgünüz, metinden hangi karta ait olduğunu tespit edemedik. Lütfen kartın bankasını, adını veya son 4 hanesini metinde bulundurun.");
+    return;
+  }
+
+  // 2. Find amounts in text
+  // Match Turkish currency format: 34.200,00 or 12.300 or 12500 etc.
+  const amounts = [];
+  
+  // Regex to match numbers that look like currency values (excluding dates)
+  // Matching: 34.200,00 or 12.300 or 4.200,00
+  const currencyRegex = /\b\d{1,3}(?:\.\d{3})*(?:,\d{2})?\b|\b\d+(?:\.\d{2})?\b/g;
+  let match;
+  
+  while ((match = currencyRegex.exec(text)) !== null) {
+    const rawVal = match[0];
+    
+    // Ignore match if it's a date segment (like 25.07.2026 or 15.07) or matches card number
+    if (rawVal.includes('.') && rawVal.split('.').length === 3) continue; // Full date dd.mm.yyyy
+    if (rawVal === matchedCard.number) continue; // Card digits
+    if (rawVal.length <= 2 && !rawVal.includes(',')) continue; // Small numbers (like offset days or day indicators)
+    
+    // Parse Turkish double formatting
+    let parsedVal = rawVal;
+    if (rawVal.includes('.') && rawVal.includes(',')) {
+      // Formatted with thousands dots and decimal comma: 34.200,00 -> 34200.00
+      parsedVal = rawVal.replace(/\./g, '').replace(',', '.');
+    } else if (rawVal.includes(',')) {
+      // Decimal comma only: 12500,50 -> 12500.50
+      parsedVal = rawVal.replace(',', '.');
+    } else if (rawVal.includes('.') && rawVal.split('.').length === 2 && rawVal.split('.')[1].length === 3) {
+      // Thousands separator only: 34.200 -> 34200
+      parsedVal = rawVal.replace(/\./g, '');
+    }
+
+    const floatVal = parseFloat(parsedVal);
+    if (!isNaN(floatVal) && floatVal > 0) {
+      amounts.push(floatVal);
+    }
+  }
+
+  if (amounts.length === 0) {
+    alert("Metin içinde geçerli bir borç tutarı bulunamadı.");
+    return;
+  }
+
+  // Select the primary amount
+  // Usually, the first large amount in the SMS or the one before "TL"
+  // Let's take the first one or if we have multiple, the largest one (under the card limit)
+  let selectedAmount = amounts[0];
+  if (amounts.length > 1) {
+    // If one of the amounts is followed by 'tl' or '₺' in the text, choose that
+    const tlIndices = [];
+    let idx = lowercaseText.indexOf('tl');
+    while (idx !== -1) {
+      tlIndices.push(idx);
+      idx = lowercaseText.indexOf('tl', idx + 1);
+    }
+    
+    let bestDist = Infinity;
+    amounts.forEach((amt) => {
+      // Find the index of raw match in original text
+      const rawStr = amt.toLocaleString('tr-TR');
+      const amtIdx = text.indexOf(rawStr);
+      if (amtIdx !== -1) {
+        tlIndices.forEach(tlIdx => {
+          const dist = tlIdx - amtIdx;
+          if (dist > 0 && dist < bestDist) {
+            bestDist = dist;
+            selectedAmount = amt;
+          }
+        });
+      }
+    });
+  }
+
+  // Confirm and update
+  const confirmMsg = `Analiz Sonucu:\n\nKart: ${matchedCard.bank} (${matchedCard.name})\nTespit Edilen Borç: ${formatCurrency(selectedAmount)}\n\nBu kartın borç bilgisini güncellemek istiyor musunuz?`;
+  
+  if (confirm(confirmMsg)) {
+    const cardIndex = state.cards.findIndex(c => c.id === matchedCard.id);
+    if (cardIndex !== -1) {
+      state.cards[cardIndex].debt = selectedAmount;
+      saveData();
+      document.getElementById("import-text").value = ""; // Clear text
+      renderDashboard();
+    }
+  }
+}
+
+// Tooltip Helpers for Rich Calendar Hover Details
+function createTooltipElement() {
+  if (document.getElementById("calendar-tooltip")) return;
+  const tooltip = document.createElement("div");
+  tooltip.id = "calendar-tooltip";
+  tooltip.className = "custom-tooltip";
+  document.body.appendChild(tooltip);
+}
+
+function showTooltip(e, dayEvents, day, month, year) {
+  const tooltip = document.getElementById("calendar-tooltip");
+  if (!tooltip) return;
+
+  const monthNames = [
+    "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
+    "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"
+  ];
+
+  let cardsHTML = '';
+  let totalDebtOnDay = 0;
+  let totalPaidOnDay = 0;
+  let totalMinPayOnDay = 0;
+
+  dayEvents.forEach(evt => {
+    const card = evt.card;
+    const isPaid = card.debt === 0;
+
+    totalDebtOnDay += card.debt;
+    // Calculate minimum payment (asgari ödeme): 40% of the balance in Turkey
+    const minPayment = card.debt * 0.40;
+    totalMinPayOnDay += minPayment;
+
+    if (isPaid) {
+      totalPaidOnDay += card.limit; // Or just show paid
+    }
+
+    cardsHTML += `
+      <div class="tooltip-card-item">
+        <div class="tooltip-card-name">
+          <span>${card.bank} - ${card.name}</span>
+          <span class="type-badge" style="background: ${card.type === 'personal' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(245, 158, 11, 0.2)'}; color: ${card.type === 'personal' ? '#60a5fa' : '#fbbf24'};">
+            ${card.type === 'personal' ? 'Şahsi' : 'Şirket'}
+          </span>
+        </div>
+        <div class="tooltip-card-details">
+          <div>Borç: <span>${formatCurrency(card.debt)}</span></div>
+          <div>Asgari (%40): <span>${formatCurrency(minPayment)}</span></div>
+          <div>Limit: <span>${formatCurrency(card.limit)}</span></div>
+          <div>Durum: <span style="color: ${isPaid ? '#34d399' : '#f87171'}; font-weight: 600;">${isPaid ? 'Ödendi ✓' : 'Ödenmedi'}</span></div>
+        </div>
+      </div>
+    `;
+  });
+
+  let summaryHTML = '';
+  if (dayEvents.length > 1) {
+    summaryHTML = `
+      <div class="tooltip-summary">
+        <div class="tooltip-summary-row total-row">
+          <span>Toplam Günlük Borç:</span>
+          <span>${formatCurrency(totalDebtOnDay)}</span>
+        </div>
+        <div class="tooltip-summary-row">
+          <span>Toplam Asgari Tutarı:</span>
+          <span>${formatCurrency(totalMinPayOnDay)}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  tooltip.innerHTML = `
+    <div class="tooltip-title">
+      <span>📅 ${day} ${monthNames[month]} ${year}</span>
+      <span style="font-size: 0.75rem; color: var(--text-secondary);">${dayEvents.length} Kart Ödemesi</span>
+    </div>
+    ${cardsHTML}
+    ${summaryHTML}
+  `;
+
+  tooltip.classList.add("show");
+  moveTooltip(e);
+}
+
+function hideTooltip() {
+  const tooltip = document.getElementById("calendar-tooltip");
+  if (tooltip) {
+    tooltip.classList.remove("show");
+  }
+}
+
+function moveTooltip(e) {
+  const tooltip = document.getElementById("calendar-tooltip");
+  if (!tooltip) return;
+
+  const offsetX = 15;
+  const offsetY = 15;
+
+  let x = e.pageX + offsetX;
+  let y = e.pageY + offsetY;
+
+  const tooltipWidth = tooltip.offsetWidth || 320;
+  const tooltipHeight = tooltip.offsetHeight || 200;
+
+  // Prevent right-edge overflow
+  if (x + tooltipWidth > window.innerWidth + window.scrollX) {
+    x = e.pageX - tooltipWidth - offsetX;
+  }
+
+  // Prevent bottom-edge overflow
+  if (y + tooltipHeight > window.innerHeight + window.scrollY) {
+    y = e.pageY - tooltipHeight - offsetY;
+  }
+
+  // Prevent negative coordinates
+  if (x < window.scrollX) x = window.scrollX + 5;
+  if (y < window.scrollY) y = window.scrollY + 5;
+
+  tooltip.style.left = x + 'px';
+  tooltip.style.top = y + 'px';
+}
+
+// D-Pro Üst Bar Alt Başlık (Submodule) Köprüsü
+window.switchTab = setFilter;
+window.addEventListener('message', (ev) => {
+  const d = ev.data || {};
+  if (d.type === 'DPRO_SWITCH_SUBMODULE' && d.targetTab) {
+    setFilter(d.targetTab);
+  }
+});
+
+
+</script>
+<script>
+/**
+ * DİZSAN KURUMSAL SIFIR TEMAS OTOMATİK GÜNCELLEME MOTORU (dizsan-auto-updater.js)
+ * Tüm web uygulamalarında (Ziyaret, Toplantı, DizGün, CardFlow, Ödeme Takvimi vb.)
+ * ve tüm cihazlarda (iPhone, iPad, Android, Windows, Mac) sıfır temasla çalışır.
+ * 
+ * - 30 saniyede bir arka plan sürüm kontrolü (version.json?t=...)
+ * - Sekmeye/uygulamaya dönüşte anında kontrol (visibilitychange & focus)
+ * - Service Worker & Browser Cache otomatik temizliği
+ * - 2.5 saniyede otomatik yenileme (Kullanıcının hiçbir şey yapmasına gerek kalmaz)
+ * - Modern sürüm modalı ve yönetici sürüm paneli
+ */
+
+(function () {
+    'use strict';
+
+    // Script etiketinden veya ortamdan parametreleri al
+    const currentScript = document.currentScript || document.querySelector('script[src*="dizsan-auto-updater.js"]');
+    const APP_ID = (currentScript && currentScript.getAttribute('data-app-id')) || 'dizsan-app';
+    const APP_NAME = (currentScript && currentScript.getAttribute('data-app-name')) || document.title || 'Dizsan Uygulaması';
+    const DEFAULT_VERSION = (currentScript && currentScript.getAttribute('data-version')) || window.CURRENT_APP_VERSION || '1.0.0';
+    const STORAGE_KEY_VER = `dizsan_app_version_${APP_ID}`;
+
+    let runningVersion = localStorage.getItem(STORAGE_KEY_VER) || DEFAULT_VERSION;
+    let hasTriggeredUpdate = false;
+    let cachedVersionData = null;
+
+    function cleanVer(v) {
+        return String(v || '').replace(/^[vV]/, '').trim();
+    }
+
+    function compareVersions(v1, v2) {
+        if (!v1 || !v2) return 0;
+        const p1 = cleanVer(v1).split('.').map(p => parseInt(p, 10) || 0);
+        const p2 = cleanVer(v2).split('.').map(p => parseInt(p, 10) || 0);
+        const len = Math.max(p1.length, p2.length);
+        for (let i = 0; i < len; i++) {
+            const num1 = p1[i] || 0;
+            const num2 = p2[i] || 0;
+            if (num1 > num2) return 1;
+            if (num1 < num2) return -1;
+        }
+        return 0;
+    }
+
+    function injectStyles() {
+        if (document.getElementById('dizsan-updater-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'dizsan-updater-styles';
+        style.textContent = `
+            .dizsan-update-banner {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 999999;
+                background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+                color: #ffffff;
+                padding: 0.75rem 1.25rem;
+                box-shadow: 0 4px 25px rgba(2, 132, 199, 0.45);
+                border-bottom: 2px solid #38bdf8;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                animation: dizsanSlideDown 0.35s ease-out;
+            }
+            @keyframes dizsanSlideDown {
+                from { transform: translateY(-100%); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            .dizsan-version-pill-floating {
+                position: fixed;
+                bottom: 12px;
+                right: 12px;
+                z-index: 9999;
+                background: rgba(15, 23, 42, 0.85);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                color: #38bdf8;
+                font-size: 0.75rem;
+                font-weight: 700;
+                padding: 4px 10px;
+                border-radius: 999px;
+                cursor: pointer;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                transition: all 0.2s ease;
+                user-select: none;
+                font-family: inherit;
+            }
+            .dizsan-version-pill-floating:hover {
+                background: #0284c7;
+                color: #ffffff;
+                transform: scale(1.05);
+            }
+            .dizsan-updater-modal {
+                position: fixed;
+                inset: 0;
+                z-index: 9999999;
+                background: rgba(0, 0, 0, 0.75);
+                backdrop-filter: blur(6px);
+                -webkit-backdrop-filter: blur(6px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 1rem;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            }
+            .dizsan-updater-box {
+                background: #0f172a;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                border-radius: 16px;
+                width: 100%;
+                max-width: 460px;
+                color: #f8fafc;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+                overflow: hidden;
+                animation: dizsanPopIn 0.25s ease-out;
+            }
+            @keyframes dizsanPopIn {
+                from { transform: scale(0.92); opacity: 0; }
+                to { transform: scale(1); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    async function fetchVersionInfo() {
+        try {
+            const res = await fetch(`version.json?t=${Date.now()}`, {
+                cache: 'no-store',
+                headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache' }
+            });
+            if (res.ok) {
+                return await res.json();
+            }
+        } catch (e) {}
+        return null;
+    }
+
+    async function checkForUpdates(isManual = false) {
+        const data = await fetchVersionInfo();
+        if (!data) {
+            if (isManual) alert('Sunucu bağlantısı kurulamadı. İnternet bağlantınızı kontrol ediniz.');
+            return false;
+        }
+
+        cachedVersionData = data;
+        const cloudVer = cleanVer(data.version);
+        const curVer = cleanVer(runningVersion);
+
+        // İlk defa kaydediliyorsa yerel hafızaya yaz
+        if (!localStorage.getItem(STORAGE_KEY_VER)) {
+            localStorage.setItem(STORAGE_KEY_VER, cloudVer || curVer);
+            runningVersion = cloudVer || curVer;
+            updateUIBadges();
+            return false;
+        }
+
+        if (compareVersions(cloudVer, curVer) > 0) {
+            triggerZeroTouchUpdate(data);
+            if (isManual) alert(`🎉 Yeni sürüm bulundu: v${cloudVer}! Uygulama otomatik güncelleniyor...`);
+            return true;
+        } else {
+            if (isManual) {
+                alert(`✅ ${APP_NAME} en güncel sürümde (v${curVer}).\n\nTüm cihazlarınız senkronize ve hazır.`);
+            }
+        }
+        return false;
+    }
+
+    function triggerZeroTouchUpdate(data) {
+        if (hasTriggeredUpdate) return;
+        hasTriggeredUpdate = true;
+
+        const newVer = cleanVer(data.version);
+        const notes = data.releaseNotes || 'Performans iyileştirmeleri ve yeni özellikler yayınlandı.';
+        localStorage.setItem(STORAGE_KEY_VER, newVer);
+
+        // Bildirim Bannerı Göster
+        const banner = document.createElement('div');
+        banner.className = 'dizsan-update-banner';
+        banner.innerHTML = `
+            <div style="display:flex; align-items:center; justify-content:space-between; max-width:1100px; margin:0 auto; gap:1rem; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:1.4rem;">🚀</span>
+                    <div>
+                        <strong style="font-size:0.95rem;">${APP_NAME} v${newVer} Yayında!</strong>
+                        <div style="font-size:0.8rem; color:#bae6fd; margin-top:2px;">${notes} — <strong>Cihazınız otomatik güncelleniyor...</strong></div>
+                    </div>
+                </div>
+                <button type="button" id="dizsan-update-now-btn" style="background:#f59e0b; color:#0f172a; border:none; padding:6px 14px; border-radius:8px; font-weight:700; font-size:0.85rem; cursor:pointer;">
+                    ⚡ Şimdi Uygula
+                </button>
+            </div>
+        `;
+        document.body.appendChild(banner);
+
+        const btn = document.getElementById('dizsan-update-now-btn');
+        if (btn) {
+            btn.onclick = () => applyUpdateImmediately();
+        }
+
+        // 2.5 saniye sonra sıfır temasla otomatik yenile
+        setTimeout(() => {
+            applyUpdateImmediately();
+        }, 2500);
+    }
+
+    function applyUpdateImmediately() {
+        if ('caches' in window) {
+            caches.keys().then((names) => {
+                return Promise.all(names.map(name => caches.delete(name)));
+            }).then(() => {
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(regs => {
+                        regs.forEach(r => r.update());
+                    }).catch(() => {});
+                }
+                window.location.reload(true);
+            }).catch(() => {
+                window.location.reload(true);
+            });
+        } else {
+            window.location.reload(true);
+        }
+    }
+
+    function updateUIBadges() {
+        // Mevcut DOM'da sürüm etiketlerini güncelle
+        const targets = document.querySelectorAll('.dynamic-version-text, #app-current-version-text, #sidebar-app-version, .app-version-badge');
+        targets.forEach(el => {
+            el.textContent = `v${cleanVer(runningVersion)}`;
+        });
+
+        // Floating rozet varsa güncelle
+        const floatPill = document.getElementById('dizsan-floating-version-pill');
+        if (floatPill) {
+            floatPill.innerHTML = `⚡ v${cleanVer(runningVersion)}`;
+        }
+    }
+
+    function injectFloatingPillIfNeeded() {
+        // Eğer sayfada belirgin bir sürüm butonu yoksa sağ alta şık bir rozet ekle
+        const existingBadge = document.querySelector('#app-version-badge, #sidebar-app-version, .version-pill, .app-version-chip');
+        if (!existingBadge && !document.getElementById('dizsan-floating-version-pill')) {
+            const pill = document.createElement('div');
+            pill.id = 'dizsan-floating-version-pill';
+            pill.className = 'dizsan-version-pill-floating';
+            pill.title = `${APP_NAME} Sürüm & Güncelleme Bilgisi`;
+            pill.innerHTML = `⚡ v${cleanVer(runningVersion)}`;
+            pill.onclick = () => openUpdaterModal();
+            document.body.appendChild(pill);
+        }
+    }
+
+    function openUpdaterModal() {
+        if (document.getElementById('dizsan-updater-modal')) return;
+
+        const cloudVer = cachedVersionData ? cleanVer(cachedVersionData.version) : cleanVer(runningVersion);
+        const relDate = cachedVersionData ? (cachedVersionData.releasedAt || '-') : '-';
+        const notes = cachedVersionData ? (cachedVersionData.releaseNotes || 'Sistem aktif ve güncel.') : 'Sistem aktif ve güncel.';
+
+        const modal = document.createElement('div');
+        modal.id = 'dizsan-updater-modal';
+        modal.className = 'dizsan-updater-modal';
+        modal.innerHTML = `
+            <div class="dizsan-updater-box">
+                <div style="padding:1.1rem 1.25rem; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-weight:700; font-size:1.05rem; display:flex; align-items:center; gap:0.5rem;">
+                        <span>🚀</span>
+                        <span>${APP_NAME} Sürüm Merkezi</span>
+                    </div>
+                    <button type="button" id="dizsan-modal-close-btn" style="background:transparent; border:none; color:#94a3b8; font-size:1.4rem; cursor:pointer; line-height:1;">&times;</button>
+                </div>
+                <div style="padding:1.25rem;">
+                    <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:0.9rem; margin-bottom:1rem;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.85rem;">
+                            <span style="color:#94a3b8;">Cihazdaki Sürüm:</span>
+                            <span style="font-weight:700; color:#34d399;">v${cleanVer(runningVersion)}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.85rem;">
+                            <span style="color:#94a3b8;">Buluttaki Sürüm:</span>
+                            <span style="font-weight:700; color:#38bdf8;">v${cloudVer}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:0.82rem;">
+                            <span style="color:#94a3b8;">Yayınlanma Tarihi:</span>
+                            <span style="color:#fde68a;">${relDate}</span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:1rem;">
+                        <span style="display:block; font-size:0.8rem; color:#94a3b8; margin-bottom:0.35rem; font-weight:600;">Sürüm Notları:</span>
+                        <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.65rem 0.85rem; font-size:0.82rem; color:#e2e8f0; line-height:1.45;">
+                            ${notes}
+                        </div>
+                    </div>
+                    <div style="background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.25); border-radius:8px; padding:0.65rem 0.85rem; font-size:0.78rem; color:#cbd5e1; line-height:1.4;">
+                        ✅ <strong>Sıfır Temas Motoru Aktif:</strong> Yeni bir sürüm çıktığında tüm telefon, tablet ve bilgisayarlarınız otomatik olarak güncellenir.
+                    </div>
+                </div>
+                <div style="padding:0.9rem 1.25rem; border-top:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; gap:0.5rem;">
+                    <button type="button" id="dizsan-modal-check-btn" style="background:#0284c7; color:#fff; border:none; padding:7px 14px; border-radius:8px; font-size:0.85rem; font-weight:600; cursor:pointer;">
+                        🔄 Güncellemeleri Denetle
+                    </button>
+                    <button type="button" id="dizsan-modal-ok-btn" style="background:rgba(255,255,255,0.1); color:#fff; border:none; padding:7px 16px; border-radius:8px; font-size:0.85rem; cursor:pointer;">
+                        Kapat
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        const closeBtn = document.getElementById('dizsan-modal-close-btn');
+        const okBtn = document.getElementById('dizsan-modal-ok-btn');
+        const checkBtn = document.getElementById('dizsan-modal-check-btn');
+
+        const closeModal = () => modal.remove();
+        if (closeBtn) closeBtn.onclick = closeModal;
+        if (okBtn) okBtn.onclick = closeModal;
+        modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+
+        if (checkBtn) {
+            checkBtn.onclick = async () => {
+                checkBtn.textContent = '⏳ Kontrol Ediliyor...';
+                await checkForUpdates(true);
+                checkBtn.textContent = '🔄 Güncellemeleri Denetle';
+            };
+        }
+    }
+
+    // Başlatma ve Dinleyiciler
+    function init() {
+        injectStyles();
+        injectFloatingPillIfNeeded();
+        updateUIBadges();
+
+        // İlk açılışta kontrol et
+        checkForUpdates(false);
+
+        // Her 30 saniyede bir arka planda kontrol et
+        setInterval(() => {
+            checkForUpdates(false);
+        }, 30000);
+
+        // Sekmeye geri dönüldüğünde veya telefon açıldığında anında kontrol et
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                checkForUpdates(false);
+            }
+        });
+        window.addEventListener('focus', () => {
+            checkForUpdates(false);
+        });
+
+        // Service Worker güncelleme yakalayıcısı
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data && (event.data.type === 'SW_UPDATED' || event.data.type === 'NEW_VERSION_AVAILABLE')) {
+                    checkForUpdates(false);
+                }
+            });
+        }
+
+        // Global köprü
+        window.DizsanAutoUpdater = {
+            check: (isManual) => checkForUpdates(isManual),
+            openModal: () => openUpdaterModal(),
+            getVersion: () => runningVersion,
+            applyUpdate: () => applyUpdateImmediately()
+        };
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+
+</script>
+</body>
+</html>
