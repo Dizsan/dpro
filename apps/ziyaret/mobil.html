@@ -2435,10 +2435,6 @@ body.dpro-embedded .content-body {
                         <i class="fa-solid fa-arrows-rotate" id="navbar-refresh-icon" style="color:#34d399;"></i> <span class="hide-on-sm" id="sync-status-text">Logo Canlı (2.682 Cari)</span>
                     </button>
 
-                    <button type="button" class="btn btn-secondary btn-sm hide-on-mobile" onclick="switchTab('cari-ekstre-tab')" title="D-Pro Cari &amp; Logo Ekstre">
-                        <i class="fa-solid fa-file-invoice-dollar" style="color:#38bdf8;"></i> <span class="hide-on-sm">Cari &amp; Ekstre</span>
-                    </button>
-
                     <button type="button" class="btn btn-primary btn-sm hide-on-desktop mobile-app-install-chip dpro-hide-when-embedded" onclick="openInstallGuideModal()" title="Uygulamayı Telefona Yükle">
                         <i class="fa-solid fa-mobile-screen-button"></i> <span>Uygulamayı Kur</span>
                     </button>
@@ -2717,8 +2713,12 @@ body.dpro-embedded .content-body {
                                 <input type="text" id="ekstre-search" class="filter-input" placeholder="Cari kodu, cari adı, adres, il, ilçe veya plaka ara..." oninput="cariEkstrePage=1; renderCariEkstreTable()">
                             </div>
 
-                            <select id="ekstre-filter-city" class="filter-input" onchange="cariEkstrePage=1; renderCariEkstreTable()">
-                                <option value="">Tüm İller</option>
+                            <select id="ekstre-filter-city" class="filter-input" onchange="handleEkstreCityFilterChange()">
+                                <option value="">📍 Tüm İller</option>
+                            </select>
+
+                            <select id="ekstre-filter-district" class="filter-input" onchange="currentCariEkstrePage=1; renderCariEkstreTable(true)">
+                                <option value="">🏘️ Tüm İlçeler</option>
                             </select>
 
                             <select id="ekstre-filter-ba" class="filter-input" onchange="cariEkstrePage=1; renderCariEkstreTable()">
@@ -3017,7 +3017,475 @@ body.dpro-embedded .content-body {
                 <section id="strategy-tab" class="tab-section">
                     <div class="filter-bar">
                         <div class="filter-group">
-                            <input type="text" id="strategy-search" class="filter-input" placeholder="İl, ilçe veya rut ara..." oninput="renderDistrictStrategies()">
+                            <div class="search-box">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="strategy-search" class="filter-input" placeholder="İl, ilçe veya rut ara..." oninput="renderDistrictStrategies()">
+                            </div>
+
+                            <select id="strategy-filter-city" class="filter-input" onchange="handleStrategyCityChange()">
+                                <option value="">📍 Tüm İller (76 İl)</option>
+                                <option value="Adana">Adana (12 İlçe • 83 Cari)</option>
+                                <option value="Adıyaman">Adıyaman (3 İlçe • 9 Cari)</option>
+                                <option value="Afyonkarahisar">Afyonkarahisar (8 İlçe • 29 Cari)</option>
+                                <option value="Aksaray">Aksaray (3 İlçe • 9 Cari)</option>
+                                <option value="Amasya">Amasya (6 İlçe • 237 Cari)</option>
+                                <option value="Ankara">Ankara (21 İlçe • 138 Cari)</option>
+                                <option value="Antalya">Antalya (13 İlçe • 47 Cari)</option>
+                                <option value="Ardahan">Ardahan (1 İlçe • 2 Cari)</option>
+                                <option value="Artvin">Artvin (6 İlçe • 22 Cari)</option>
+                                <option value="Aydın">Aydın (2 İlçe • 3 Cari)</option>
+                                <option value="Ağrı">Ağrı (2 İlçe • 3 Cari)</option>
+                                <option value="Balıkesir">Balıkesir (5 İlçe • 12 Cari)</option>
+                                <option value="Bartın">Bartın (2 İlçe • 8 Cari)</option>
+                                <option value="Batman">Batman (1 İlçe • 4 Cari)</option>
+                                <option value="Bayburt">Bayburt (2 İlçe • 3 Cari)</option>
+                                <option value="Bilecik">Bilecik (1 İlçe • 3 Cari)</option>
+                                <option value="Bitlis">Bitlis (1 İlçe • 1 Cari)</option>
+                                <option value="Bolu">Bolu (3 İlçe • 4 Cari)</option>
+                                <option value="Burdur">Burdur (3 İlçe • 18 Cari)</option>
+                                <option value="Bursa">Bursa (7 İlçe • 14 Cari)</option>
+                                <option value="Denizli">Denizli (7 İlçe • 17 Cari)</option>
+                                <option value="Diyarbakır">Diyarbakır (7 İlçe • 8 Cari)</option>
+                                <option value="Düzce">Düzce (2 İlçe • 2 Cari)</option>
+                                <option value="Edirne">Edirne (1 İlçe • 1 Cari)</option>
+                                <option value="Elazığ">Elazığ (4 İlçe • 30 Cari)</option>
+                                <option value="Erzincan">Erzincan (3 İlçe • 17 Cari)</option>
+                                <option value="Erzurum">Erzurum (7 İlçe • 11 Cari)</option>
+                                <option value="Eskişehir">Eskişehir (2 İlçe • 2 Cari)</option>
+                                <option value="Gaziantep">Gaziantep (4 İlçe • 9 Cari)</option>
+                                <option value="Giresun">Giresun (10 İlçe • 66 Cari)</option>
+                                <option value="Gümüşhane">Gümüşhane (3 İlçe • 11 Cari)</option>
+                                <option value="Hatay">Hatay (9 İlçe • 29 Cari)</option>
+                                <option value="Isparta">Isparta (6 İlçe • 16 Cari)</option>
+                                <option value="Iğdır">Iğdır (1 İlçe • 10 Cari)</option>
+                                <option value="Kahramanmaraş">Kahramanmaraş (4 İlçe • 30 Cari)</option>
+                                <option value="Karabük">Karabük (1 İlçe • 4 Cari)</option>
+                                <option value="Karaman">Karaman (1 İlçe • 1 Cari)</option>
+                                <option value="Kars">Kars (4 İlçe • 29 Cari)</option>
+                                <option value="Kastamonu">Kastamonu (11 İlçe • 92 Cari)</option>
+                                <option value="Kayseri">Kayseri (8 İlçe • 24 Cari)</option>
+                                <option value="Kocaeli">Kocaeli (8 İlçe • 20 Cari)</option>
+                                <option value="Konya">Konya (9 İlçe • 44 Cari)</option>
+                                <option value="Kütahya">Kütahya (2 İlçe • 4 Cari)</option>
+                                <option value="Kırklareli">Kırklareli (1 İlçe • 2 Cari)</option>
+                                <option value="Kırıkkale">Kırıkkale (4 İlçe • 43 Cari)</option>
+                                <option value="Kırşehir">Kırşehir (3 İlçe • 13 Cari)</option>
+                                <option value="Malatya">Malatya (3 İlçe • 8 Cari)</option>
+                                <option value="Manisa">Manisa (5 İlçe • 11 Cari)</option>
+                                <option value="Mardin">Mardin (4 İlçe • 6 Cari)</option>
+                                <option value="Mersin">Mersin (8 İlçe • 44 Cari)</option>
+                                <option value="Muğla">Muğla (7 İlçe • 22 Cari)</option>
+                                <option value="Muş">Muş (3 İlçe • 17 Cari)</option>
+                                <option value="Nevşehir">Nevşehir (7 İlçe • 23 Cari)</option>
+                                <option value="Ordu">Ordu (13 İlçe • 121 Cari)</option>
+                                <option value="Osmaniye">Osmaniye (3 İlçe • 49 Cari)</option>
+                                <option value="Rize">Rize (6 İlçe • 44 Cari)</option>
+                                <option value="Sakarya">Sakarya (5 İlçe • 7 Cari)</option>
+                                <option value="Samsun">Samsun (16 İlçe • 282 Cari)</option>
+                                <option value="Siirt">Siirt (2 İlçe • 2 Cari)</option>
+                                <option value="Sinop">Sinop (7 İlçe • 49 Cari)</option>
+                                <option value="Sivas">Sivas (7 İlçe • 29 Cari)</option>
+                                <option value="Tekirdağ">Tekirdağ (1 İlçe • 1 Cari)</option>
+                                <option value="Tokat">Tokat (7 İlçe • 85 Cari)</option>
+                                <option value="Trabzon">Trabzon (12 İlçe • 119 Cari)</option>
+                                <option value="Uşak">Uşak (4 İlçe • 20 Cari)</option>
+                                <option value="Van">Van (3 İlçe • 4 Cari)</option>
+                                <option value="Yalova">Yalova (1 İlçe • 1 Cari)</option>
+                                <option value="Yozgat">Yozgat (12 İlçe • 155 Cari)</option>
+                                <option value="Zonguldak">Zonguldak (6 İlçe • 19 Cari)</option>
+                                <option value="Çanakkale">Çanakkale (3 İlçe • 12 Cari)</option>
+                                <option value="Çankırı">Çankırı (4 İlçe • 49 Cari)</option>
+                                <option value="Çorum">Çorum (13 İlçe • 750 Cari)</option>
+                                <option value="İstanbul">İstanbul (33 İlçe • 102 Cari)</option>
+                                <option value="İzmir">İzmir (8 İlçe • 14 Cari)</option>
+                                <option value="Şanlıurfa">Şanlıurfa (4 İlçe • 4 Cari)</option>
+                                <option value="Şırnak">Şırnak (3 İlçe • 4 Cari)</option>
+                            </select>
+
+                            <select id="strategy-filter-district" class="filter-input" onchange="renderDistrictStrategies()">
+                                <option value="">🏘️ Tüm İlçeler (364 İlçe)</option>
+                                <option value="19 Mayıs">19 Mayıs (Samsun) • 2 Cari</option>
+                                <option value="Acıgöl">Acıgöl (Nevşehir) • 1 Cari</option>
+                                <option value="Adapazarı">Adapazarı (Sakarya) • 1 Cari</option>
+                                <option value="Akdağmadeni">Akdağmadeni (Yozgat) • 2 Cari</option>
+                                <option value="Akdeniz">Akdeniz (Mersin) • 16 Cari</option>
+                                <option value="Akhisar">Akhisar (Manisa) • 1 Cari</option>
+                                <option value="Akyurt">Akyurt (Ankara) • 2 Cari</option>
+                                <option value="Akçaabat">Akçaabat (Trabzon) • 7 Cari</option>
+                                <option value="Akçakale">Akçakale (Şanlıurfa) • 1 Cari</option>
+                                <option value="Akıncılar">Akıncılar (Sivas) • 1 Cari</option>
+                                <option value="Alaca">Alaca (Çorum) • 56 Cari</option>
+                                <option value="Alanya">Alanya (Antalya) • 4 Cari</option>
+                                <option value="Alaçam">Alaçam (Samsun) • 1 Cari</option>
+                                <option value="Altındağ">Altındağ (Ankara) • 5 Cari</option>
+                                <option value="Altınordu">Altınordu (Ordu) • 15 Cari</option>
+                                <option value="Altınova">Altınova (Yalova) • 1 Cari</option>
+                                <option value="Altınözü">Altınözü (Hatay) • 1 Cari</option>
+                                <option value="Andırın">Andırın (Kahramanmaraş) • 16 Cari</option>
+                                <option value="Antakya">Antakya (Hatay) • 8 Cari</option>
+                                <option value="Araç">Araç (Kastamonu) • 2 Cari</option>
+                                <option value="Ardeşen">Ardeşen (Rize) • 2 Cari</option>
+                                <option value="Arhavi">Arhavi (Artvin) • 1 Cari</option>
+                                <option value="Arsin">Arsin (Trabzon) • 4 Cari</option>
+                                <option value="Artova">Artova (Tokat) • 1 Cari</option>
+                                <option value="Artuklu">Artuklu (Mardin) • 1 Cari</option>
+                                <option value="Asarcık">Asarcık (Samsun) • 1 Cari</option>
+                                <option value="Atakum">Atakum (Samsun) • 8 Cari</option>
+                                <option value="Ataşehir">Ataşehir (İstanbul) • 9 Cari</option>
+                                <option value="Avanos">Avanos (Nevşehir) • 1 Cari</option>
+                                <option value="Avcılar">Avcılar (İstanbul) • 1 Cari</option>
+                                <option value="Ayancık">Ayancık (Sinop) • 3 Cari</option>
+                                <option value="Aybastı">Aybastı (Ordu) • 4 Cari</option>
+                                <option value="Aydıncık">Aydıncık (Yozgat) • 8 Cari</option>
+                                <option value="Azdavay">Azdavay (Kastamonu) • 2 Cari</option>
+                                <option value="Aşkale">Aşkale (Erzurum) • 1 Cari</option>
+                                <option value="Babadağ">Babadağ (Denizli) • 1 Cari</option>
+                                <option value="Bafra">Bafra (Samsun) • 33 Cari</option>
+                                <option value="Bahçelievler">Bahçelievler (İstanbul) • 2 Cari</option>
+                                <option value="Bala">Bala (Ankara) • 2 Cari</option>
+                                <option value="Balışeyh">Balışeyh (Kırıkkale) • 3 Cari</option>
+                                <option value="Banaz">Banaz (Uşak) • 9 Cari</option>
+                                <option value="Bandırma">Bandırma (Balıkesir) • 7 Cari</option>
+                                <option value="Battalgazi">Battalgazi (Malatya) • 4 Cari</option>
+                                <option value="Batıataşehir">Batıataşehir (İstanbul) • 1 Cari</option>
+                                <option value="Bayat">Bayat (Çorum) • 15 Cari</option>
+                                <option value="Baydiğin">Baydiğin (Yozgat) • 1 Cari</option>
+                                <option value="Bayrampaşa">Bayrampaşa (İstanbul) • 1 Cari</option>
+                                <option value="Bağcılar">Bağcılar (İstanbul) • 2 Cari</option>
+                                <option value="Bağlar">Bağlar (Diyarbakır) • 1 Cari</option>
+                                <option value="Başakşehir">Başakşehir (İstanbul) • 1 Cari</option>
+                                <option value="Beykoz">Beykoz (İstanbul) • 3 Cari</option>
+                                <option value="Beylikdüzü">Beylikdüzü (İstanbul) • 1 Cari</option>
+                                <option value="Beyoğlu">Beyoğlu (İstanbul) • 2 Cari</option>
+                                <option value="Beypazarı">Beypazarı (Ankara) • 5 Cari</option>
+                                <option value="Beşikdüzü">Beşikdüzü (Trabzon) • 4 Cari</option>
+                                <option value="Beşiktaş">Beşiktaş (İstanbul) • 3 Cari</option>
+                                <option value="Biga">Biga (Çanakkale) • 5 Cari</option>
+                                <option value="Birecik">Birecik (Şanlıurfa) • 1 Cari</option>
+                                <option value="Bolvadin">Bolvadin (Afyonkarahisar) • 1 Cari</option>
+                                <option value="Bornova">Bornova (İzmir) • 5 Cari</option>
+                                <option value="Boyabat">Boyabat (Sinop) • 25 Cari</option>
+                                <option value="Bozkurt">Bozkurt (Kastamonu) • 1 Cari</option>
+                                <option value="Bozüyük">Bozüyük (Bilecik) • 3 Cari</option>
+                                <option value="Boğazkale">Boğazkale (Çorum) • 2 Cari</option>
+                                <option value="Buca">Buca (İzmir) • 1 Cari</option>
+                                <option value="Bucak">Bucak (Burdur) • 6 Cari</option>
+                                <option value="Bulancak">Bulancak (Giresun) • 3 Cari</option>
+                                <option value="Büyükçekmece">Büyükçekmece (İstanbul) • 3 Cari</option>
+                                <option value="Canik">Canik (Samsun) • 4 Cari</option>
+                                <option value="Ceyhan">Ceyhan (Adana) • 3 Cari</option>
+                                <option value="Cide">Cide (Kastamonu) • 2 Cari</option>
+                                <option value="Cihanbeyli">Cihanbeyli (Konya) • 4 Cari</option>
+                                <option value="Cizre">Cizre (Şırnak) • 2 Cari</option>
+                                <option value="Dalaman">Dalaman (Muğla) • 1 Cari</option>
+                                <option value="Delice">Delice (Kırıkkale) • 9 Cari</option>
+                                <option value="Demirözü">Demirözü (Bayburt) • 1 Cari</option>
+                                <option value="Dereli">Dereli (Giresun) • 2 Cari</option>
+                                <option value="Derinkuyu">Derinkuyu (Nevşehir) • 1 Cari</option>
+                                <option value="Develi">Develi (Kayseri) • 2 Cari</option>
+                                <option value="Devrekani">Devrekani (Kastamonu) • 10 Cari</option>
+                                <option value="Dicle">Dicle (Diyarbakır) • 1 Cari</option>
+                                <option value="Digor">Digor (Kars) • 1 Cari</option>
+                                <option value="Dikmen">Dikmen (Sinop) • 1 Cari</option>
+                                <option value="Dilovası">Dilovası (Kocaeli) • 2 Cari</option>
+                                <option value="Dodurga">Dodurga (Çorum) • 1 Cari</option>
+                                <option value="Durağan">Durağan (Sinop) • 3 Cari</option>
+                                <option value="Dörtyol">Dörtyol (Hatay) • 1 Cari</option>
+                                <option value="Döşemealtı">Döşemealtı (Antalya) • 3 Cari</option>
+                                <option value="Düzköy">Düzköy (Trabzon) • 1 Cari</option>
+                                <option value="Edremit">Edremit (Balıkesir) • 2 Cari</option>
+                                <option value="Elmadağ">Elmadağ (Ankara) • 1 Cari</option>
+                                <option value="Elmalı">Elmalı (Antalya) • 2 Cari</option>
+                                <option value="Erbaa">Erbaa (Tokat) • 5 Cari</option>
+                                <option value="Erdemli">Erdemli (Mersin) • 9 Cari</option>
+                                <option value="Ereğli">Ereğli (Zonguldak) • 20 Cari</option>
+                                <option value="Erfelek">Erfelek (Sinop) • 3 Cari</option>
+                                <option value="Ergani">Ergani (Diyarbakır) • 2 Cari</option>
+                                <option value="Erzin">Erzin (Hatay) • 3 Cari</option>
+                                <option value="Esenler">Esenler (İstanbul) • 1 Cari</option>
+                                <option value="Esenyurt">Esenyurt (İstanbul) • 5 Cari</option>
+                                <option value="Eskil">Eskil (Aksaray) • 1 Cari</option>
+                                <option value="Espiye">Espiye (Giresun) • 8 Cari</option>
+                                <option value="Etimesgut">Etimesgut (Ankara) • 4 Cari</option>
+                                <option value="Eynesil">Eynesil (Giresun) • 3 Cari</option>
+                                <option value="Eyyübiye">Eyyübiye (Şanlıurfa) • 1 Cari</option>
+                                <option value="Eğridir">Eğridir (Isparta) • 1 Cari</option>
+                                <option value="Eşme">Eşme (Uşak) • 1 Cari</option>
+                                <option value="Fatsa">Fatsa (Ordu) • 10 Cari</option>
+                                <option value="Ferizli">Ferizli (Sakarya) • 1 Cari</option>
+                                <option value="Fethiye">Fethiye (Muğla) • 10 Cari</option>
+                                <option value="Gazipaşa">Gazipaşa (Antalya) • 2 Cari</option>
+                                <option value="Gebze">Gebze (Kocaeli) • 6 Cari</option>
+                                <option value="Gediz">Gediz (Kütahya) • 2 Cari</option>
+                                <option value="Gelendost">Gelendost (Isparta) • 1 Cari</option>
+                                <option value="Göksun">Göksun (Kahramanmaraş) • 1 Cari</option>
+                                <option value="Gökçebey">Gökçebey (Zonguldak) • 1 Cari</option>
+                                <option value="Gölbaşı">Gölbaşı (Ankara) • 4 Cari</option>
+                                <option value="Göle">Göle (Ardahan) • 2 Cari</option>
+                                <option value="Gölköy">Gölköy (Ordu) • 8 Cari</option>
+                                <option value="Gönen">Gönen (Balıkesir) • 3 Cari</option>
+                                <option value="Görele">Görele (Giresun) • 3 Cari</option>
+                                <option value="Göynücek">Göynücek (Amasya) • 5 Cari</option>
+                                <option value="Gülşehir">Gülşehir (Nevşehir) • 2 Cari</option>
+                                <option value="Gümüşhacıköy">Gümüşhacıköy (Amasya) • 3 Cari</option>
+                                <option value="Güneysu">Güneysu (Rize) • 1 Cari</option>
+                                <option value="Güngören">Güngören (İstanbul) • 1 Cari</option>
+                                <option value="Gürgentepe">Gürgentepe (Ordu) • 1 Cari</option>
+                                <option value="Hacılar">Hacılar (Kayseri) • 1 Cari</option>
+                                <option value="Haliliye">Haliliye (Şanlıurfa) • 1 Cari</option>
+                                <option value="Hani">Hani (Diyarbakır) • 1 Cari</option>
+                                <option value="Hanönü">Hanönü (Kastamonu) • 1 Cari</option>
+                                <option value="Hasköy">Hasköy (Muş) • 7 Cari</option>
+                                <option value="Hassa">Hassa (Hatay) • 1 Cari</option>
+                                <option value="Havran">Havran (Balıkesir) • 1 Cari</option>
+                                <option value="Havza">Havza (Samsun) • 22 Cari</option>
+                                <option value="Haymana">Haymana (Ankara) • 1 Cari</option>
+                                <option value="Hendek">Hendek (Sakarya) • 2 Cari</option>
+                                <option value="Honaz">Honaz (Denizli) • 1 Cari</option>
+                                <option value="Hopa">Hopa (Artvin) • 8 Cari</option>
+                                <option value="Horasan">Horasan (Erzurum) • 1 Cari</option>
+                                <option value="Hüyük">Hüyük (Konya) • 1 Cari</option>
+                                <option value="Ilgaz">Ilgaz (Çankırı) • 3 Cari</option>
+                                <option value="Kabadüz">Kabadüz (Ordu) • 1 Cari</option>
+                                <option value="Kabataş">Kabataş (Ordu) • 1 Cari</option>
+                                <option value="Kadirli">Kadirli (Osmaniye) • 37 Cari</option>
+                                <option value="Kadıköy">Kadıköy (İstanbul) • 1 Cari</option>
+                                <option value="Kadışehri">Kadışehri (Yozgat) • 1 Cari</option>
+                                <option value="Kahramankazan">Kahramankazan (Ankara) • 4 Cari</option>
+                                <option value="Kahta">Kahta (Adıyaman) • 6 Cari</option>
+                                <option value="Kalkandere">Kalkandere (Rize) • 1 Cari</option>
+                                <option value="Kandıra">Kandıra (Kocaeli) • 3 Cari</option>
+                                <option value="Kangal">Kangal (Sivas) • 1 Cari</option>
+                                <option value="Karabağlar">Karabağlar (İzmir) • 1 Cari</option>
+                                <option value="Karadeniz Ereğli">Karadeniz Ereğli (Zonguldak) • 1 Cari</option>
+                                <option value="Karaisalı">Karaisalı (Adana) • 1 Cari</option>
+                                <option value="Karapınar">Karapınar (Konya) • 4 Cari</option>
+                                <option value="Karatay">Karatay (Konya) • 4 Cari</option>
+                                <option value="Kargı">Kargı (Çorum) • 18 Cari</option>
+                                <option value="Kartal">Kartal (İstanbul) • 3 Cari</option>
+                                <option value="Kartepe">Kartepe (Kocaeli) • 1 Cari</option>
+                                <option value="Kavacık">Kavacık (İstanbul) • 1 Cari</option>
+                                <option value="Kavak">Kavak (Samsun) • 3 Cari</option>
+                                <option value="Kayaş">Kayaş (Ankara) • 1 Cari</option>
+                                <option value="Kaynaşlı">Kaynaşlı (Düzce) • 1 Cari</option>
+                                <option value="Kazan">Kazan (Ankara) • 3 Cari</option>
+                                <option value="Kağıthane">Kağıthane (İstanbul) • 1 Cari</option>
+                                <option value="Kağızman">Kağızman (Kars) • 1 Cari</option>
+                                <option value="Kaş">Kaş (Antalya) • 6 Cari</option>
+                                <option value="Kelkit">Kelkit (Gümüşhane) • 4 Cari</option>
+                                <option value="Kemaliye">Kemaliye (Erzincan) • 1 Cari</option>
+                                <option value="Kemer">Kemer (Antalya) • 1 Cari</option>
+                                <option value="Kepez">Kepez (Antalya) • 8 Cari</option>
+                                <option value="Keçiören">Keçiören (Ankara) • 4 Cari</option>
+                                <option value="Keşap">Keşap (Giresun) • 3 Cari</option>
+                                <option value="Kilimli">Kilimli (Zonguldak) • 3 Cari</option>
+                                <option value="Kocasinan">Kocasinan (Kayseri) • 3 Cari</option>
+                                <option value="Korkut">Korkut (Muş) • 5 Cari</option>
+                                <option value="Korkuteli">Korkuteli (Antalya) • 2 Cari</option>
+                                <option value="Kovancılar">Kovancılar (Elazığ) • 3 Cari</option>
+                                <option value="Koyulhisar">Koyulhisar (Sivas) • 3 Cari</option>
+                                <option value="Kozaklı">Kozaklı (Nevşehir) • 4 Cari</option>
+                                <option value="Kozan">Kozan (Adana) • 32 Cari</option>
+                                <option value="Kumluca">Kumluca (Antalya) • 1 Cari</option>
+                                <option value="Kumru">Kumru (Ordu) • 3 Cari</option>
+                                <option value="Kuşadası">Kuşadası (Aydın) • 2 Cari</option>
+                                <option value="Körfez">Körfez (Kocaeli) • 2 Cari</option>
+                                <option value="Köşk">Köşk (Aydın) • 1 Cari</option>
+                                <option value="Küre">Küre (Kastamonu) • 7 Cari</option>
+                                <option value="Küçükçekmece">Küçükçekmece (İstanbul) • 2 Cari</option>
+                                <option value="Kırkağaç">Kırkağaç (Manisa) • 1 Cari</option>
+                                <option value="Kırıkhan">Kırıkhan (Hatay) • 1 Cari</option>
+                                <option value="Kızıltepe">Kızıltepe (Mardin) • 3 Cari</option>
+                                <option value="Kızılırmak">Kızılırmak (Çankırı) • 12 Cari</option>
+                                <option value="Ladik">Ladik (Samsun) • 11 Cari</option>
+                                <option value="Lüleburgaz">Lüleburgaz (Kırklareli) • 2 Cari</option>
+                                <option value="Maden">Maden (Elazığ) • 1 Cari</option>
+                                <option value="Malkara">Malkara (Tekirdağ) • 1 Cari</option>
+                                <option value="Maltepe">Maltepe (İstanbul) • 6 Cari</option>
+                                <option value="Mamak">Mamak (Ankara) • 7 Cari</option>
+                                <option value="Manavgat">Manavgat (Antalya) • 7 Cari</option>
+                                <option value="Marmaris">Marmaris (Muğla) • 2 Cari</option>
+                                <option value="Maslak">Maslak (İstanbul) • 1 Cari</option>
+                                <option value="Maçka">Maçka (Trabzon) • 3 Cari</option>
+                                <option value="Mecitözü">Mecitözü (Çorum) • 19 Cari</option>
+                                <option value="Melikgazi">Melikgazi (Kayseri) • 4 Cari</option>
+                                <option value="Meram">Meram (Konya) • 1 Cari</option>
+                                <option value="Merkez">Merkez (Çorum) • 1377 Cari</option>
+                                <option value="Merkezefendi">Merkezefendi (Denizli) • 3 Cari</option>
+                                <option value="Merzifon">Merzifon (Amasya) • 64 Cari</option>
+                                <option value="Mesudiye">Mesudiye (Ordu) • 5 Cari</option>
+                                <option value="Midyat">Midyat (Mardin) • 1 Cari</option>
+                                <option value="Mihalgazi">Mihalgazi (Eskişehir) • 1 Cari</option>
+                                <option value="Milas">Milas (Muğla) • 2 Cari</option>
+                                <option value="Mucur">Mucur (Kırşehir) • 2 Cari</option>
+                                <option value="Mudurnu">Mudurnu (Bolu) • 1 Cari</option>
+                                <option value="Muratpaşa">Muratpaşa (Antalya) • 1 Cari</option>
+                                <option value="Murgul">Murgul (Artvin) • 1 Cari</option>
+                                <option value="Mut">Mut (Mersin) • 1 Cari</option>
+                                <option value="Nallıhan">Nallıhan (Ankara) • 3 Cari</option>
+                                <option value="Niksar">Niksar (Tokat) • 7 Cari</option>
+                                <option value="Nilüfer">Nilüfer (Bursa) • 2 Cari</option>
+                                <option value="Nizip">Nizip (Gaziantep) • 2 Cari</option>
+                                <option value="Nusaybin">Nusaybin (Mardin) • 1 Cari</option>
+                                <option value="Of">Of (Trabzon) • 3 Cari</option>
+                                <option value="Oltu">Oltu (Erzurum) • 1 Cari</option>
+                                <option value="Onikişubat">Onikişubat (Kahramanmaraş) • 7 Cari</option>
+                                <option value="Orhangazi">Orhangazi (Bursa) • 1 Cari</option>
+                                <option value="Orta">Orta (Çankırı) • 3 Cari</option>
+                                <option value="Ortahisar">Ortahisar (Trabzon) • 25 Cari</option>
+                                <option value="Ortaköy">Ortaköy (Çorum) • 3 Cari</option>
+                                <option value="Osmancık">Osmancık (Çorum) • 38 Cari</option>
+                                <option value="Osmangazi">Osmangazi (Bursa) • 2 Cari</option>
+                                <option value="Oğuzlar">Oğuzlar (Çorum) • 1 Cari</option>
+                                <option value="Palu">Palu (Elazığ) • 1 Cari</option>
+                                <option value="Pamukkale">Pamukkale (Denizli) • 3 Cari</option>
+                                <option value="Pamukova">Pamukova (Sakarya) • 2 Cari</option>
+                                <option value="Patnos">Patnos (Ağrı) • 1 Cari</option>
+                                <option value="Payas">Payas (Hatay) • 2 Cari</option>
+                                <option value="Pendik">Pendik (İstanbul) • 6 Cari</option>
+                                <option value="Pervari">Pervari (Siirt) • 1 Cari</option>
+                                <option value="Perşembe">Perşembe (Ordu) • 1 Cari</option>
+                                <option value="Polatlı">Polatlı (Ankara) • 11 Cari</option>
+                                <option value="Pozantı">Pozantı (Adana) • 3 Cari</option>
+                                <option value="Pursaklar">Pursaklar (Ankara) • 3 Cari</option>
+                                <option value="Reyhanlı">Reyhanlı (Hatay) • 2 Cari</option>
+                                <option value="Reşadiye">Reşadiye (Tokat) • 6 Cari</option>
+                                <option value="Saimbeyli">Saimbeyli (Adana) • 1 Cari</option>
+                                <option value="Salihli">Salihli (Manisa) • 2 Cari</option>
+                                <option value="Salıpazarı">Salıpazarı (Samsun) • 2 Cari</option>
+                                <option value="Sancaktepe">Sancaktepe (İstanbul) • 3 Cari</option>
+                                <option value="Sapanca">Sapanca (Sakarya) • 1 Cari</option>
+                                <option value="Saraykent">Saraykent (Yozgat) • 1 Cari</option>
+                                <option value="Sarıkaya">Sarıkaya (Yozgat) • 11 Cari</option>
+                                <option value="Sarıyer">Sarıyer (İstanbul) • 4 Cari</option>
+                                <option value="Sarıçam">Sarıçam (Adana) • 9 Cari</option>
+                                <option value="Seferihisar">Seferihisar (İzmir) • 2 Cari</option>
+                                <option value="Selim">Selim (Kars) • 7 Cari</option>
+                                <option value="Selçuklu">Selçuklu (Konya) • 7 Cari</option>
+                                <option value="Senirkent">Senirkent (Isparta) • 3 Cari</option>
+                                <option value="Serik">Serik (Antalya) • 1 Cari</option>
+                                <option value="Serinhisar">Serinhisar (Denizli) • 3 Cari</option>
+                                <option value="Seydikemer">Seydikemer (Muğla) • 4 Cari</option>
+                                <option value="Seyhan">Seyhan (Adana) • 6 Cari</option>
+                                <option value="Silifke">Silifke (Mersin) • 4 Cari</option>
+                                <option value="Silivri">Silivri (İstanbul) • 1 Cari</option>
+                                <option value="Sinanpaşa">Sinanpaşa (Afyonkarahisar) • 2 Cari</option>
+                                <option value="Sincan">Sincan (Ankara) • 9 Cari</option>
+                                <option value="Sincanlı">Sincanlı (Afyonkarahisar) • 1 Cari</option>
+                                <option value="Soma">Soma (Manisa) • 5 Cari</option>
+                                <option value="Sorgun">Sorgun (Yozgat) • 73 Cari</option>
+                                <option value="Sultanbeyli">Sultanbeyli (İstanbul) • 8 Cari</option>
+                                <option value="Suluova">Suluova (Amasya) • 22 Cari</option>
+                                <option value="Sungurlu">Sungurlu (Çorum) • 56 Cari</option>
+                                <option value="Sur">Sur (Diyarbakır) • 1 Cari</option>
+                                <option value="Talas">Talas (Kayseri) • 1 Cari</option>
+                                <option value="Tarsus">Tarsus (Mersin) • 6 Cari</option>
+                                <option value="Tatvan">Tatvan (Bitlis) • 1 Cari</option>
+                                <option value="Taşköprü">Taşköprü (Kastamonu) • 7 Cari</option>
+                                <option value="Taşova">Taşova (Amasya) • 3 Cari</option>
+                                <option value="Tekkeköy">Tekkeköy (Samsun) • 14 Cari</option>
+                                <option value="Tepebaşı">Tepebaşı (Eskişehir) • 1 Cari</option>
+                                <option value="Terme">Terme (Samsun) • 8 Cari</option>
+                                <option value="Tirebolu">Tirebolu (Giresun) • 1 Cari</option>
+                                <option value="Tonya">Tonya (Trabzon) • 4 Cari</option>
+                                <option value="Toprakkale">Toprakkale (Osmaniye) • 1 Cari</option>
+                                <option value="Torbalı">Torbalı (İzmir) • 2 Cari</option>
+                                <option value="Toroslar">Toroslar (Mersin) • 2 Cari</option>
+                                <option value="Tosya">Tosya (Kastamonu) • 6 Cari</option>
+                                <option value="Tufanbeyli">Tufanbeyli (Adana) • 1 Cari</option>
+                                <option value="Turhal">Turhal (Tokat) • 11 Cari</option>
+                                <option value="Tuzla">Tuzla (İstanbul) • 3 Cari</option>
+                                <option value="Tuşba">Tuşba (Van) • 1 Cari</option>
+                                <option value="Türkeli">Türkeli (Sinop) • 2 Cari</option>
+                                <option value="Tınaztepe">Tınaztepe (Afyonkarahisar) • 1 Cari</option>
+                                <option value="Ula">Ula (Muğla) • 2 Cari</option>
+                                <option value="Ulubey">Ulubey (Ordu) • 5 Cari</option>
+                                <option value="Ulus">Ulus (Bartın) • 1 Cari</option>
+                                <option value="Uğurludağ">Uğurludağ (Çorum) • 1 Cari</option>
+                                <option value="Vakfıkebir">Vakfıkebir (Trabzon) • 9 Cari</option>
+                                <option value="Vezirköprü">Vezirköprü (Samsun) • 71 Cari</option>
+                                <option value="Yahyalı">Yahyalı (Kayseri) • 9 Cari</option>
+                                <option value="Yahşihan">Yahşihan (Kırıkkale) • 2 Cari</option>
+                                <option value="Yakutiye">Yakutiye (Erzurum) • 3 Cari</option>
+                                <option value="Yalvaç">Yalvaç (Isparta) • 2 Cari</option>
+                                <option value="Yatağan">Yatağan (Muğla) • 1 Cari</option>
+                                <option value="Yağlıdere">Yağlıdere (Giresun) • 2 Cari</option>
+                                <option value="Yellice">Yellice (Sivas) • 1 Cari</option>
+                                <option value="Yenimahalle">Yenimahalle (Ankara) • 27 Cari</option>
+                                <option value="Yeniçağ">Yeniçağ (Bolu) • 1 Cari</option>
+                                <option value="Yenişehir">Yenişehir (Bursa) • 3 Cari</option>
+                                <option value="Yerköy">Yerköy (Yozgat) • 12 Cari</option>
+                                <option value="Yeşilyurt">Yeşilyurt (Malatya) • 3 Cari</option>
+                                <option value="Yomra">Yomra (Trabzon) • 3 Cari</option>
+                                <option value="Yunak">Yunak (Konya) • 1 Cari</option>
+                                <option value="Yunusemre">Yunusemre (Manisa) • 2 Cari</option>
+                                <option value="Yusufeli">Yusufeli (Artvin) • 4 Cari</option>
+                                <option value="Yüreğir">Yüreğir (Adana) • 8 Cari</option>
+                                <option value="Yıldırım">Yıldırım (Bursa) • 3 Cari</option>
+                                <option value="Zara">Zara (Sivas) • 2 Cari</option>
+                                <option value="Zeytinburnu">Zeytinburnu (İstanbul) • 3 Cari</option>
+                                <option value="Zile">Zile (Tokat) • 18 Cari</option>
+                                <option value="Çamoluk">Çamoluk (Giresun) • 1 Cari</option>
+                                <option value="Çan">Çan (Çanakkale) • 5 Cari</option>
+                                <option value="Çandır">Çandır (Yozgat) • 1 Cari</option>
+                                <option value="Çankaya">Çankaya (Ankara) • 14 Cari</option>
+                                <option value="Çarşamba">Çarşamba (Samsun) • 25 Cari</option>
+                                <option value="Çarşıbaşı">Çarşıbaşı (Trabzon) • 7 Cari</option>
+                                <option value="Çavdır">Çavdır (Burdur) • 5 Cari</option>
+                                <option value="Çay">Çay (Afyonkarahisar) • 1 Cari</option>
+                                <option value="Çaycuma">Çaycuma (Zonguldak) • 1 Cari</option>
+                                <option value="Çayeli">Çayeli (Rize) • 1 Cari</option>
+                                <option value="Çayırova">Çayırova (Kocaeli) • 1 Cari</option>
+                                <option value="Çekerek">Çekerek (Yozgat) • 4 Cari</option>
+                                <option value="Çivril">Çivril (Denizli) • 1 Cari</option>
+                                <option value="Çiçekdağ">Çiçekdağ (Kırşehir) • 1 Cari</option>
+                                <option value="Çiğli">Çiğli (İzmir) • 1 Cari</option>
+                                <option value="Çubuk">Çubuk (Ankara) • 11 Cari</option>
+                                <option value="Çukurova">Çukurova (Adana) • 2 Cari</option>
+                                <option value="Ödemiş">Ödemiş (İzmir) • 1 Cari</option>
+                                <option value="Ümraniye">Ümraniye (İstanbul) • 8 Cari</option>
+                                <option value="Ünye">Ünye (Ordu) • 32 Cari</option>
+                                <option value="Ürgüp">Ürgüp (Nevşehir) • 1 Cari</option>
+                                <option value="Üsküdar">Üsküdar (İstanbul) • 1 Cari</option>
+                                <option value="İdil">İdil (Şırnak) • 1 Cari</option>
+                                <option value="İliç">İliç (Erzincan) • 1 Cari</option>
+                                <option value="İlkadım">İlkadım (Samsun) • 43 Cari</option>
+                                <option value="İmamoğlu">İmamoğlu (Adana) • 3 Cari</option>
+                                <option value="İncesu">İncesu (Kayseri) • 1 Cari</option>
+                                <option value="İnebolu">İnebolu (Kastamonu) • 3 Cari</option>
+                                <option value="İnegöl">İnegöl (Bursa) • 3 Cari</option>
+                                <option value="İscehisar">İscehisar (Afyonkarahisar) • 8 Cari</option>
+                                <option value="İskilip">İskilip (Çorum) • 22 Cari</option>
+                                <option value="İspir">İspir (Erzurum) • 1 Cari</option>
+                                <option value="İyidere">İyidere (Rize) • 1 Cari</option>
+                                <option value="İzmit">İzmit (Kocaeli) • 2 Cari</option>
+                                <option value="Şahinbey">Şahinbey (Gaziantep) • 1 Cari</option>
+                                <option value="Şarkışla">Şarkışla (Sivas) • 1 Cari</option>
+                                <option value="Şavşat">Şavşat (Artvin) • 1 Cari</option>
+                                <option value="Şefaatli">Şefaatli (Yozgat) • 7 Cari</option>
+                                <option value="Şehitkamil">Şehitkamil (Gaziantep) • 5 Cari</option>
+                                <option value="Şenkaya">Şenkaya (Erzurum) • 2 Cari</option>
+                                <option value="Şiran">Şiran (Gümüşhane) • 3 Cari</option>
+                                <option value="Şişli">Şişli (İstanbul) • 2 Cari</option>
+                                <option value="Şuhut">Şuhut (Afyonkarahisar) • 2 Cari</option>
+                            </select>
+
+                            <select id="strategy-filter-rut" class="filter-input" onchange="renderDistrictStrategies()">
+                                <option value="">🚗 Tüm Rutlar (9)</option>
+                                <option value="DİĞER">DİĞER (228 Bölge)</option>
+                                <option value="RUT-01">RUT-01 (13 Bölge)</option>
+                                <option value="RUT-02">RUT-02 (6 Bölge)</option>
+                                <option value="RUT-03">RUT-03 (16 Bölge)</option>
+                                <option value="RUT-04">RUT-04 (7 Bölge)</option>
+                                <option value="RUT-05">RUT-05 (37 Bölge)</option>
+                                <option value="RUT-06">RUT-06 (31 Bölge)</option>
+                                <option value="RUT-07">RUT-07 (52 Bölge)</option>
+                                <option value="RUT-08">RUT-08 (44 Bölge)</option>
+                            </select>
+
+                            <button type="button" id="strategy-filter-reset-btn" class="btn btn-secondary btn-sm" onclick="resetStrategyFilters()" style="display:none;">
+                                <i class="fa-solid fa-filter-circle-xmark" style="color:#f87171;"></i> Filtreyi Temizle
+                            </button>
                         </div>
                     </div>
 
@@ -3025,7 +3493,10 @@ body.dpro-embedded .content-body {
                         <div class="table-header-row">
                             <div class="table-header-title">
                                 <i class="fa-solid fa-map-marked-alt" style="color:var(--dizsan-light);"></i>
-                                <span>İl ve İlçe Bazlı 120 Kodlu Müşteri Saha Planı &amp; Müzakere Rehberi (434 Bölge)</span>
+                                <span id="strategy-table-count-label">İl ve İlçe Bazlı 120 Kodlu Müşteri Saha Planı &amp; Müzakere Rehberi (434 Bölge)</span>
+                            </div>
+                            <div style="font-size:0.76rem; color:#93c5fd;">
+                                <i class="fa-solid fa-hand-pointer"></i> İlçeye tıklayarak veya <strong>Hızlı Geçiş</strong> butonlarıyla o ilçenin müşterilerini açabilirsiniz
                             </div>
                         </div>
 
@@ -3041,6 +3512,7 @@ body.dpro-embedded .content-body {
                                         <th>Toplam İşlem</th>
                                         <th>Bölge Cirosu (TL)</th>
                                         <th>Saha Ziyaret Odağı &amp; Müzakere Stratejisi</th>
+                                        <th style="text-align:right;">Hızlı Geçiş / Aksiyon</th>
                                     </tr>
                                 </thead>
                                 <tbody id="strategy-table-body">
@@ -5581,9 +6053,11 @@ function computeStateSignature(stateObj) {
     const cLen = Array.isArray(stateObj.customers) ? stateObj.customers.length : 0;
     const vLen = Array.isArray(stateObj.visits) ? stateObj.visits.length : 0;
     const tLen = Array.isArray(stateObj.tasks) ? stateObj.tasks.length : 0;
+    const sLen = stateObj.districtStrategies ? Object.keys(stateObj.districtStrategies).length : 0;
+    const invLen = Array.isArray(stateObj.customers) ? stateObj.customers.filter(c => Array.isArray(c.serviceHistory) && c.serviceHistory.length > 0).length : 0;
     const qDate = (stateObj.logoMetadata && stateObj.logoMetadata.queryDateFormatted) || '';
     const upd = stateObj.updatedAt || '';
-    return `${cLen}|${vLen}|${tLen}|${qDate}|${upd}`;
+    return `${cLen}|${vLen}|${tLen}|${sLen}|${invLen}|${qDate}|${upd}`;
 }
 
 async function loadInitialData() {
@@ -5595,6 +6069,7 @@ async function loadInitialData() {
             if (parsed && Array.isArray(parsed.customers) && parsed.customers.length > 0) {
                 parsed.users = migrateOfficialUserEmails(parsed.users);
                 appState = { ...appState, ...parsed };
+                ensureDistrictStrategiesPopulated();
                 lastSyncedSignature = computeStateSignature(appState);
                 updateLogoLiveIndicator();
             }
@@ -5604,8 +6079,8 @@ async function loadInitialData() {
     // 2. Aşama: DizGün ekosistem köprüsünü senkronize et
     syncWithDizGunBridge();
 
-    // 3. Aşama: Logo ERP ve müşteri verilerini GitHub'dan çek (yalnızca fark varsa ekranı günceller)
-    fetchLiveGitHubData(true);
+    // 3. Aşama: Logo ERP ve müşteri verilerini yerel/GitHub'dan çek
+    await fetchLiveGitHubData(true);
 }
 
 function updateLogoLiveIndicator() {
@@ -5669,7 +6144,10 @@ async function fetchLiveGitHubData(isInitial = false) {
         } catch (e) {}
     }
 
-    if (!liveData) return false;
+    if (!liveData) {
+        ensureDistrictStrategiesPopulated();
+        return false;
+    }
 
     const incomingSignature = computeStateSignature(liveData);
     const hasActualDiff = incomingSignature !== lastSyncedSignature;
@@ -5689,6 +6167,8 @@ async function fetchLiveGitHubData(isInitial = false) {
     }
     if (liveData.districtStrategies && Object.keys(liveData.districtStrategies).length > 0) {
         appState.districtStrategies = liveData.districtStrategies;
+    } else {
+        ensureDistrictStrategiesPopulated();
     }
     if (liveData.logoMetadata) {
         appState.logoMetadata = liveData.logoMetadata;
@@ -5714,7 +6194,22 @@ async function fetchLiveGitHubData(isInitial = false) {
 
 function saveStateLocally() {
     appState.users = migrateOfficialUserEmails(appState.users);
-    localStorage.setItem(STORAGE_KEY_STATE, JSON.stringify(sanitizeStateForCloud(appState)));
+    try {
+        localStorage.setItem(STORAGE_KEY_STATE, JSON.stringify(sanitizeStateForCloud(appState)));
+    } catch (e) {
+        try {
+            // Safari 5MB localStorage kotası aşılırsa fatura alt kalemlerini (serviceHistory) hariç tutarak kaydet
+            const sanitized = sanitizeStateForCloud(appState);
+            const lightState = {
+                ...sanitized,
+                customers: (sanitized.customers || []).map(c => {
+                    const { serviceHistory, ...rest } = c;
+                    return rest;
+                })
+            };
+            localStorage.setItem(STORAGE_KEY_STATE, JSON.stringify(lightState));
+        } catch (err2) {}
+    }
     syncWithDizGunBridge();
 }
 
@@ -6166,7 +6661,14 @@ function switchTab(tabId) {
     }
 
     if (tabId === 'cari-ekstre-tab') {
-        renderCariEkstreTable();
+        populateFilterOptions();
+        renderCariEkstreTable(false);
+    } else if (tabId === 'legacy-tab') {
+        populateFilterOptions();
+        renderLegacyCustomers();
+    } else if (tabId === 'strategy-tab') {
+        populateStrategyFilters(false);
+        renderDistrictStrategies();
     }
 
     const sidebar = document.getElementById('sidebar');
@@ -6215,12 +6717,17 @@ function getCustomerAccountingSummary(c) {
     }
     const absBalance = Math.abs(bal);
     const baCode = bal > 0.009 ? '(B)' : (bal < -0.009 ? '(A)' : '-');
+    const baLabel = bal > 0.009 ? '(B) Borçlu' : (bal < -0.009 ? '(A) Alacaklı' : 'Kapalı / Sıfır');
     return {
         debit,
         credit,
         balance: bal,
+        borc: debit,
+        alacak: credit,
+        bakiye: bal,
         absBalance,
         baCode,
+        baLabel,
         invoiceCount: history.length
     };
 }
@@ -6813,17 +7320,60 @@ function exportLegacyToExcel() {
 }
 
 let currentCariEkstrePage = 1;
+let cariEkstrePage = 1;
 const CARI_EKSTRE_PAGE_SIZE = 50;
 
-function renderCariEkstreTable(resetPage = true) {
-    const tbody = document.getElementById('cari-ekstre-tbody');
-    if (!tbody) return;
-    if (resetPage) currentCariEkstrePage = 1;
+function handleEkstreCityFilterChange(preselectedDistrict = '') {
+    const citySel = document.getElementById('ekstre-filter-city') || document.getElementById('ekstre-city-filter');
+    const distSel = document.getElementById('ekstre-filter-district');
+    const cityVal = citySel ? citySel.value : '';
+    if (distSel) {
+        distSel.innerHTML = '<option value="">🏘️ Tüm İlçeler</option>';
+        const customers = appState.customers || [];
+        const matched = cityVal && cityVal !== 'ALL'
+            ? customers.filter(c => normalizeTR(c.city) === normalizeTR(cityVal))
+            : customers;
+        const distCounts = {};
+        matched.forEach(c => {
+            if (c.district) distCounts[c.district] = (distCounts[c.district] || 0) + 1;
+        });
+        Object.keys(distCounts).sort((a, b) => a.localeCompare(b, 'tr')).forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d;
+            opt.textContent = `${d} (${distCounts[d]})`;
+            distSel.appendChild(opt);
+        });
+        if (preselectedDistrict) {
+            const matchOpt = Array.from(distSel.options).find(o => normalizeTR(o.value) === normalizeTR(preselectedDistrict));
+            if (matchOpt) {
+                distSel.value = matchOpt.value;
+            } else {
+                const opt = document.createElement('option');
+                opt.value = preselectedDistrict;
+                opt.textContent = preselectedDistrict;
+                distSel.appendChild(opt);
+                distSel.value = preselectedDistrict;
+            }
+        }
+    }
+    currentCariEkstrePage = 1;
+    cariEkstrePage = 1;
+    renderCariEkstreTable(true);
+}
 
-    const searchVal = normalizeTR(document.getElementById('ekstre-search-input')?.value || '');
-    const cityVal = document.getElementById('ekstre-city-filter')?.value || 'ALL';
-    const statusVal = document.getElementById('ekstre-balance-filter')?.value || 'ALL';
-    const sortVal = document.getElementById('ekstre-sort-filter')?.value || 'REVENUE_DESC';
+function renderCariEkstreTable(resetPage = true) {
+    const tbody = document.getElementById('ekstre-table-body') || document.getElementById('cari-ekstre-tbody');
+    if (!tbody) return;
+    if (resetPage) {
+        currentCariEkstrePage = 1;
+        cariEkstrePage = 1;
+    }
+
+    const searchVal = normalizeTR((document.getElementById('ekstre-search') || document.getElementById('ekstre-search-input'))?.value || '');
+    const cityVal = (document.getElementById('ekstre-filter-city') || document.getElementById('ekstre-city-filter'))?.value || '';
+    const districtVal = document.getElementById('ekstre-filter-district')?.value || '';
+    const statusVal = (document.getElementById('ekstre-filter-ba') || document.getElementById('ekstre-balance-filter'))?.value || '';
+    const sortVal = (document.getElementById('ekstre-sort') || document.getElementById('ekstre-sort-filter'))?.value || 'BALANCE_DESC';
 
     const allCustomers = appState.customers || [];
 
@@ -6845,13 +7395,13 @@ function renderCariEkstreTable(resetPage = true) {
         return { c, acc, invCount };
     });
 
-    const elTotalCount = document.getElementById('ekstre-kpi-total-count');
+    const elTotalCount = document.getElementById('ekstre-kpi-count') || document.getElementById('ekstre-kpi-total-count');
     if (elTotalCount) elTotalCount.textContent = allCustomers.length.toLocaleString('tr-TR');
-    const elBorc = document.getElementById('ekstre-kpi-borc');
+    const elBorc = document.getElementById('ekstre-kpi-debit') || document.getElementById('ekstre-kpi-borc');
     if (elBorc) elBorc.textContent = formatMoney(grandBorc);
-    const elAlacak = document.getElementById('ekstre-kpi-alacak');
+    const elAlacak = document.getElementById('ekstre-kpi-credit') || document.getElementById('ekstre-kpi-alacak');
     if (elAlacak) elAlacak.textContent = formatMoney(grandAlacak);
-    const elBakiye = document.getElementById('ekstre-kpi-bakiye');
+    const elBakiye = document.getElementById('ekstre-kpi-net') || document.getElementById('ekstre-kpi-bakiye');
     if (elBakiye) elBakiye.textContent = formatMoney(grandNetBorc);
     const elInvoices = document.getElementById('ekstre-kpi-invoices');
     if (elInvoices) elInvoices.textContent = totalInvoiceCount.toLocaleString('tr-TR');
@@ -6859,11 +7409,13 @@ function renderCariEkstreTable(resetPage = true) {
     if (elInvoicesSub) elInvoicesSub.textContent = `${withInvoiceCustomers.toLocaleString('tr-TR')} caride tıklanabilir fatura kalemi`;
 
     let filtered = enriched.filter(({ c, acc, invCount }) => {
-        if (cityVal !== 'ALL' && c.city !== cityVal) return false;
-        if (statusVal === 'B' && acc.baCode !== '(B)') return false;
-        if (statusVal === 'A' && acc.baCode !== '(A)') return false;
+        if (cityVal && cityVal !== 'ALL' && normalizeTR(c.city) !== normalizeTR(cityVal)) return false;
+        if (districtVal && normalizeTR(c.district) !== normalizeTR(districtVal)) return false;
+        if ((statusVal === 'B' || statusVal === '(B)') && acc.baCode !== '(B)') return false;
+        if ((statusVal === 'A' || statusVal === '(A)') && acc.baCode !== '(A)') return false;
+        if (statusVal === 'ACTIVE_BAL' && acc.baCode === '-') return false;
         if (statusVal === 'ZERO' && acc.baCode !== '-') return false;
-        if (statusVal === 'WITH_INVOICE' && invCount === 0) return false;
+        if ((statusVal === 'WITH_INVOICE' || statusVal === 'HAS_INVOICE') && invCount === 0) return false;
 
         if (searchVal) {
             const hay = normalizeTR(`${c.code} ${c.title} ${c.address} ${c.district} ${c.city} ${c.plates} ${c.phone}`);
@@ -6873,25 +7425,26 @@ function renderCariEkstreTable(resetPage = true) {
     });
 
     filtered.sort((a, b) => {
-        if (sortVal === 'BAKIYE_DESC') return Math.abs(b.acc.bakiye) - Math.abs(a.acc.bakiye);
-        if (sortVal === 'BORC_DESC') return b.acc.borc - a.acc.borc;
+        if (sortVal === 'BAKIYE_DESC' || sortVal === 'BALANCE_DESC') return Math.abs(b.acc.bakiye) - Math.abs(a.acc.bakiye);
+        if (sortVal === 'BORC_DESC' || sortVal === 'DEBIT_DESC') return b.acc.borc - a.acc.borc;
+        if (sortVal === 'CREDIT_DESC') return b.acc.alacak - a.acc.alacak;
         if (sortVal === 'REVENUE_DESC') return (Number(b.c.totalRevenue) || b.acc.borc) - (Number(a.c.totalRevenue) || a.acc.borc);
         if (sortVal === 'CODE_ASC') return String(a.c.code || '').localeCompare(String(b.c.code || ''), 'tr');
-        if (sortVal === 'NAME_ASC') return String(a.c.title || '').localeCompare(String(b.c.title || ''), 'tr');
+        if (sortVal === 'NAME_ASC' || sortVal === 'TITLE_ASC') return String(a.c.title || '').localeCompare(String(b.c.title || ''), 'tr');
         return 0;
     });
 
-    const countBadge = document.getElementById('ekstre-filtered-count-badge');
-    if (countBadge) countBadge.textContent = `${filtered.length.toLocaleString('tr-TR')} Cari Hesap`;
+    const countBadge = document.getElementById('ekstre-table-count-label') || document.getElementById('ekstre-filtered-count-badge');
+    if (countBadge) countBadge.textContent = `D-Pro Cari & Logo Ekstre Listesi (${filtered.length.toLocaleString('tr-TR')} Cari)`;
 
     const totalPages = Math.max(1, Math.ceil(filtered.length / CARI_EKSTRE_PAGE_SIZE));
     if (currentCariEkstrePage > totalPages) currentCariEkstrePage = totalPages;
     const startIdx = (currentCariEkstrePage - 1) * CARI_EKSTRE_PAGE_SIZE;
     const pageItems = filtered.slice(startIdx, startIdx + CARI_EKSTRE_PAGE_SIZE);
 
-    const pageInfo = document.getElementById('ekstre-pagination-info');
+    const pageInfo = document.getElementById('ekstre-page-indicator') || document.getElementById('ekstre-pagination-info');
     if (pageInfo) {
-        pageInfo.textContent = `Toplam ${filtered.length.toLocaleString('tr-TR')} cariden ${filtered.length ? startIdx + 1 : 0}-${Math.min(startIdx + CARI_EKSTRE_PAGE_SIZE, filtered.length)} arası gösteriliyor (Sayfa ${currentCariEkstrePage}/${totalPages})`;
+        pageInfo.textContent = `Sayfa ${currentCariEkstrePage} / ${totalPages} (${filtered.length.toLocaleString('tr-TR')} Cari)`;
     }
 
     if (pageItems.length === 0) {
@@ -9364,30 +9917,268 @@ function renderTasks() {
 // ==========================================================================
 // 8. İLÇE RUT STRATEJİLERİ VE LOGLAR
 // ==========================================================================
+function ensureDistrictStrategiesPopulated() {
+    const existing = appState.districtStrategies || {};
+    if (Object.keys(existing).length > 0) return existing;
+    const customers = appState.customers || [];
+    if (customers.length === 0) return existing;
+    const built = {};
+    customers.forEach(c => {
+        const city = (c.city || 'Diğer').trim();
+        const district = (c.district || 'Merkez').trim();
+        const key = `${city}|${district}`;
+        if (!built[key]) {
+            built[key] = {
+                rut: c.rut || 'RUT-01',
+                city,
+                district,
+                totalCustomers: 0,
+                churnCustomers: 0,
+                totalOperations: 0,
+                totalRevenue: 0,
+                strategy: `${district} bölgesindeki ağır vasıta ve filo müşterilerine yerinde saha ziyareti ve özel bakım kampanyası sunumu.`
+            };
+        }
+        built[key].totalCustomers += 1;
+        if ((c.priority || '').includes('P1') || (c.priority || '').includes('P2') || (c.churnDuration && !c.churnDuration.includes('Aktif'))) {
+            built[key].churnCustomers += 1;
+        }
+        built[key].totalOperations += Number(c.totalOperations || (c.serviceHistory ? c.serviceHistory.length : 1));
+        built[key].totalRevenue += Number(c.totalRevenue || 0);
+    });
+    appState.districtStrategies = built;
+    return built;
+}
+
+function populateStrategyFilters(forceRebuildDistricts = false) {
+    ensureDistrictStrategiesPopulated();
+    const strategies = Object.values(appState.districtStrategies || {});
+    if (strategies.length === 0) return;
+
+    const citySel = document.getElementById('strategy-filter-city');
+    const distSel = document.getElementById('strategy-filter-district');
+    const rutSel = document.getElementById('strategy-filter-rut');
+
+    if (citySel && citySel.dataset.populatedCount !== String(strategies.length)) {
+        const cityMap = {};
+        strategies.forEach(s => {
+            if (!s.city) return;
+            if (!cityMap[s.city]) cityMap[s.city] = { districts: 0, customers: 0 };
+            cityMap[s.city].districts += 1;
+            cityMap[s.city].customers += Number(s.totalCustomers || 0);
+        });
+        const sortedCities = Object.keys(cityMap).sort((a, b) => a.localeCompare(b, 'tr'));
+        const curCity = citySel.value;
+        citySel.innerHTML = `<option value="">📍 Tüm İller (${sortedCities.length} İl)</option>` +
+            sortedCities.map(ct => `<option value="${ct}">${ct} (${cityMap[ct].districts} İlçe • ${cityMap[ct].customers} Cari)</option>`).join('');
+        if (curCity) citySel.value = curCity;
+        citySel.dataset.populatedCount = String(strategies.length);
+    }
+
+    if (rutSel && rutSel.dataset.populatedCount !== String(strategies.length)) {
+        const rutMap = {};
+        strategies.forEach(s => {
+            if (!s.rut) return;
+            rutMap[s.rut] = (rutMap[s.rut] || 0) + 1;
+        });
+        const sortedRuts = Object.keys(rutMap).sort((a, b) => a.localeCompare(b, 'tr', { numeric: true }));
+        const curRut = rutSel.value;
+        rutSel.innerHTML = `<option value="">🚗 Tüm Rutlar (${sortedRuts.length})</option>` +
+            sortedRuts.map(rt => `<option value="${rt}">${rt} (${rutMap[rt]} Bölge)</option>`).join('');
+        if (curRut) rutSel.value = curRut;
+        rutSel.dataset.populatedCount = String(strategies.length);
+    }
+
+    if (distSel && (forceRebuildDistricts || distSel.dataset.populatedCount !== String(strategies.length))) {
+        const selectedCity = citySel ? citySel.value : '';
+        const distMap = {};
+        strategies.forEach(s => {
+            if (!s.district) return;
+            if (selectedCity && normalizeTR(s.city) !== normalizeTR(selectedCity)) return;
+            const key = selectedCity ? s.district : `${s.district} (${s.city})`;
+            const val = s.district;
+            if (!distMap[val]) distMap[val] = { label: key, customers: 0 };
+            distMap[val].customers += Number(s.totalCustomers || 0);
+        });
+        const sortedDists = Object.keys(distMap).sort((a, b) => a.localeCompare(b, 'tr'));
+        const prevDist = distSel.value;
+        distSel.innerHTML = `<option value="">🏘️ Tüm İlçeler (${sortedDists.length} İlçe)</option>` +
+            sortedDists.map(d => `<option value="${d}">${distMap[d].label} • ${distMap[d].customers} Cari</option>`).join('');
+        if (prevDist && distMap[prevDist]) {
+            distSel.value = prevDist;
+        } else {
+            distSel.value = '';
+        }
+        distSel.dataset.populatedCount = `${strategies.length}:${selectedCity}`;
+    }
+}
+
+function handleStrategyCityChange() {
+    const distSel = document.getElementById('strategy-filter-district');
+    if (distSel) distSel.value = '';
+    populateStrategyFilters(true);
+    renderDistrictStrategies();
+}
+
+function resetStrategyFilters() {
+    const searchEl = document.getElementById('strategy-search');
+    const citySel = document.getElementById('strategy-filter-city');
+    const distSel = document.getElementById('strategy-filter-district');
+    const rutSel = document.getElementById('strategy-filter-rut');
+    if (searchEl) searchEl.value = '';
+    if (citySel) citySel.value = '';
+    if (distSel) distSel.value = '';
+    if (rutSel) rutSel.value = '';
+    populateStrategyFilters(true);
+    renderDistrictStrategies();
+}
+
+function openStrategyDistrictInRutPlan(city, district, rut = '') {
+    switchTab('legacy-tab');
+    populateFilterOptions();
+
+    const searchInput = document.getElementById('legacy-search');
+    if (searchInput) searchInput.value = '';
+    const prioSel = document.getElementById('legacy-filter-priority');
+    if (prioSel) prioSel.value = '';
+    const balSel = document.getElementById('legacy-filter-balance');
+    if (balSel) balSel.value = '';
+    const rutSel = document.getElementById('legacy-filter-rut');
+    if (rutSel) rutSel.value = '';
+
+    const cityInput = document.getElementById('legacy-filter-city');
+    if (cityInput) {
+        cityInput.value = city || '';
+    }
+    handleCityFilterChange();
+
+    const distSelect = document.getElementById('legacy-filter-district');
+    if (distSelect && district) {
+        const matchOpt = Array.from(distSelect.options).find(o => normalizeTR(o.value) === normalizeTR(district));
+        if (matchOpt) {
+            distSelect.value = matchOpt.value;
+        } else {
+            const opt = document.createElement('option');
+            opt.value = district;
+            opt.textContent = district;
+            distSelect.appendChild(opt);
+            distSelect.value = district;
+        }
+    }
+
+    legacyPage = 1;
+    renderLegacyCustomers();
+    if (window.DizsanBackNav && typeof window.DizsanBackNav.showToast === 'function') {
+        window.DizsanBackNav.showToast(`📍 ${city} / ${district} bölgesi Rut Planlama ekranında filtrelendi.`);
+    }
+}
+
+function openStrategyDistrictInCariRehber(city, district) {
+    switchTab('cari-ekstre-tab');
+    populateFilterOptions();
+
+    const searchEl = document.getElementById('ekstre-search') || document.getElementById('ekstre-search-input');
+    if (searchEl) searchEl.value = '';
+    const baEl = document.getElementById('ekstre-filter-ba') || document.getElementById('ekstre-balance-filter');
+    if (baEl) baEl.value = '';
+
+    const citySel = document.getElementById('ekstre-filter-city') || document.getElementById('ekstre-city-filter');
+    if (citySel && city) {
+        const matchCity = Array.from(citySel.options).find(o => normalizeTR(o.value) === normalizeTR(city));
+        if (matchCity) {
+            citySel.value = matchCity.value;
+        } else {
+            const opt = document.createElement('option');
+            opt.value = city;
+            opt.textContent = city;
+            citySel.appendChild(opt);
+            citySel.value = city;
+        }
+    }
+
+    handleEkstreCityFilterChange(district);
+    if (window.DizsanBackNav && typeof window.DizsanBackNav.showToast === 'function') {
+        window.DizsanBackNav.showToast(`📒 ${city} / ${district} bölgesi Müşteri Rehberi (Cari & Ekstre) ekranında açıldı.`);
+    }
+}
+
 function renderDistrictStrategies() {
     const tbody = document.getElementById('strategy-table-body');
     if (!tbody) return;
+
+    populateStrategyFilters(false);
+
     const search = normalizeTR(document.getElementById('strategy-search')?.value);
+    const selectedCity = document.getElementById('strategy-filter-city')?.value || '';
+    const selectedDistrict = document.getElementById('strategy-filter-district')?.value || '';
+    const selectedRut = document.getElementById('strategy-filter-rut')?.value || '';
     const strategies = Object.values(appState.districtStrategies || {});
 
+    const resetBtn = document.getElementById('strategy-filter-reset-btn');
+    if (resetBtn) {
+        resetBtn.style.display = (search || selectedCity || selectedDistrict || selectedRut) ? 'inline-flex' : 'none';
+    }
+
     const filtered = strategies.filter(s => {
-        if (!search) return true;
-        const hay = normalizeTR(`${s.rut} ${s.city} ${s.district} ${s.strategy}`);
-        return hay.includes(search);
+        if (selectedCity && normalizeTR(s.city) !== normalizeTR(selectedCity)) return false;
+        if (selectedDistrict && normalizeTR(s.district) !== normalizeTR(selectedDistrict)) return false;
+        if (selectedRut && s.rut !== selectedRut) return false;
+        if (search) {
+            const hay = normalizeTR(`${s.rut} ${s.city} ${s.district} ${s.strategy}`);
+            if (!hay.includes(search)) return false;
+        }
+        return true;
     });
 
-    tbody.innerHTML = filtered.map(s => `
+    const countLabel = document.getElementById('strategy-table-count-label');
+    if (countLabel) {
+        const isFiltered = Boolean(search || selectedCity || selectedDistrict || selectedRut);
+        countLabel.textContent = isFiltered
+            ? `İl ve İlçe Bazlı 120 Kodlu Müşteri Saha Planı & Müzakere Rehberi (${filtered.length} / ${strategies.length} Bölge)`
+            : `İl ve İlçe Bazlı 120 Kodlu Müşteri Saha Planı & Müzakere Rehberi (${strategies.length} Bölge)`;
+    }
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9" style="text-align:center; padding:1.5rem; color:var(--text-sec);">
+                    Seçilen il/ilçe kriterlerine uygun bölge kaydı bulunamadı.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = filtered.map(s => {
+        const safeCity = String(s.city || '').replace(/'/g, "\\'");
+        const safeDist = String(s.district || '').replace(/'/g, "\\'");
+        const safeRut = String(s.rut || '').replace(/'/g, "\\'");
+        return `
         <tr>
-            <td style="font-weight:700; color:var(--dizsan-light);">${s.rut}</td>
+            <td style="font-weight:700; color:var(--dizsan-light); white-space:nowrap;">${s.rut}</td>
             <td><strong>${s.city}</strong></td>
-            <td>${s.district}</td>
+            <td>
+                <span class="badge badge-secondary" style="cursor:pointer; border-color:rgba(56,189,248,0.4); color:#38bdf8;" onclick="openStrategyDistrictInRutPlan('${safeCity}', '${safeDist}', '${safeRut}')" title="${s.city} / ${s.district} müşterilerini Rut Planlama sekmesinde aç">
+                    <i class="fa-solid fa-location-dot"></i> ${s.district}
+                </span>
+            </td>
             <td style="font-weight:700;">${s.totalCustomers}</td>
             <td style="color:#f87171; font-weight:700;">${s.churnCustomers}</td>
             <td>${s.totalOperations}</td>
-            <td style="color:#34d399; font-weight:700;">${formatMoney(s.totalRevenue)}</td>
+            <td style="color:#34d399; font-weight:700; white-space:nowrap;">${formatMoney(s.totalRevenue)}</td>
             <td style="font-size:0.78rem; color:#cbd5e1;">${s.strategy}</td>
+            <td style="text-align:right; white-space:nowrap;">
+                <div style="display:inline-flex; gap:0.35rem; justify-content:flex-end;">
+                    <button type="button" class="btn btn-primary btn-sm" style="padding:0.28rem 0.55rem; font-size:0.72rem;" onclick="openStrategyDistrictInRutPlan('${safeCity}', '${safeDist}', '${safeRut}')" title="${s.city} / ${s.district} için Rut Planlama ekranına geç">
+                        <i class="fa-solid fa-route"></i> Rut Planla
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" style="padding:0.28rem 0.55rem; font-size:0.72rem;" onclick="openStrategyDistrictInCariRehber('${safeCity}', '${safeDist}')" title="${s.city} / ${s.district} için Müşteri Rehberi &amp; Cari Ekstre ekranına geç">
+                        <i class="fa-solid fa-address-book" style="color:#38bdf8;"></i> Müşteri Rehberi
+                    </button>
+                </div>
+            </td>
         </tr>
-    `).join('');
+    `}).join('');
 }
 
 function renderLogs() {
