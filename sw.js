@@ -1,5 +1,5 @@
-// D-Pro Kurumsal Yönetim & DizGün Entegre Platformu - Service Worker (v1.2.5)
-const CACHE_NAME = "dizsan-dpro-v1.2.5";
+// D-Pro Kurumsal Yönetim & DizGün Entegre Platformu - Service Worker (v1.3.5)
+const CACHE_NAME = "dizsan-dpro-v1.3.5";
 const ASSETS = [
   "./",
   "./index.html",
@@ -15,7 +15,8 @@ const ASSETS = [
   "./apps/kredi/index.html",
   "./apps/odeme-takvimi/index.html",
   "./apps/kredi-karti/index.html",
-  "./apps/vdf-odeme/index.html"
+  "./apps/vdf-odeme/index.html",
+  "./apps/dikas/index.html"
 ];
 
 self.addEventListener("install", (e) => {
@@ -49,7 +50,7 @@ self.addEventListener("fetch", (e) => {
   }
 
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request, { cache: "no-store" })
       .then((networkRes) => {
         if (networkRes && networkRes.status === 200 && e.request.method === "GET") {
           const copy = networkRes.clone();

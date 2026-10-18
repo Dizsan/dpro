@@ -4721,6 +4721,9 @@
             let totalPaidDebt = 0.0;
             let totalInstallmentsCount = 0;
             let totalPaidInstallmentsCount = 0;
+            let globalLastPaidDateObj = null;
+            let globalLastPaidDateStr = null;
+            let globalLastPaidBankName = "";
 
             const timelineItems = [];
 
@@ -4735,24 +4738,48 @@
                 let loanRemainingAmount = 0.0;
                 let loanRemainingPrincipal = 0.0;
                 let loanTotalCount = loan.installments.length;
+                let lastPaidDateObj = null;
+                let lastPaidDateStr = null;
+                let lastPaidTaksitNo = null;
+                let nextUnpaidDateObj = null;
+                let nextUnpaidDateStr = null;
+                let nextUnpaidTaksitNo = null;
 
                 // Ensure state is initialized
                 if (!userState[key]) userState[key] = {};
 
+                const bankDisplayName = loan.name || (key === 'is_bankasi' ? 'İş Bankası' : (key === 'ziraat_bankasi' ? 'Ziraat Bankası' : 'Ziraat Otomotiv -2-'));
+
                 loan.installments.forEach(inst => {
                     const state = userState[key][inst.taksit_no] || { is_paid: false };
                     const pData = getParsedData(inst, key);
+                    const instDateObj = parseDateObj(inst.vade);
 
                     if (state.is_paid) {
                         loanPaidCount++;
                         loanPaidAmount += pData.taksit_tutari;
                         totalPaidDebt += pData.taksit_tutari;
                         totalPaidInstallmentsCount++;
+                        if (instDateObj && (!lastPaidDateObj || instDateObj >= lastPaidDateObj)) {
+                            lastPaidDateObj = instDateObj;
+                            lastPaidDateStr = inst.vade;
+                            lastPaidTaksitNo = inst.taksit_no;
+                        }
+                        if (instDateObj && (!globalLastPaidDateObj || instDateObj >= globalLastPaidDateObj)) {
+                            globalLastPaidDateObj = instDateObj;
+                            globalLastPaidDateStr = inst.vade;
+                            globalLastPaidBankName = bankDisplayName;
+                        }
                     } else {
                         loanRemainingAmount += pData.taksit_tutari;
                         loanRemainingPrincipal += pData.anapara;
                         totalRemainingDebt += pData.taksit_tutari;
                         totalRemainingPrincipal += pData.anapara;
+                        if (instDateObj && (!nextUnpaidDateObj || instDateObj < nextUnpaidDateObj)) {
+                            nextUnpaidDateObj = instDateObj;
+                            nextUnpaidDateStr = inst.vade;
+                            nextUnpaidTaksitNo = inst.taksit_no;
+                        }
 
                         const name = loan.name || (key === 'is_bankasi' ? 'İş Bankası' : (key === 'ziraat_bankasi' ? 'Ziraat Bankası' : 'Ziraat Otomotiv -2-'));
 
@@ -4787,6 +4814,22 @@
                 const loanEarlyCommission = loanRemainingPrincipal * (earlyCommRate / 100);
                 const loanEarlyPayoffTotal = loanRemainingPrincipal + loanEarlyCommission;
 
+                const lastPaidBadgeHtml = lastPaidDateStr
+                    ? `<div style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
+                           <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 9px; border-radius: 7px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.32); font-size: 11.5px;">
+                               <span style="color: #a7f3d0; font-weight: 700;">Son Ödenen Tarih:</span>
+                               <span style="color: #34d399; font-weight: 800; font-family: monospace; font-size: 12px;">${lastPaidDateStr} <small style="color: #6ee7b7; font-weight: 600;">(#${lastPaidTaksitNo})</small></span>
+                           </div>
+                           ${nextUnpaidDateStr ? `<div style="display: flex; align-items: center; justify-content: space-between; padding: 5px 9px; border-radius: 7px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.26); font-size: 11px;">
+                               <span style="color: #fde68a; font-weight: 600;">Sıradaki Ödeme Tarihi:</span>
+                               <span style="color: #fbbf24; font-weight: 800; font-family: monospace;">${nextUnpaidDateStr} <small style="color: #fcd34d; font-weight: 600;">(#${nextUnpaidTaksitNo})</small></span>
+                           </div>` : ''}
+                       </div>`
+                    : `<div style="margin-top: 8px; display: flex; align-items: center; justify-content: space-between; padding: 6px 9px; border-radius: 7px; background: rgba(148, 163, 184, 0.08); border: 1px solid rgba(148, 163, 184, 0.18); font-size: 11.5px;">
+                           <span style="color: #94a3b8; font-weight: 700;">Son Ödenen Tarih:</span>
+                           <span style="color: #cbd5e1; font-weight: 700;">Henüz Ödeme Yok</span>
+                       </div>`;
+
                 // Build Individual Bank Card
                 const cardHtml = `
                     <div class="card ${cardClass}" onclick="openLoanTabDirectly('${key}')" style="cursor: pointer;">
@@ -4798,6 +4841,7 @@
                         </div>
                         <div class="card-value ${valueColor}">${formatTRY(loanRemainingAmount)}</div>
                         <div class="card-subtitle">Taksit: <span>${loanTotalCount - loanPaidCount} Kalan (${loanPaidCount} Ödenen)</span></div>
+                        ${lastPaidBadgeHtml}
                         <div class="card-detail-row" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 4px; font-size: 11px;">
                             <div style="display: flex; justify-content: space-between; color: var(--text-dimmed);">
                                 <span>Kalan Anapara (Kapatma):</span>
@@ -4864,6 +4908,11 @@
                     </div>
                     <div class="card-value" style="color: #6ee7b7;">${formatTRY(totalPaidDebt)}</div>
                     <div class="card-subtitle">Ödenen Toplam Taksit: <span>${totalPaidInstallmentsCount} / ${totalInstallmentsCount}</span></div>
+                    ${globalLastPaidDateStr ? `
+                    <div style="margin-top: 8px; display: flex; align-items: center; justify-content: space-between; padding: 5px 8px; border-radius: 6px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); font-size: 11px;">
+                        <span style="color: #94a3b8; font-weight: 600;">Son Ödenen Tarih:</span>
+                        <span style="color: #34d399; font-weight: 800; font-family: monospace;">${globalLastPaidDateStr} <small style="color: #6ee7b7; font-weight: 600;">(${globalLastPaidBankName})</small></span>
+                    </div>` : ''}
                 </div>
             `;
             statsGrid.insertAdjacentHTML('afterbegin', summaryTotalsHtml);
@@ -5515,10 +5564,18 @@
             let loanTotalCount = loan.installments.length;
             const earlyCommRate = parseFloat(document.getElementById('sim-commission-rate')?.value ?? 3.0) || 0.0;
 
+            let loanLastPaidDateObj = null;
+            let loanLastPaidDateStr = null;
+            let loanLastPaidTaksitNo = null;
+            let loanNextUnpaidDateObj = null;
+            let loanNextUnpaidDateStr = null;
+            let loanNextUnpaidTaksitNo = null;
+
             loan.installments.forEach(inst => {
                 const bankState = userState[bankKey] || {};
                 const state = bankState[inst.taksit_no] || { is_paid: false };
                 const pData = getParsedData(inst, bankKey);
+                const instDateObj = parseDateObj(inst.vade);
                 
                 loanTotalPrincipal += pData.anapara;
                 loanTotalInterest += pData.faiz;
@@ -5527,11 +5584,31 @@
                 if (state.is_paid) {
                     loanTotalPaid += pData.taksit_tutari;
                     loanPaidCount++;
+                    if (instDateObj && (!loanLastPaidDateObj || instDateObj >= loanLastPaidDateObj)) {
+                        loanLastPaidDateObj = instDateObj;
+                        loanLastPaidDateStr = inst.vade;
+                        loanLastPaidTaksitNo = inst.taksit_no;
+                    }
                 } else {
                     loanTotalRemaining += pData.taksit_tutari;
                     loanRemainingPrincipal += pData.anapara;
+                    if (instDateObj && (!loanNextUnpaidDateObj || instDateObj < loanNextUnpaidDateObj)) {
+                        loanNextUnpaidDateObj = instDateObj;
+                        loanNextUnpaidDateStr = inst.vade;
+                        loanNextUnpaidTaksitNo = inst.taksit_no;
+                    }
                 }
             });
+
+            const loanLastPaidBadgeHtml = loanLastPaidDateStr
+                ? `<div style="margin-top: 8px; padding: 5px 8px; border-radius: 6px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.28); display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
+                       <span style="color: #a7f3d0; font-weight: 600;">Son Ödenen Tarih:</span>
+                       <span style="color: #34d399; font-weight: 800; letter-spacing: 0.2px;">${loanLastPaidDateStr}${loanLastPaidTaksitNo ? ` (${loanLastPaidTaksitNo}. Taksit)` : ''}</span>
+                   </div>`
+                : `<div style="margin-top: 8px; padding: 5px 8px; border-radius: 6px; background: rgba(148, 163, 184, 0.08); border: 1px solid rgba(148, 163, 184, 0.18); display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
+                       <span style="color: var(--text-dimmed); font-weight: 600;">Son Ödenen Tarih:</span>
+                       <span style="color: var(--text-muted); font-weight: 700;">Henüz Ödeme Yok</span>
+                   </div>`;
 
             const loanEarlyCommission = loanRemainingPrincipal * (earlyCommRate / 100);
             const loanEarlyPayoffTotal = loanRemainingPrincipal + loanEarlyCommission;
@@ -5578,6 +5655,7 @@
                     </div>
                     <div class="card-value" style="color: #6ee7b7; font-size: 20px;">${formatTRY(loanTotalPaid)}</div>
                     <div class="card-subtitle">Ödenen Taksit: <span>${loanPaidCount} / ${loanTotalCount} Ay (${paidPercent}%)</span></div>
+                    ${loanLastPaidBadgeHtml}
                 </div>
 
                 <div class="card ${cardClass}">
@@ -5801,7 +5879,9 @@
             if (activeTab === 'combined') renderDashboard();
             else if (activeTab === 'payments_logs') renderLogsTable();
             else if (activeTab === 'early_payment') updateSimulatorDropdown();
-            else renderLoanTrackerTableBody(); // Individual tracking table
+            else if (typeof renderLoanTrackerTab === 'function') renderLoanTrackerTab(activeTab);
+            else if (typeof renderLoanTrackerView === 'function') renderLoanTrackerView(activeTab);
+            else renderLoanTrackerTableBody();
         }
 
 
