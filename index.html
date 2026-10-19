@@ -1517,6 +1517,23 @@
                     { id: "dikas_instruments", name: "Kredi Kartı, Kredi & Çek/Senet", targetTab: "instruments" },
                     { id: "dikas_reports", name: "Raporlar (Excel & A4 Yazıcı)", targetTab: "reports" }
                 ]
+            },
+            {
+                id: "Dizsan_Gunluk_Kasa",
+                title: "Günlük Kasa // Kasa Formu & A4",
+                displayTitle: "Dizsan Günlük Kasa",
+                subtitle: "%100 Manuel Günlük Kasa Formu, Yetki Matrisi & A4 Çıktı",
+                icon: "fa-solid fa-cash-register",
+                color: "#f59e0b",
+                localUrl: "apps/gunluk-kasa/index.html",
+                liveUrl: "https://dizsan.github.io/dpro/apps/gunluk-kasa/index.html",
+                qrBase64: "icon-192.png",
+                submodules: [
+                    { id: "kasa_form", name: "Günlük Kasa Formu (%100 Manuel)", targetTab: "form" },
+                    { id: "kasa_a4", name: "A4 Çıktı & Klasik Excel Formu", targetTab: "a4" },
+                    { id: "kasa_archive", name: "Kasa Arşivi & Detaylı Arama", targetTab: "archive" },
+                    { id: "kasa_admin", name: "Kullanıcı & Yetki Yönetimi", targetTab: "admin" }
+                ]
             }
         ];
 
@@ -1572,12 +1589,18 @@
         }
 
         let dproState = {
-            version: "v1.3.2",
+            version: "v1.6.1",
             users: [],
             permissions: {}, // username -> { apps: {}, submodules: {} }
             customApps: [],
             logs: [],
             changelog: [
+                {
+                    version: "v1.6.1",
+                    date: new Date().toLocaleDateString("tr-TR"),
+                    author: "ÖMER EREN",
+                    notes: "Dizsan Günlük Kasa (%100 Manuel Günlük Kasa Formu, 4 Kademeli Yetki Matrisi & A4 Çıktı) D-Pro sol menüsüne entegre edildi."
+                },
                 {
                     version: "v1.3.2",
                     date: new Date().toLocaleDateString("tr-TR"),
@@ -1646,7 +1669,7 @@
                     console.error("D-Pro state parse error:", e);
                 }
             }
-            dproState.version = "v1.3.2";
+            dproState.version = "v1.6.1";
             if (!Array.isArray(dproState.users) || dproState.users.length === 0) {
                 dproState.users = INITIAL_USERS.map(u => ({ ...u }));
             }
@@ -2342,6 +2365,7 @@
                 storageSnapshot["dizsan_demet_remember_login"] = uJson;
                 storageSnapshot["dizsan_dikas_active_user"] = uJson;
                 storageSnapshot["dizsan_dikas_remember_login"] = uJson;
+                storageSnapshot["dizsan_gunluk_kasa_active_user"] = uJson;
             }
 
             const restrictedTargets = (restrictedSubs || []).map(s => s.targetTab);
@@ -2532,7 +2556,7 @@
             const a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
             if (!a) return;
             const href = a.getAttribute("href") || "";
-            if (href.includes("D-Pro/index.html")) {
+            if (href.includes("D-Pro/index.html") || href === "../index.html") {
                 e.preventDefault();
                 window.parent.postMessage({ type: "DPRO_BACK_TO_MAIN" }, "*");
             } else if (href.includes("Ödeme Takvimi") || href.includes("odeme-takvimi")) {
@@ -2544,6 +2568,9 @@
             } else if (href.includes("VDF Ödeme") || href.includes("vdf-odeme")) {
                 e.preventDefault();
                 window.parent.postMessage({ type: "DPRO_OPEN_APP", appId: "Dizsan_VDF_Odeme" }, "*");
+            } else if (href.includes("Dizsan Kasa") || href.includes("gunluk-kasa")) {
+                e.preventDefault();
+                window.parent.postMessage({ type: "DPRO_OPEN_APP", appId: "Dizsan_Gunluk_Kasa" }, "*");
             } else if (href.includes("DIZSAN_MOBIL_KAREKOD")) {
                 e.preventDefault();
                 window.parent.postMessage({ type: "DPRO_OPEN_TAB", tabName: "all-qrcodes" }, "*");
@@ -2628,11 +2655,13 @@
                         localStorage.setItem("dizsan_demet_remember_login", uJson);
                         localStorage.setItem("dizsan_dikas_active_user", uJson);
                         localStorage.setItem("dizsan_dikas_remember_login", uJson);
+                        localStorage.setItem("dizsan_gunluk_kasa_active_user", uJson);
                         sessionStorage.setItem("dizsan_ziyaret_active_user", uJson);
                         sessionStorage.setItem("dizsan_toplanti_active_user", uJson);
                         sessionStorage.setItem("dizsan_kredi_active_user_v1", uJson);
                         sessionStorage.setItem("dizsan_demet_active_user", uJson);
                         sessionStorage.setItem("dizsan_dikas_active_user", uJson);
+                        sessionStorage.setItem("dizsan_gunluk_kasa_active_user", uJson);
                     }
                 } catch (e) {}
 
@@ -2654,7 +2683,7 @@
                             const a = ev.target && ev.target.closest ? ev.target.closest("a[href]") : null;
                             if (!a) return;
                             const href = a.getAttribute("href") || "";
-                            if (href.includes("D-Pro/index.html")) {
+                            if (href.includes("D-Pro/index.html") || href === "../index.html") {
                                 ev.preventDefault();
                                 exitFullScreenToDPro();
                             } else if (href.includes("Ödeme Takvimi") || href.includes("odeme-takvimi")) {
@@ -2672,6 +2701,9 @@
                             } else if (href.includes("DiKas") || href.includes("dikas")) {
                                 ev.preventDefault();
                                 openEmbeddedApp("Dizsan_DiKas_Finans");
+                            } else if (href.includes("Dizsan Kasa") || href.includes("gunluk-kasa")) {
+                                ev.preventDefault();
+                                openEmbeddedApp("Dizsan_Gunluk_Kasa");
                             } else if (href.includes("DIZSAN_MOBIL_KAREKOD")) {
                                 ev.preventDefault();
                                 openDProTab("all-qrcodes");
@@ -3154,7 +3186,7 @@
                     swRefreshing = true;
                     window.location.reload();
                 });
-                navigator.serviceWorker.register("sw.js?v=1.6.0", { updateViaCache: "none" }).then((reg) => {
+                navigator.serviceWorker.register("sw.js?v=1.6.1", { updateViaCache: "none" }).then((reg) => {
                     try { reg.update(); } catch (e) {}
                 }).catch(() => {});
             }

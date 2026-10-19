@@ -1,5 +1,5 @@
-// D-Pro Kurumsal Yönetim & DizGün Entegre Platformu - Service Worker (v1.6.0)
-const CACHE_NAME = "dizsan-dpro-v1.6.0";
+// D-Pro Kurumsal Yönetim & DizGün Entegre Platformu - Service Worker (v1.6.1)
+const CACHE_NAME = "dizsan-dpro-v1.6.1";
 const ASSETS = [
   "./",
   "./index.html",
@@ -17,7 +17,8 @@ const ASSETS = [
   "./apps/kredi-karti/index.html",
   "./apps/vdf-odeme/index.html",
   "./apps/dikas/index.html",
-  "./apps/dmet/index.html"
+  "./apps/dmet/index.html",
+  "./apps/gunluk-kasa/index.html"
 ];
 
 self.addEventListener("install", (e) => {

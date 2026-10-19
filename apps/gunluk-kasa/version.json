@@ -1,0 +1,9 @@
+{
+  "appId": "dizsan-kasa",
+  "appName": "Dizsan Günlük Kasa Formu & Kasa Takip",
+  "version": "1.0.1",
+  "build": 101,
+  "releasedAt": "2026-10-19 12:45:00",
+  "releaseNotes": "%100 Manuel Veri Giriş Modu: Dış veri kaynakları ve hazır örnek kayıtlar kaldırıldı; tüm tablolar 0,00 ₺ olarak sıfırdan başlar ve doğrudan tablo içi hızlı manuel giriş satırları eklendi.",
+  "author": "Ömer Eren & DİZSAN"
+}

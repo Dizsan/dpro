@@ -1,0 +1,136 @@
+{
+  "version": "1.0.1",
+  "updatedAt": "19.10.2026 12:40:00",
+  "updatedAtMs": 1792402800000,
+  "stateRevision": 2,
+  "users": [
+    {
+      "order": 0,
+      "name": "ÖMER EREN",
+      "username": "ömer",
+      "email": "oeren@dizsan.com.tr",
+      "pinStamp": "2697120930-1230232798-23831670",
+      "dept": "Yönetim Kurulu / Sistem Yöneticisi",
+      "rolePreset": "ADMIN",
+      "permissions": {
+        "view": true,
+        "add": true,
+        "edit": true,
+        "delete": true,
+        "lockDay": true,
+        "manageUsers": true
+      }
+    },
+    {
+      "order": 1,
+      "name": "GÖKHAN ÖZBULUT",
+      "username": "gokhan.ozbulut",
+      "email": "gozbulut@dizsan.com.tr",
+      "pinStamp": "3741314348-4038843960-1626309061",
+      "dept": "Kasa Sorumlusu / Muhasebe & Finans",
+      "rolePreset": "EDITOR",
+      "permissions": {
+        "view": true,
+        "add": true,
+        "edit": true,
+        "delete": true,
+        "lockDay": true,
+        "manageUsers": false
+      }
+    },
+    {
+      "order": 2,
+      "name": "RAFET CANBEK",
+      "username": "rafet.canbek",
+      "email": "rcanbek@dizsan.com.tr",
+      "pinStamp": "3592512679-3759997292-303417646",
+      "dept": "Genel Müdür / Kontrol Eden",
+      "rolePreset": "ADMIN",
+      "permissions": {
+        "view": true,
+        "add": true,
+        "edit": true,
+        "delete": true,
+        "lockDay": true,
+        "manageUsers": true
+      }
+    },
+    {
+      "order": 3,
+      "name": "ERTUĞRUL ERDEM",
+      "username": "ertugrul.erdem",
+      "email": "eerdem@dizsan.com.tr",
+      "pinStamp": "3592512679-3759997292-303417646",
+      "dept": "Servis Danışmanı (Kayıt Ekleme)",
+      "rolePreset": "CONTRIBUTOR",
+      "permissions": {
+        "view": true,
+        "add": true,
+        "edit": false,
+        "delete": false,
+        "lockDay": false,
+        "manageUsers": false
+      }
+    },
+    {
+      "order": 4,
+      "name": "NECATİ DEMİRCİ",
+      "username": "necati.demirci",
+      "email": "ndemirci@dizsan.com.tr",
+      "pinStamp": "3592512679-3759997292-303417646",
+      "dept": "Servis Danışmanı (Kayıt Ekleme)",
+      "rolePreset": "CONTRIBUTOR",
+      "permissions": {
+        "view": true,
+        "add": true,
+        "edit": false,
+        "delete": false,
+        "lockDay": false,
+        "manageUsers": false
+      }
+    },
+    {
+      "order": 5,
+      "name": "HAKAN AYDIN",
+      "username": "hakan.aydin",
+      "email": "haydin@dizsan.com.tr",
+      "pinStamp": "3552174369-58562770-3993401784",
+      "dept": "Servis Müdürü (Görüntüleme)",
+      "rolePreset": "VIEWER",
+      "permissions": {
+        "view": true,
+        "add": false,
+        "edit": false,
+        "delete": false,
+        "lockDay": false,
+        "manageUsers": false
+      }
+    },
+    {
+      "order": 6,
+      "name": "FATİH KIROĞLU",
+      "username": "fatih.kiroglu",
+      "email": "fkiroglu@dizsan.com.tr",
+      "pinStamp": "567307289-1446660830-2254300224",
+      "dept": "Yedek Parça / Depo (Görüntüleme)",
+      "rolePreset": "VIEWER",
+      "permissions": {
+        "view": true,
+        "add": false,
+        "edit": false,
+        "delete": false,
+        "lockDay": false,
+        "manageUsers": false
+      }
+    }
+  ],
+  "days": {},
+  "auditLogs": [
+    {
+      "timestamp": "19.10.2026 12:40:00",
+      "user": "Sistem",
+      "category": "SİSTEM",
+      "detail": "Dizsan Günlük Kasa Formu %100 manuel giriş modunda (0,00 TL başlangıç ile) hazırlandı."
+    }
+  ]
+}

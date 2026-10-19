@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark" data-version="1.0.0">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0284c7">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Dizsan Kasa">
+    <title>Dizsan Günlük Kasa Formu &amp; Kasa Takip Sistemi v1.0.0</title>
+
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/jpeg" href="dizsan_logo.jpg">
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <link rel="stylesheet" href="style.css?v=1.0.0">
+</head>
+<body>
+
+    <!-- ==========================================================================
+         1. ŞİFRELİ KULLANICI GİRİŞ EKRANI (LOGIN OVERLAY)
+         ========================================================================== -->
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-card">
+            <div class="login-brand">
+                <img src="dizsan_logo.jpg" alt="DİZSAN Logo" class="login-logo">
+                <h1>Dizsan Günlük Kasa</h1>
+                <p>Günlük Kasa Formu &bull; Nakit, POS, Çek, Havale &amp; A4 Baskı Sistemi</p>
+                <span class="version-pill">
+                    <i class="fa-solid fa-cash-register"></i> Sürüm <span class="dynamic-version-text">v1.0.0</span> &bull; iOS / Android / Windows / Web
+                </span>
+            </div>
+
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="login-form-group">
+                    <label for="login-username">Kullanıcı Adı veya Kurumsal E-Posta</label>
+                    <div class="login-input-wrap">
+                        <i class="fa-solid fa-user-shield"></i>
+                        <input type="text" id="login-username" class="login-input" placeholder="Örn: ömer, gokhan.ozbulut, rafet.canbek" required autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="login-form-group">
+                    <label for="login-password">Şifre</label>
+                    <div class="login-input-wrap">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="login-password" class="login-input" placeholder="••••••" required autocomplete="current-password">
+                    </div>
+                </div>
+
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; font-size:0.75rem;">
+                    <label style="display:flex; align-items:center; gap:6px; color:#cbd5e1; cursor:pointer;">
+                        <input type="checkbox" id="login-remember-me" checked style="width:15px; height:15px; accent-color:#38bdf8;">
+                        <span>Beni Hatırla</span>
+                    </label>
+                    <a href="javascript:void(0)" onclick="openForgotPasswordModal()" style="color:#38bdf8; text-decoration:none; font-weight:600;">
+                        <i class="fa-solid fa-key"></i> Şifremi Unuttum?
+                    </a>
+                </div>
+
+                <div id="login-error" style="display:none; color:#fca5a5; background:rgba(239,68,68,0.16); border:1px solid rgba(239,68,68,0.4); padding:8px 10px; border-radius:9px; font-size:0.76rem; margin-bottom:10px;"></div>
+
+                <button type="submit" class="btn-login">
+                    <i class="fa-solid fa-right-to-bracket"></i> Günlük Kasa Sistemine Giriş Yap
+                </button>
+            </form>
+
+            <div style="margin-top:10px; display:flex; gap:6px;">
+                <button type="button" onclick="openInstallModal()" class="btn" style="flex:1; background:rgba(56,189,248,0.12); border-color:rgba(56,189,248,0.35); color:#e0f2fe; font-size:0.73rem;">
+                    <i class="fa-solid fa-mobile-screen-button" style="color:#38bdf8;"></i>
+                    <span>Mobil / Masaüstü Kurulum</span>
+                </button>
+                <a href="../index.html" class="btn" style="background:rgba(255,255,255,0.06); color:#cbd5e1; text-decoration:none; font-size:0.73rem;">
+                    <i class="fa-solid fa-grid-2"></i> Portal
+                </a>
+            </div>
+
+            <div class="quick-user-chips">
+                <span><i class="fa-solid fa-users-gear"></i> Yetkili Personel Seçimi (Kullanıcı adını doldurur):</span>
+                <div id="quick-user-list" class="chip-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         2. ANA UYGULAMA KABUĞU (SIDEBAR + MAIN WORKSPACE)
+         ========================================================================== -->
+    <div class="app-shell">
+
+        <!-- SOL YÖNETİM MENÜSÜ -->
+        <aside class="sidebar" id="app-sidebar">
+            <div class="sidebar-brand">
+                <img src="dizsan_logo.jpg" alt="Dizsan" class="sidebar-logo">
+                <div class="sidebar-brand-text">
+                    <h2>
+                        <span>Dizsan Kasa</span>
+                        <span class="badge badge-info" id="sidebar-app-version" style="font-size:0.62rem;">v1.0.0</span>
+                    </h2>
+                    <span>Günlük Kasa Formu &amp; A4</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-group-label">Günlük Kasa &amp; Baskı</div>
+                <button class="side-nav-btn active" data-tab="form" onclick="switchTab('form')">
+                    <span class="nav-left"><i class="fa-solid fa-table-list"></i> <span>Günlük Kasa Formu</span></span>
+                    <span class="nav-badge" id="nav-badge-today-items">0</span>
+                </button>
+                <button class="side-nav-btn" data-tab="a4" onclick="switchTab('a4')">
+                    <span class="nav-left"><i class="fa-solid fa-print"></i> <span>A4 Çıktı &amp; Excel Formu</span></span>
+                    <span class="nav-badge" style="background:rgba(245,158,11,0.2); color:#fbbf24;">A4</span>
+                </button>
+                <button class="side-nav-btn" data-tab="archive" onclick="switchTab('archive')">
+                    <span class="nav-left"><i class="fa-solid fa-calendar-check"></i> <span>Kasa Arşivi &amp; Arama</span></span>
+                    <span class="nav-badge" id="nav-badge-days">0</span>
+                </button>
+
+                <div class="nav-group-label">Yetki &amp; Denetim</div>
+                <button class="side-nav-btn" data-tab="admin" id="nav-item-admin" onclick="switchTab('admin')">
+                    <span class="nav-left"><i class="fa-solid fa-user-lock"></i> <span>Kullanıcı &amp; Yetki Yönetimi</span></span>
+                    <span class="nav-badge" id="nav-badge-users">0</span>
+                </button>
+
+                <div class="nav-group-label">Hızlı Kayıt Ekle (Yetkiye Göre)</div>
+                <button class="side-nav-btn perm-require-add" onclick="openEntryModal('CASH_IN')">
+                    <span class="nav-left"><i class="fa-solid fa-circle-plus" style="color:#10b981;"></i> <span>+ Nakit Kasa Girişi</span></span>
+                </button>
+                <button class="side-nav-btn perm-require-add" onclick="openEntryModal('CASH_OUT')">
+                    <span class="nav-left"><i class="fa-solid fa-circle-minus" style="color:#f43f5e;"></i> <span>- Günlük Nakit Ödeme</span></span>
+                </button>
+                <button class="side-nav-btn perm-require-add" onclick="openEntryModal('POS_CC')">
+                    <span class="nav-left"><i class="fa-solid fa-credit-card" style="color:#38bdf8;"></i> <span>+ Kredi Kartı (POS)</span></span>
+                </button>
+                <button class="side-nav-btn perm-require-add" onclick="openEntryModal('CARI_CC')">
+                    <span class="nav-left"><i class="fa-solid fa-wallet" style="color:#f59e0b;"></i> <span>+ Cari Kredi Kartı Ödemesi</span></span>
+                </button>
+                <button class="side-nav-btn perm-require-add" onclick="openEntryModal('CHECK_OUT')">
+                    <span class="nav-left"><i class="fa-solid fa-money-check-dollar" style="color:#a855f7;"></i> <span>+ Çek / Senet Çıkışı</span></span>
+                </button>
+                <button class="side-nav-btn perm-require-add" onclick="openEntryModal('WIRE_IN')">
+                    <span class="nav-left"><i class="fa-solid fa-building-columns" style="color:#14b8a6;"></i> <span>+ Gelen / Giden Havale</span></span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-mini-card">
+                    <div>
+                        <div class="user-mini-name" id="sidebar-user-name">ÖMER EREN</div>
+                        <div class="user-mini-role" id="sidebar-user-role">Yönetici (Tam Yetki)</div>
+                    </div>
+                    <div style="display:flex; gap:4px;">
+                        <button class="btn btn-xs" onclick="openChangePasswordModal()" title="Şifre Değiştir">
+                            <i class="fa-solid fa-key"></i>
+                        </button>
+                        <button class="btn btn-xs" onclick="handleLogout()" title="Güvenli Çıkış">
+                            <i class="fa-solid fa-power-off" style="color:var(--rose-danger);"></i>
+                        </button>
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.68rem; color:var(--text-muted);">
+                    <a href="../D-Pro/index.html" onclick="if(window.parent && window.parent !== window){ event.preventDefault(); window.parent.postMessage({type:'DPRO_BACK_TO_MAIN'}, '*'); }" style="color:var(--dizsan-cyan); text-decoration:none;"><i class="fa-solid fa-arrow-left"></i> D-Pro / Portal</a>
+                    <span id="sync-status-indicator"><i class="fa-solid fa-cloud-arrow-up" style="color:var(--emerald-ok);"></i> Senkron</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- SAĞ ANA ÇALIŞMA ALANI -->
+        <div class="main-workspace">
+
+            <!-- ÜST ARAÇ ÇUBUĞU -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="mobile-menu-trigger" onclick="toggleMobileSidebar()" title="Menüyü Aç/Kapat">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div class="page-title-block">
+                        <h1>
+                            <span id="current-page-title">GÜNLÜK KASA FORMU</span>
+                            <span class="badge badge-info" id="active-date-pill">17.10.2026</span>
+                            <span class="badge badge-success" id="active-role-badge">Tam Yetki</span>
+                        </h1>
+                        <p id="current-page-subtitle">Nakit devir, günlük giriş ve ödemeler, POS kredi kartı, cari kart, çek/senet ve havale icmali</p>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <button class="btn btn-success btn-sm perm-require-add" onclick="openEntryModal('CASH_IN')" title="Nakit Giriş Ekle (Kısayol: G)">
+                        <i class="fa-solid fa-plus-circle"></i> <span>+ Giriş</span>
+                    </button>
+                    <button class="btn btn-danger btn-sm perm-require-add" onclick="openEntryModal('CASH_OUT')" title="Günlük Nakit Ödeme Ekle (Kısayol: N)">
+                        <i class="fa-solid fa-minus-circle"></i> <span>- Ödeme</span>
+                    </button>
+                    <button class="btn btn-primary btn-sm perm-require-add" onclick="openEntryModal('POS_CC')" title="POS / Kredi Kartı İşlemi Ekle (Kısayol: K)">
+                        <i class="fa-solid fa-credit-card"></i> <span>+ Kredi Kartı</span>
+                    </button>
+                    <button class="btn btn-warning btn-sm" onclick="printDailyKasaA4()" title="Birebir Eski Excel Düzeninde A4 Kağıda Yazdır (Kısayol: P)">
+                        <i class="fa-solid fa-print"></i> <span>A4 Çıktı Al</span>
+                    </button>
+                    <button class="btn btn-sm" onclick="exportDailyKasaExcel()" title="Günlük Kasa Formunu Excel (.xls) Olarak İndir">
+                        <i class="fa-solid fa-file-excel" style="color:var(--emerald-ok);"></i> <span>Excel</span>
+                    </button>
+                    <select id="theme-mode-select" class="form-control" style="width:auto; padding:4px 7px; font-size:0.72rem;" onchange="setThemeMode(this.value)" title="Tema Seçimi">
+                        <option value="dark">Koyu</option>
+                        <option value="light">Açık</option>
+                        <option value="system">Sistem</option>
+                    </select>
+                    <button class="btn btn-sm" onclick="toggleMobileViewportPreview()" id="btn-mobile-preview" title="Mobil / Web Görünümü Test Et">
+                        <i class="fa-solid fa-mobile-screen"></i> <span id="lbl-mobile-preview">Mobil</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- GÖVDE İÇERİĞİ -->
+            <div class="workspace-body">
+
+                <!-- YETKİ BİLGİLENDİRME ŞERİDİ (Sadece kısıtlı yetkide gösterilir) -->
+                <div id="role-permission-banner" style="display:none; margin-bottom:10px; padding:8px 12px; border-radius:10px; font-size:0.76rem; align-items:center; justify-content:space-between; gap:8px;"></div>
+
+                <!-- ======================================================================
+                     SEKME 1: GÜNLÜK KASA FORMU (DİJİTAL KOKPİT & BİREBİR TABLOLAR)
+                     ====================================================================== -->
+                <section id="tab-form" class="tab-section active">
+
+                    <!-- TARİH GEZGİNİ VE DÖVİZ KURLARI ÇUBUĞU -->
+                    <div class="kasa-date-toolbar">
+                        <div class="date-nav-group">
+                            <button class="btn btn-sm" onclick="stepSelectedDate(-1)" title="Önceki Gün">
+                                <i class="fa-solid fa-chevron-left"></i> <span>Önceki Gün</span>
+                            </button>
+                            <div style="display:flex; align-items:center; gap:5px;">
+                                <i class="fa-solid fa-calendar-day" style="color:var(--dizsan-cyan);"></i>
+                                <input type="text" id="kasa-date-input" class="form-control" style="width:118px; font-weight:800; text-align:center;" placeholder="GG.AA.YYYY" onchange="handleDateInputChanged(this.value)">
+                            </div>
+                            <button class="btn btn-sm" onclick="stepSelectedDate(1)" title="Sonraki Gün">
+                                <span>Sonraki Gün</span> <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                            <button class="btn btn-xs badge-info" onclick="jumpToToday()" title="Bugünün Tarihine Git">Bugün</button>
+                            <span class="badge badge-success" style="font-size:0.66rem;"><i class="fa-solid fa-keyboard"></i> %100 Manuel Giriş (Bağımsız)</span>
+                        </div>
+
+                        <div class="fx-rate-group">
+                            <div class="fx-pill" title="Günlük Euro Kuru (Manuel Giriş)">
+                                <span style="color:var(--text-muted); font-weight:600;">Euro Kuru:</span>
+                                <input type="text" id="fx-eur-input" placeholder="--" onchange="updateDayMetaField('euroRate', this.value)">
+                            </div>
+                            <div class="fx-pill" title="Günlük Dolar Kuru (Manuel Giriş)">
+                                <span style="color:var(--text-muted); font-weight:600;">Dolar Kuru:</span>
+                                <input type="text" id="fx-usd-input" placeholder="--" onchange="updateDayMetaField('usdRate', this.value)">
+                            </div>
+                            <button class="btn btn-sm perm-require-edit" onclick="openCarryoverOverrideModal()" title="Kasa Devir Bakiyesini Manuel Gir / Değiştir">
+                                <i class="fa-solid fa-scale-balanced" style="color:var(--amber-warn);"></i> <span>Kasa Devri Gir</span>
+                            </button>
+                            <button class="btn btn-sm perm-require-edit" onclick="clearCurrentDayEntries()" title="Seçili Günün Kayıtlarını Sıfırla">
+                                <i class="fa-solid fa-broom" style="color:var(--rose-danger);"></i> <span>Günü Sıfırla</span>
+                            </button>
+                            <button class="btn btn-sm" id="btn-toggle-day-lock" onclick="toggleDayLockStatus()" title="Günü Onayla / Kilitle">
+                                <i class="fa-solid fa-lock-open"></i> <span>Gün Açık</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- HERO METRİK & ASİMETRİK ÖZET KARTLARI -->
+                    <div class="kasa-hero-grid">
+                        <div class="kpi-box hero">
+                            <div class="kpi-label">
+                                <span>GENEL TOPLAM (ERTESİ GÜNE DEVREDEN NET KASA)</span>
+                                <i class="fa-solid fa-vault" style="color:#38bdf8;"></i>
+                            </div>
+                            <div class="kpi-val" id="kpi-net-closing">0,00 ₺</div>
+                            <div class="kpi-sub" id="kpi-net-closing-sub">Girişler Toplamı (0,00 ₺) &minus; Ödemeler Toplamı (0,00 ₺)</div>
+                        </div>
+                        <div class="kpi-box">
+                            <div class="kpi-label">
+                                <span>DEVİR + GÜNLÜK GİRİŞLER</span>
+                                <i class="fa-solid fa-arrow-trend-up" style="color:#10b981;"></i>
+                            </div>
+                            <div class="kpi-val" style="color:#34d399;" id="kpi-total-in">0,00 ₺</div>
+                            <div class="kpi-sub" id="kpi-total-in-sub">Devir: 0,00 ₺ | Gün İçi: 0,00 ₺</div>
+                        </div>
+                        <div class="kpi-box">
+                            <div class="kpi-label">
+                                <span>GÜNLÜK NAKİT ÖDEMELER</span>
+                                <i class="fa-solid fa-arrow-trend-down" style="color:#f43f5e;"></i>
+                            </div>
+                            <div class="kpi-val" style="color:#fb7185;" id="kpi-total-out">0,00 ₺</div>
+                            <div class="kpi-sub" id="kpi-total-out-sub">0 Kalem Nakit Çıkış</div>
+                        </div>
+                        <div class="kpi-box">
+                            <div class="kpi-label">
+                                <span>KREDİ KARTI (POS) TOPLAMI</span>
+                                <i class="fa-solid fa-credit-card" style="color:#38bdf8;"></i>
+                            </div>
+                            <div class="kpi-val" id="kpi-pos-total">0,00 ₺</div>
+                            <div class="kpi-sub" id="kpi-pos-sub">0 Adet POS Çekimi</div>
+                        </div>
+                        <div class="kpi-box">
+                            <div class="kpi-label">
+                                <span>CARİ KART / ÇEK / HAVALE</span>
+                                <i class="fa-solid fa-building-columns" style="color:#fbbf24;"></i>
+                            </div>
+                            <div class="kpi-val" id="kpi-other-total">0,00 ₺</div>
+                            <div class="kpi-sub" id="kpi-other-sub">Cari Kart: 0,00 ₺ | Havale: 0,00 ₺</div>
+                        </div>
+                    </div>
+
+                    <!-- ÖNCEKİ GÜN DEVİR BİLGİ ŞERİDİ (MANUEL VEYA OTOMATİK DÜZENLENEBİLİR) -->
+                    <div class="prev-day-summary-bar">
+                        <div class="prev-bar-col">
+                            <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--dizsan-cyan);"></i> <strong id="prev-summary-date-label">Önceki Gün</strong> <strong>DEVİR VE GİRİŞLER TOPLAMI:</strong></span>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <strong style="font-size:0.88rem; color:var(--text-white);" id="prev-summary-in-val">0,00 ₺</strong>
+                            </div>
+                        </div>
+                        <div class="prev-bar-col">
+                            <span><strong>ÖDEMELER TOPLAMI:</strong> <strong style="color:#fb7185;" id="prev-summary-out-val">0,00 ₺</strong></span>
+                            <span>
+                                <i class="fa-solid fa-arrow-right"></i> <strong>BİR SONRAKİ GÜNE DEVREDEN BAKİYE:</strong>
+                                <strong style="color:#34d399; font-size:0.88rem; cursor:pointer; text-decoration:underline dotted;" onclick="openCarryoverOverrideModal()" title="Manuel Devir Tutarı Girmek İçin Tıklayın" id="prev-summary-carry-val">0,00 ₺</strong>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- ==================================================================
+                         ÜST ANA TABLO: SOL (KASA DEVRİ VE GİRİŞLER) | SAĞ (GÜNLÜK ÖDEMELER)
+                         ================================================================== -->
+                    <div class="kasa-dual-grid">
+
+                        <!-- SOL PANEL: KASA DEVRİ VE GÜNLÜK NAKİT GİRİŞLER -->
+                        <div class="kasa-panel">
+                            <div class="kasa-panel-header">
+                                <div class="kasa-panel-title">
+                                    <i class="fa-solid fa-circle-plus" style="color:#10b981;"></i>
+                                    <span>KASA DEVRİ VE NAKİT GİRİŞLER</span>
+                                </div>
+                                <button class="btn btn-success btn-xs perm-require-add" onclick="openEntryModal('CASH_IN')">
+                                    <i class="fa-solid fa-plus"></i> <span>Nakit Giriş Ekle</span>
+                                </button>
+                            </div>
+                            <div class="kasa-table-wrap">
+                                <table class="kasa-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:24%;">TÜR / KAYNAK</th>
+                                            <th>AÇIKLAMA / CARİ</th>
+                                            <th style="width:22%; text-align:right;">TUTAR (₺)</th>
+                                            <th style="width:74px; text-align:right;">İŞLEM</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-cash-in"></tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="2">GİRİŞLER TOPLAMI (Kasa Devri + Günlük Girişler)</td>
+                                            <td class="amount-cell" id="tfoot-cash-in-total">22.420,00 ₺</td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- SAĞ PANEL: GÜNLÜK NAKİT ÖDEMELER (ÇIKIŞLAR) -->
+                        <div class="kasa-panel">
+                            <div class="kasa-panel-header">
+                                <div class="kasa-panel-title">
+                                    <i class="fa-solid fa-circle-minus" style="color:#f43f5e;"></i>
+                                    <span>GÜNLÜK NAKİT ÖDEMELER (<span id="lbl-right-date">17.10.2026</span>)</span>
+                                </div>
+                                <button class="btn btn-danger btn-xs perm-require-add" onclick="openEntryModal('CASH_OUT')">
+                                    <i class="fa-solid fa-plus"></i> <span>Nakit Ödeme Ekle</span>
+                                </button>
+                            </div>
+                            <div class="kasa-table-wrap">
+                                <table class="kasa-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ÖDEME AÇIKLAMASI / CARİ / PLAKA</th>
+                                            <th style="width:24%; text-align:right;">TUTAR (₺)</th>
+                                            <th style="width:74px; text-align:right;">İŞLEM</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-cash-out"></tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td>ÖDEMELER TOPLAMI</td>
+                                            <td class="amount-cell" style="color:#fb7185;" id="tfoot-cash-out-total">1.250,00 ₺</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr class="grand-total-row">
+                                            <td>GENEL TOPLAM (ERTESİ GÜNE DEVREDEN BAKİYE)</td>
+                                            <td class="amount-cell" id="tfoot-grand-total">21.170,00 ₺</td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- ==================================================================
+                         ALT 6 TABLO: EXCEL FORMUNDAKİ SIRALAMA İLE SOL VE SAĞ SÜTUNLAR
+                         ================================================================== -->
+                    <div class="kasa-dual-grid">
+
+                        <!-- SOL ALT SÜTUN (4 TABLO: Çek-Senet Çıkışı, Çek Çıkış Cari/Banka, Cari Kredi Kartı Ödemesi, Giden Havale) -->
+                        <div style="display:flex; flex-direction:column; gap:12px;">
+
+                            <!-- 1. ÇEK - SENET ÇIKIŞI -->
+                            <div class="kasa-panel">
+                                <div class="kasa-panel-header">
+                                    <div class="kasa-panel-title">
+                                        <i class="fa-solid fa-money-check-dollar" style="color:#a855f7;"></i>
+                                        <span>ÇEK - SENET ÇIKIŞI</span>
+                                    </div>
+                                    <button class="btn btn-xs perm-require-add" onclick="openEntryModal('CHECK_OUT')">
+                                        <i class="fa-solid fa-plus"></i> <span>Ekle</span>
+                                    </button>
+                                </div>
+                                <div class="kasa-table-wrap">
+                                    <table class="kasa-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:20%;">SENET / ÇEK</th>
+                                                <th style="width:18%;">VADE</th>
+                                                <th>MÜŞTERİ İSMİ</th>
+                                                <th style="width:22%; text-align:right;">MEBLAĞ</th>
+                                                <th style="width:68px; text-align:right;">İŞLEM</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbody-check-out"></tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="3" style="text-align:center;">TOPLAM</td>
+                                                <td class="amount-cell" id="tfoot-check-out">0,00 ₺</td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- 2. ÇEK ÇIKIŞ CARİ HESAP / BANKA -->
+                            <div class="kasa-panel">
+                                <div class="kasa-panel-header">
+                                    <div class="kasa-panel-title">
+                                        <i class="fa-solid fa-building-wheat" style="color:#38bdf8;"></i>
+                                        <span>ÇEK ÇIKIŞ CARİ HESAP / BANKA</span>
+                                    </div>
+                                    <button class="btn btn-xs perm-require-add" onclick="openEntryModal('CHECK_CARI_BANK')">
+                                        <i class="fa-solid fa-plus"></i> <span>Ekle</span>
+                                    </button>
+                                </div>
+                                <div class="kasa-table-wrap">
+                                    <table class="kasa-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:28%;">CARİ / BANKA</th>
+                                                <th>AÇIKLAMA</th>
+                                                <th style="width:22%; text-align:right;">TUTAR</th>
+                                                <th style="width:68px; text-align:right;">İŞLEM</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbody-check-cari"></tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="2" style="text-align:center;">TOPLAM</td>
+                                                <td class="amount-cell" id="tfoot-check-cari">0,00 ₺</td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- 3. CARİ KREDİ KARTI ÖDEMESİ -->
+                            <div class="kasa-panel">
+                                <div class="kasa-panel-header">
+                                    <div class="kasa-panel-title">
+                                        <i class="fa-solid fa-credit-card" style="color:#f59e0b;"></i>
+                                        <span>CARİ KREDİ KARTI ÖDEMESİ</span>
+                                    </div>
+                                    <button class="btn btn-xs perm-require-add" onclick="openEntryModal('CARI_CC')">
+                                        <i class="fa-solid fa-plus"></i> <span>Ekle</span>
+                                    </button>
+                                </div>
+                                <div class="kasa-table-wrap">
+                                    <table class="kasa-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:28%;">CARİ / İSİM</th>
+                                                <th>AÇIKLAMA</th>
+                                                <th style="width:22%; text-align:right;">TUTAR</th>
+                                                <th style="width:68px; text-align:right;">İŞLEM</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbody-cari-cc"></tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="2" style="text-align:center;">TOPLAM</td>
+                                                <td class="amount-cell" id="tfoot-cari-cc">24.000,00 ₺</td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- 4. GİDEN HAVALE -->
+                            <div class="kasa-panel">
+                                <div class="kasa-panel-header">
+                                    <div class="kasa-panel-title">
+                                        <i class="fa-solid fa-paper-plane" style="color:#fb7185;"></i>
+                                        <span>GİDEN HAVALE</span>
+                                    </div>
+                                    <button class="btn btn-xs perm-require-add" onclick="openEntryModal('WIRE_OUT')">
+                                        <i class="fa-solid fa-plus"></i> <span>Ekle</span>
+                                    </button>
+                                </div>
+                                <div class="kasa-table-wrap">
+                                    <table class="kasa-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:26%;">BANKA</th>
+                                                <th>ALICI CARİ / AÇIKLAMA</th>
+                                                <th style="width:22%; text-align:right;">TUTAR</th>
+                                                <th style="width:68px; text-align:right;">İŞLEM</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbody-wire-out"></tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="2" style="text-align:center;">TOPLAM</td>
+                                                <td class="amount-cell" id="tfoot-wire-out">0,00 ₺</td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- SAĞ ALT SÜTUN (2 TABLO: Kredi Kartı POS, Gelen Havale) -->
+                        <div style="display:flex; flex-direction:column; gap:12px;">
+
+                            <!-- 5. KREDİ KARTI (POS TAHSİLATLARI) -->
+                            <div class="kasa-panel">
+                                <div class="kasa-panel-header">
+                                    <div class="kasa-panel-title">
+                                        <i class="fa-solid fa-cash-register" style="color:#38bdf8;"></i>
+                                        <span>KREDİ KARTI (POS ÇEKİMLERİ)</span>
+                                    </div>
+                                    <button class="btn btn-xs perm-require-add" onclick="openEntryModal('POS_CC')">
+                                        <i class="fa-solid fa-plus"></i> <span>Ekle</span>
+                                    </button>
+                                </div>
+                                <div class="kasa-table-wrap">
+                                    <table class="kasa-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:24%;">BANKA</th>
+                                                <th>CARİ HESAP / FATURA AÇIKLAMASI</th>
+                                                <th style="width:22%; text-align:right;">TUTAR</th>
+                                                <th style="width:68px; text-align:right;">İŞLEM</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbody-pos-cc"></tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="2" style="text-align:center;">TOPLAM</td>
+                                                <td class="amount-cell" id="tfoot-pos-cc">109.500,00 ₺</td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- 6. GELEN HAVALE -->
+                            <div class="kasa-panel">
+                                <div class="kasa-panel-header">
+                                    <div class="kasa-panel-title">
+                                        <i class="fa-solid fa-building-columns" style="color:#10b981;"></i>
+                                        <span>GELEN HAVALE</span>
+                                    </div>
+                                    <button class="btn btn-xs perm-require-add" onclick="openEntryModal('WIRE_IN')">
+                                        <i class="fa-solid fa-plus"></i> <span>Ekle</span>
+                                    </button>
+                                </div>
+                                <div class="kasa-table-wrap">
+                                    <table class="kasa-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:24%;">BANKA</th>
+                                                <th>GÖNDEREN CARİ / AÇIKLAMA</th>
+                                                <th style="width:22%; text-align:right;">TUTAR</th>
+                                                <th style="width:68px; text-align:right;">İŞLEM</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbody-wire-in"></tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="2" style="text-align:center;">TOPLAM</td>
+                                                <td class="amount-cell" id="tfoot-wire-in">0,00 ₺</td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- EN ALT İMZA VE ONAY KUTULARI -->
+                    <div class="signature-bar">
+                        <div class="sig-card">
+                            <div>
+                                <div style="font-size:0.68rem; color:var(--text-muted); font-weight:700;">KASA SORUMLUSU</div>
+                                <input type="text" id="sig-cashier-input" class="form-control" style="margin-top:4px; font-weight:800; width:220px;" value="GÖKHAN ÖZBULUT" onchange="updateDayMetaField('cashierName', this.value)">
+                            </div>
+                            <div style="text-align:right;">
+                                <span class="badge badge-success" id="sig-cashier-status"><i class="fa-solid fa-signature"></i> Hazırlayan İmzalı</span>
+                                <div style="font-size:0.68rem; color:var(--text-muted); margin-top:4px;">A4 Baskıda Görünür</div>
+                            </div>
+                        </div>
+
+                        <div class="sig-card">
+                            <div>
+                                <div style="font-size:0.68rem; color:var(--text-muted); font-weight:700;">KONTROL EDEN</div>
+                                <input type="text" id="sig-controller-input" class="form-control" style="margin-top:4px; font-weight:800; width:220px;" value="RAFET CANBEK" onchange="updateDayMetaField('controllerName', this.value)">
+                            </div>
+                            <div style="text-align:right;">
+                                <button class="btn btn-xs btn-primary" onclick="approveDayController()" id="btn-controller-approve">
+                                    <i class="fa-solid fa-check-double"></i> <span id="lbl-controller-approve">Kontrol Onayı Ver</span>
+                                </button>
+                                <div style="font-size:0.68rem; color:var(--text-muted); margin-top:4px;" id="sub-controller-approve">A4 Baskıda Görünür</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </section>
+
+                <!-- ======================================================================
+                     SEKME 2: A4 ÇIKTI & BİREBİR KLASİK EXCEL FORMU ÖNİZLEME
+                     ====================================================================== -->
+                <section id="tab-a4" class="tab-section">
+                    <div class="a4-preview-toolbar no-print">
+                        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                            <span style="font-weight:800; color:var(--text-white);"><i class="fa-solid fa-file-lines" style="color:var(--amber-warn);"></i> Birebir Klasik Excel "GÜNLÜK KASA FORMU" A4 Kağıt Önizlemesi</span>
+                            <span class="badge badge-info" id="a4-toolbar-date">17.10.2026</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                            <button class="btn btn-warning btn-sm" onclick="window.print()">
+                                <i class="fa-solid fa-print"></i> <span>Şimdi A4 Kağıda Yazdır / PDF Kaydet</span>
+                            </button>
+                            <button class="btn btn-success btn-sm" onclick="exportDailyKasaExcel()">
+                                <i class="fa-solid fa-file-excel"></i> <span>Excel (.xls) İndir</span>
+                            </button>
+                            <button class="btn btn-sm" onclick="shareDailyKasaWhatsApp()">
+                                <i class="fa-brands fa-whatsapp" style="color:#25D366;"></i> <span>WhatsApp Özeti</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="a4-paper-Viewport">
+                        <div class="a4-sheet-paper" id="a4-printable-sheet">
+                            <!-- app.js tarafından milimetrik olarak doldurulur -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======================================================================
+                     SEKME 3: KASA ARŞİVİ, TARİHÇE VE DETAYLI ARAMA
+                     ====================================================================== -->
+                <section id="tab-archive" class="tab-section">
+                    <div class="kasa-panel" style="margin-bottom:14px;">
+                        <div class="kasa-panel-header">
+                            <div class="kasa-panel-title">
+                                <i class="fa-solid fa-magnifying-glass" style="color:var(--dizsan-cyan);"></i>
+                                <span>TÜM GÜNLERDE KASA HAREKETİ, CARİ, PLAKA VE TDR TEDARİK ARAMA</span>
+                            </div>
+                        </div>
+                        <div style="padding:12px;">
+                            <div style="display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:8px; margin-bottom:10px;">
+                                <input type="text" id="archive-search-input" class="form-control" placeholder="Cari adı, açıklama, plaka (19 DS 134), fatura no veya TDR kodu ara..." oninput="renderArchiveSection()">
+                                <select id="archive-section-filter" class="form-control" onchange="renderArchiveSection()">
+                                    <option value="ALL">Tüm Tablolar</option>
+                                    <option value="CASH_IN">Nakit Girişler</option>
+                                    <option value="CASH_OUT">Günlük Nakit Ödemeler</option>
+                                    <option value="POS_CC">Kredi Kartı (POS)</option>
+                                    <option value="CARI_CC">Cari Kredi Kartı Ödemesi</option>
+                                    <option value="CHECK_OUT">Çek - Senet Çıkışı</option>
+                                    <option value="CHECK_CARI_BANK">Çek Çıkış Cari / Banka</option>
+                                    <option value="WIRE_IN">Gelen Havale</option>
+                                    <option value="WIRE_OUT">Giden Havale</option>
+                                </select>
+                                <select id="archive-tdr-filter" class="form-control" onchange="renderArchiveSection()">
+                                    <option value="ALL">Tümü (TDR + Normal)</option>
+                                    <option value="ONLY_TDR">Sadece TDR (Tedarik) Kalemleri</option>
+                                </select>
+                                <button class="btn btn-sm" onclick="exportArchiveSearchCSV()">
+                                    <i class="fa-solid fa-download"></i> <span>CSV İndir</span>
+                                </button>
+                            </div>
+                            <div class="kasa-table-wrap">
+                                <table class="kasa-table">
+                                    <thead>
+                                        <tr>
+                                            <th>TARİH</th>
+                                            <th>TABLO / BÖLÜM</th>
+                                            <th>KAYNAK / BANKA / CARİ</th>
+                                            <th>AÇIKLAMA</th>
+                                            <th style="text-align:right;">TUTAR</th>
+                                            <th>EKLEYEN</th>
+                                            <th style="text-align:right;">GİT</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-archive-search"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="kasa-panel">
+                        <div class="kasa-panel-header">
+                            <div class="kasa-panel-title">
+                                <i class="fa-solid fa-calendar-days" style="color:#10b981;"></i>
+                                <span>GÜNLÜK KASA DEFTERİ ÖZETLERİ (GEÇMİŞ &amp; GÜNCEL GÜNLER)</span>
+                            </div>
+                        </div>
+                        <div class="kasa-table-wrap">
+                            <table class="kasa-table">
+                                <thead>
+                                    <tr>
+                                        <th>TARİH</th>
+                                        <th style="text-align:right;">KASA DEVRİ (+)</th>
+                                        <th style="text-align:right;">GİRİŞLER TOPLAMI</th>
+                                        <th style="text-align:right;">ÖDEMELER TOPLAMI</th>
+                                        <th style="text-align:right;">DEVREDEN GENEL TOPLAM</th>
+                                        <th style="text-align:right;">KREDİ KARTI (POS)</th>
+                                        <th style="text-align:right;">CARİ KART / HAVALE</th>
+                                        <th>SORUMLU / KONTROL</th>
+                                        <th style="text-align:right;">İŞLEM</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-archive-days"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======================================================================
+                     SEKME 4: KULLANICILAR, YETKİ MATRİSİ VE DENETİM LOGLARI
+                     ====================================================================== -->
+                <section id="tab-admin" class="tab-section">
+                    <div class="kasa-panel" style="margin-bottom:14px;">
+                        <div class="kasa-panel-header">
+                            <div class="kasa-panel-title">
+                                <i class="fa-solid fa-user-shield" style="color:var(--dizsan-cyan);"></i>
+                                <span>KULLANICI VE YETKİ SINIRLAMASI YÖNETİMİ (GÖRÜNTÜLEME / EKLEME / DEĞİŞİKLİK / TAM YETKİ)</span>
+                            </div>
+                            <button class="btn btn-primary btn-xs perm-require-admin" onclick="openUserModal()">
+                                <i class="fa-solid fa-user-plus"></i> <span>+ Yeni Kullanıcı Tanımla</span>
+                            </button>
+                        </div>
+                        <div style="padding:10px 12px; font-size:0.75rem; color:var(--text-secondary); border-bottom:1px solid var(--border-subtle);">
+                            Her kullanıcı için hazır yetki profili seçebilir veya <strong>Görüntüleme</strong>, <strong>Ekleme</strong>, <strong>Değişiklik/Düzenleme</strong>, <strong>Silme</strong> ve <strong>Yönetici</strong> kutucuklarını tek tıkla açıp kapatabilirsiniz.
+                        </div>
+                        <div class="kasa-table-wrap">
+                            <table class="kasa-table">
+                                <thead>
+                                    <tr>
+                                        <th>AD SOYAD &amp; KULLANICI ADI</th>
+                                        <th>BİRİM / UNVAN</th>
+                                        <th>YETKİ PROFİLİ</th>
+                                        <th>DETAYLI İZİN ANAHTARLARI (ANLIK DEĞİŞTİR)</th>
+                                        <th style="text-align:right;">İŞLEM</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-admin-users"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="kasa-dual-grid">
+                        <div class="kasa-panel">
+                            <div class="kasa-panel-header">
+                                <div class="kasa-panel-title">
+                                    <i class="fa-solid fa-clipboard-list" style="color:#f59e0b;"></i>
+                                    <span>KASA İŞLEM &amp; GÜVENLİK DENETİM LOGLARI</span>
+                                </div>
+                                <button class="btn btn-xs" onclick="exportAuditLogsCSV()">
+                                    <i class="fa-solid fa-file-csv"></i> <span>Logları İndir</span>
+                                </button>
+                            </div>
+                            <div class="kasa-table-wrap" style="max-height:320px; overflow-y:auto;">
+                                <table class="kasa-table">
+                                    <thead>
+                                        <tr>
+                                            <th>TARİH / SAAT</th>
+                                            <th>KULLANICI</th>
+                                            <th>İŞLEM TÜRÜ</th>
+                                            <th>DETAY</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-audit-logs"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="kasa-panel">
+                            <div class="kasa-panel-header">
+                                <div class="kasa-panel-title">
+                                    <i class="fa-solid fa-database" style="color:#10b981;"></i>
+                                    <span>VERİ YEDEKLEME, GERİ YÜKLEME &amp; SIFIRLAMA</span>
+                                </div>
+                            </div>
+                            <div style="padding:14px; display:flex; flex-direction:column; gap:10px;">
+                                <p style="font-size:0.76rem; color:var(--text-secondary);">
+                                    Tüm günlük kasa föyleriniz %100 manuel olarak girilir; hiçbir dış sistemden veri çekilmez. Verileriniz yerel olarak kaydedilir ve istediğiniz zaman JSON veya Excel yedeği alabilirsiniz.
+                                </p>
+                                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                                    <button class="btn btn-primary btn-sm" onclick="exportFullBackupJSON()">
+                                        <i class="fa-solid fa-download"></i> <span>Tam Yedek İndir (.JSON)</span>
+                                    </button>
+                                    <label class="btn btn-sm perm-require-admin" style="cursor:pointer;">
+                                        <i class="fa-solid fa-upload"></i> <span>Yedek Dosyası Yükle</span>
+                                        <input type="file" accept=".json" style="display:none;" onchange="importFullBackupJSON(event)">
+                                    </label>
+                                    <button class="btn btn-danger btn-sm perm-require-admin" onclick="resetAllKasaDataToZero()">
+                                        <i class="fa-solid fa-trash-can"></i> <span>Tüm Günleri Sıfırla (0,00 ₺)</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MOBİL ALT NAVİGASYON ÇUBUĞU -->
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+        <button class="mob-nav-item active" data-tab="form" onclick="switchTab('form')">
+            <i class="fa-solid fa-cash-register"></i>
+            <span>Günlük Kasa</span>
+        </button>
+        <button class="mob-nav-item" data-tab="a4" onclick="switchTab('a4')">
+            <i class="fa-solid fa-print"></i>
+            <span>A4 Çıktı</span>
+        </button>
+        <button class="mob-nav-item" data-tab="archive" onclick="switchTab('archive')">
+            <i class="fa-solid fa-calendar-check"></i>
+            <span>Arşiv &amp; Ara</span>
+        </button>
+        <button class="mob-nav-item" data-tab="admin" onclick="switchTab('admin')">
+            <i class="fa-solid fa-user-lock"></i>
+            <span>Yetkiler</span>
+        </button>
+    </nav>
+
+    <!-- ==========================================================================
+         3. MODALLAR (KAYIT EKLE/DÜZENLE, DEVİR DÜZELT, KULLANICI/YETKİ, ŞİFRE)
+         ========================================================================== -->
+
+    <!-- KASA KAYDI EKLE / DÜZENLE MODALI -->
+    <div id="modal-entry" class="modal-backdrop">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 id="modal-entry-title"><i class="fa-solid fa-plus-circle" style="color:var(--dizsan-cyan);"></i> <span>Kasa Kaydı Ekle</span></h3>
+                <button class="btn btn-xs" onclick="closeModal('modal-entry')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="form-entry" onsubmit="handleSaveEntry(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="entry-id">
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="entry-date">Kasa Tarihi (GG.AA.YYYY)</label>
+                            <input type="text" id="entry-date" class="form-control" placeholder="GG.AA.YYYY" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="entry-section">Tablo / İşlem Bölümü</label>
+                            <select id="entry-section" class="form-control" onchange="handleEntrySectionChange(this.value)" required>
+                                <option value="CASH_IN">1. Nakit Girişler (Üst Sol Tablo)</option>
+                                <option value="CASH_OUT">2. Günlük Nakit Ödemeler (Üst Sağ Tablo)</option>
+                                <option value="POS_CC">3. Kredi Kartı / POS Çekimi (Alt Sağ)</option>
+                                <option value="CARI_CC">4. Cari Kredi Kartı Ödemesi (Alt Sol)</option>
+                                <option value="CHECK_OUT">5. Çek - Senet Çıkışı (Alt Sol)</option>
+                                <option value="CHECK_CARI_BANK">6. Çek Çıkış Cari Hesap / Banka</option>
+                                <option value="WIRE_IN">7. Gelen Havale (Alt Sağ)</option>
+                                <option value="WIRE_OUT">8. Giden Havale (Alt Sol)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2" id="entry-row-party-due">
+                        <div class="form-group" id="group-entry-col1">
+                            <label for="entry-col1" id="lbl-entry-col1">Kaynak / Banka / Cari</label>
+                            <input type="text" id="entry-col1" class="form-control" placeholder="Örn: ZİRAAT, MEHMET DUMANLI, NAKİT">
+                        </div>
+                        <div class="form-group" id="group-entry-due" style="display:none;">
+                            <label for="entry-due-date">Vade Tarihi (GG.AA.YYYY)</label>
+                            <input type="text" id="entry-due-date" class="form-control" placeholder="GG.AA.YYYY">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="entry-desc" id="lbl-entry-desc">Açıklama / Müşteri / Fatura / Plaka (TDR ile başlarsa otomatik Tedarik sayılır)</label>
+                        <input type="text" id="entry-desc" class="form-control" placeholder="Açıklama giriniz..." required>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="entry-amount">Tutar (₺)</label>
+                            <input type="number" step="0.01" id="entry-amount" class="form-control" placeholder="0.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="entry-code">Hizmet / Stok Kodu (Opsiyonel - TDR Tedarik Kuralı)</label>
+                            <input type="text" id="entry-code" class="form-control" placeholder="Örn: TDR.01 veya boş bırakın">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn" onclick="closeModal('modal-entry')">Vazgeç</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MANUEL KASA DEVRİ AYARLAMA MODALI -->
+    <div id="modal-carryover" class="modal-backdrop">
+        <div class="modal-dialog" style="max-width:460px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-scale-balanced" style="color:var(--amber-warn);"></i> <span>Manuel Kasa Devri &amp; Önceki Gün Özeti</span></h3>
+                <button class="btn btn-xs" onclick="closeModal('modal-carryover')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="handleSaveCarryoverOverride(event)">
+                <div class="modal-body">
+                    <p style="font-size:0.74rem; color:var(--text-secondary); margin-bottom:10px;">
+                        Kasa devrini ve üst özet satırlarını tamamen manuel olarak aşağıdan girebilirsiniz.
+                    </p>
+                    <div class="form-group">
+                        <label>Seçili Gün</label>
+                        <input type="text" id="carry-modal-date" class="form-control" readonly>
+                    </div>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="carry-modal-prev-in">Önceki Gün Devir ve Girişler Toplamı (₺)</label>
+                            <input type="number" step="0.01" id="carry-modal-prev-in" class="form-control" placeholder="0.00" oninput="autoCalcCarryFromPrevInputs()">
+                        </div>
+                        <div class="form-group">
+                            <label for="carry-modal-prev-out">Önceki Gün Ödemeler Toplamı (₺)</label>
+                            <input type="number" step="0.01" id="carry-modal-prev-out" class="form-control" placeholder="0.00" oninput="autoCalcCarryFromPrevInputs()">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="carry-modal-label">Devir Satırı Açıklaması</label>
+                        <input type="text" id="carry-modal-label" class="form-control" placeholder="Örn: KASA DEVRİ ( + ) BAKİYESİ">
+                    </div>
+                    <div class="form-group">
+                        <label for="carry-modal-amount">Bugüne Devreden Kasa Bakiyesi (+) (₺)</label>
+                        <input type="number" step="0.01" id="carry-modal-amount" class="form-control" placeholder="0.00">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn" onclick="clearCarryoverOverride()">Sıfırla / Otomatik</button>
+                    <button type="submit" class="btn btn-primary">Devri Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- KULLANICI VE YETKİ EKLE/DÜZENLE MODALI -->
+    <div id="modal-user" class="modal-backdrop">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 id="modal-user-title"><i class="fa-solid fa-user-shield" style="color:var(--dizsan-cyan);"></i> <span>Kullanıcı ve Yetki Tanımla</span></h3>
+                <button class="btn btn-xs" onclick="closeModal('modal-user')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="handleSaveUser(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="user-edit-original-username">
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="user-name-input">Ad Soyad</label>
+                            <input type="text" id="user-name-input" class="form-control" placeholder="Örn: AHMET YILMAZ" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="user-username-input">Kullanıcı Adı (Giriş İçin)</label>
+                            <input type="text" id="user-username-input" class="form-control" placeholder="Örn: ahmet.yilmaz" required>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="user-dept-input">Departman / Görev</label>
+                            <input type="text" id="user-dept-input" class="form-control" placeholder="Örn: Muhasebe / Ön Büro">
+                        </div>
+                        <div class="form-group">
+                            <label for="user-pass-input">Giriş Şifresi (Değiştirmek için yazın)</label>
+                            <input type="text" id="user-pass-input" class="form-control" placeholder="Varsayılan: 123456">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="user-role-preset">Yetki Seviyesi (Hazır Profil Seçimi)</label>
+                        <select id="user-role-preset" class="form-control" onchange="applyRolePresetCheckboxes(this.value)">
+                            <option value="ADMIN">1. Tam Yetki / Yönetici (Görüntüleme + Ekleme + Değişiklik + Silme + Yetki Yönetimi)</option>
+                            <option value="EDITOR">2. Değişiklik &amp; Düzenleme Yetkisi (Görüntüleme + Ekleme + Değişiklik + Silme)</option>
+                            <option value="CONTRIBUTOR">3. Sadece Ekleme Yetkisi (Görüntüleme + Yeni Kayıt Ekleme — Değişiklik/Silme Yasak)</option>
+                            <option value="VIEWER">4. Sadece Görüntüleme / Salt Okunur (Sadece İnceleme ve A4/Excel Çıktı Alma)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Özel Yetki Kutucukları (İstediğiniz Kombinasyonu Seçebilirsiniz)</label>
+                        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;">
+                            <label class="perm-pill-check"><input type="checkbox" id="perm-chk-view" checked disabled> <span>Görüntüleme &amp; A4 Çıktı</span></label>
+                            <label class="perm-pill-check"><input type="checkbox" id="perm-chk-add"> <span>Yeni Kayıt Ekleme</span></label>
+                            <label class="perm-pill-check"><input type="checkbox" id="perm-chk-edit"> <span>Değişiklik / Düzenleme</span></label>
+                            <label class="perm-pill-check"><input type="checkbox" id="perm-chk-delete"> <span>Kayıt Silme</span></label>
+                            <label class="perm-pill-check"><input type="checkbox" id="perm-chk-lock"> <span>Gün Sonu Onay / Kilit</span></label>
+                            <label class="perm-pill-check"><input type="checkbox" id="perm-chk-admin"> <span>Kullanıcı &amp; Yetki Yönetimi</span></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn" onclick="closeModal('modal-user')">İptal</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Kullanıcıyı Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ŞİFRE DEĞİŞTİR MODALI -->
+    <div id="modal-change-password" class="modal-backdrop">
+        <div class="modal-dialog" style="max-width:400px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-key" style="color:var(--dizsan-cyan);"></i> <span>Şifre Değiştir</span></h3>
+                <button class="btn btn-xs" onclick="closeModal('modal-change-password')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="handleChangePasswordSubmit(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Mevcut Şifreniz</label>
+                        <input type="password" id="chg-old-pass" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Yeni Şifre</label>
+                        <input type="password" id="chg-new-pass" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Yeni Şifre (Tekrar)</label>
+                        <input type="password" id="chg-confirm-pass" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn" onclick="closeModal('modal-change-password')">İptal</button>
+                    <button type="submit" class="btn btn-primary">Şifreyi Güncelle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ŞİFREMİ UNUTTUM MODALI -->
+    <div id="modal-forgot-password" class="modal-backdrop">
+        <div class="modal-dialog" style="max-width:410px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-unlock-keyhole" style="color:var(--amber-warn);"></i> <span>Şifre Sıfırlama</span></h3>
+                <button class="btn btn-xs" onclick="closeModal('modal-forgot-password')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div id="forgot-step-1">
+                    <div class="form-group">
+                        <label>Kullanıcı Adınız veya Ad Soyad</label>
+                        <input type="text" id="forgot-username" class="form-control" placeholder="Örn: gokhan.ozbulut">
+                    </div>
+                    <button type="button" class="btn btn-primary" style="width:100%;" onclick="sendPasswordResetCode()">Doğrulama Kodu Oluştur</button>
+                </div>
+                <div id="forgot-step-2" style="display:none;">
+                    <div id="forgot-code-display" style="padding:8px 10px; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); border-radius:8px; font-size:0.75rem; margin-bottom:10px;"></div>
+                    <div class="form-group">
+                        <label>Doğrulama Kodu</label>
+                        <input type="text" id="forgot-code-input" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Yeni Şifreniz</label>
+                        <input type="password" id="forgot-new-pass" class="form-control">
+                    </div>
+                    <button type="button" class="btn btn-primary" style="width:100%;" onclick="verifyAndResetPassword()">Şifreyi Yenile</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KURULUM REHBERİ MODALI -->
+    <div id="modal-install-guide" class="modal-backdrop">
+        <div class="modal-dialog" style="max-width:460px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-mobile-screen-button" style="color:var(--dizsan-cyan);"></i> <span>iOS, Android &amp; Windows Kurulumu</span></h3>
+                <button class="btn btn-xs" onclick="closeModal('modal-install-guide')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" style="font-size:0.78rem; color:var(--text-secondary); display:flex; flex-direction:column; gap:10px;">
+                <div style="padding:10px; background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid var(--border-subtle);">
+                    <strong style="color:var(--text-white);"><i class="fa-brands fa-apple"></i> iPhone &amp; iPad (iOS Safari):</strong>
+                    <p style="margin-top:4px;">Safari'de alt ortadaki <strong>Paylaş</strong> simgesine dokunun ve <strong>"Ana Ekrana Ekle"</strong> seçeneğini seçin.</p>
+                </div>
+                <div style="padding:10px; background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid var(--border-subtle);">
+                    <strong style="color:var(--text-white);"><i class="fa-brands fa-android"></i> Android Telefon &amp; Tablet:</strong>
+                    <p style="margin-top:4px;">Tarayıcı menüsünden (⋮) <strong>"Uygulamayı Yükle / Ana Ekrana Ekle"</strong> seçeneğine dokunun.</p>
+                </div>
+                <div style="padding:10px; background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid var(--border-subtle);">
+                    <strong style="color:var(--text-white);"><i class="fa-brands fa-windows"></i> Windows &amp; Mac Masaüstü:</strong>
+                    <p style="margin-top:4px;">Adres çubuğunun sağındaki <strong>Uygulamayı Yükle</strong> simgesine tıklayarak masaüstü uygulaması olarak çalıştırabilirsiniz.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="closeModal('modal-install-guide')">Tamam</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="auto-date-helper.js"></script>
+    <script src="app.js?v=1.0.1"></script>
+    <script src="dizsan-back-navigation.js"></script>
+    <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.0.1"></script>
+</body>
+</html>

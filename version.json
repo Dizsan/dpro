@@ -1,6 +1,6 @@
 {
-  "version": "1.6.0",
-  "updatedAt": "2026-10-19T02:02:00Z",
-  "notes": "v1.6.0 — D-Met (Dizsan Entegre Medya Takip & 5 İl 55 İlçe Scania Kaza Radarı), DiKas Finans & Nakit Akışı ve Sol Menü Kaydırma Düzeltmesi",
+  "version": "1.6.1",
+  "updatedAt": "2026-10-19T12:58:00Z",
+  "notes": "v1.6.1 — Dizsan Günlük Kasa (%100 Manuel Günlük Kasa Formu, Yetki Matrisi & A4 Çıktı), D-Met ve DiKas D-Pro Sol Menü Entegrasyonu",
   "mandatory": true
 }

@@ -1,0 +1,25 @@
+{
+  "name": "Dizsan Günlük Kasa Formu & Kasa Takip",
+  "short_name": "Dizsan Kasa",
+  "description": "Dizsan Günlük Kasa Formu, Nakit Giriş/Ödeme, Kredi Kartı, Çek/Senet, Havale, Yetki Yönetimi ve Birebir A4 Çıktı Sistemi",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#060913",
+  "theme_color": "#0284c7",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
