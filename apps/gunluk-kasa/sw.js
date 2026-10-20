@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dizsan-kasa-v1.0.1';
+const CACHE_NAME = 'dizsan-kasa-v1.0.4';
 const ASSETS = [
   './',
   './index.html',
@@ -9,6 +9,7 @@ const ASSETS = [
   './dizsan-auto-updater.js',
   './dizsan-back-navigation.js',
   './dizsan_logo.jpg',
+  './dizsan_full_logo.png',
   './icon-192.png',
   './icon-512.png'
 ];

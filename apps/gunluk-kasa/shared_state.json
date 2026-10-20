@@ -1,8 +1,8 @@
 {
-  "version": "1.0.1",
-  "updatedAt": "19.10.2026 12:40:00",
-  "updatedAtMs": 1792402800000,
-  "stateRevision": 2,
+  "version": "1.0.4",
+  "updatedAt": "20.10.2026 16:54:54",
+  "updatedAtMs": 1792504494501,
+  "stateRevision": 22,
   "users": [
     {
       "order": 0,
@@ -28,13 +28,13 @@
       "email": "gozbulut@dizsan.com.tr",
       "pinStamp": "3741314348-4038843960-1626309061",
       "dept": "Kasa Sorumlusu / Muhasebe & Finans",
-      "rolePreset": "EDITOR",
+      "rolePreset": "CONTRIBUTOR",
       "permissions": {
         "view": true,
         "add": true,
-        "edit": true,
-        "delete": true,
-        "lockDay": true,
+        "edit": false,
+        "delete": false,
+        "lockDay": false,
         "manageUsers": false
       }
     },
@@ -45,14 +45,14 @@
       "email": "rcanbek@dizsan.com.tr",
       "pinStamp": "3592512679-3759997292-303417646",
       "dept": "Genel Müdür / Kontrol Eden",
-      "rolePreset": "ADMIN",
+      "rolePreset": "CONTRIBUTOR",
       "permissions": {
         "view": true,
         "add": true,
-        "edit": true,
-        "delete": true,
-        "lockDay": true,
-        "manageUsers": true
+        "edit": false,
+        "delete": false,
+        "lockDay": false,
+        "manageUsers": false
       }
     },
     {
@@ -124,8 +124,182 @@
       }
     }
   ],
-  "days": {},
+  "days": {
+    "2026-10-19": {
+      "dateISO": "2026-10-19",
+      "euroRate": "55,5676",
+      "usdRate": "49,5523",
+      "prevInOverride": null,
+      "prevOutOverride": null,
+      "carryoverOverride": null,
+      "carryoverLabel": "18/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
+      "cashierName": "GÖKHAN ÖZBULUT",
+      "controllerName": "RAFET CANBEK",
+      "controllerApproved": false,
+      "isLocked": false,
+      "entries": [
+        {
+          "id": "ENT-1792413946541-678",
+          "dateISO": "2026-10-19",
+          "section": "CASH_OUT",
+          "col1": "YAKIT GİDERİ",
+          "desc": "19AAJ501 YAKIT ALIMI",
+          "dueDate": "",
+          "amount": 10000,
+          "code": "",
+          "createdBy": "ÖMER EREN",
+          "createdAt": "19.10.2026 15:45:46"
+        },
+        {
+          "id": "ENT-1792413985584-132",
+          "dateISO": "2026-10-19",
+          "section": "CASH_IN",
+          "col1": "AHMET DENEME",
+          "desc": "CARİ HESABA MAHSUBEN",
+          "dueDate": "",
+          "amount": 11000,
+          "code": "",
+          "createdBy": "ÖMER EREN",
+          "createdAt": "19.10.2026 15:46:25"
+        }
+      ],
+      "tcmbSlotKey": "2026-10-19_HISTORICAL"
+    },
+    "2026-10-20": {
+      "dateISO": "2026-10-20",
+      "euroRate": "55,6191",
+      "usdRate": "49,5780",
+      "prevInOverride": null,
+      "prevOutOverride": null,
+      "carryoverOverride": null,
+      "carryoverLabel": "19/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
+      "cashierName": "GÖKHAN ÖZBULUT",
+      "controllerName": "RAFET CANBEK",
+      "controllerApproved": false,
+      "isLocked": false,
+      "entries": [
+        {
+          "id": "ENT-1792493531934-42",
+          "dateISO": "2026-10-20",
+          "section": "CASH_IN",
+          "col1": "CARI HESABA MAHSUBEN ÖDEME",
+          "desc": "CEMAL DEMIR CARI ÖDEME",
+          "dueDate": "",
+          "amount": 50000,
+          "code": "",
+          "createdBy": "ÖMER EREN",
+          "createdAt": "20.10.2026 13:52:11"
+        },
+        {
+          "id": "ENT-1792493562961-823",
+          "dateISO": "2026-10-20",
+          "section": "POS_CC",
+          "col1": "CARI HESABE ÖDEME",
+          "desc": "CARI ÖDEME",
+          "dueDate": "",
+          "amount": 10000,
+          "code": "",
+          "createdBy": "ÖMER EREN",
+          "createdAt": "20.10.2026 13:52:42"
+        },
+        {
+          "id": "ENT-1792493593726-672",
+          "dateISO": "2026-10-20",
+          "section": "WIRE_IN",
+          "col1": "GARANTI BANKASI ÖMER EREN ŞAHSI HESAP",
+          "desc": "CARI HESABA ÖDEME",
+          "dueDate": "",
+          "amount": 8000,
+          "code": "",
+          "createdBy": "ÖMER EREN",
+          "createdAt": "20.10.2026 13:53:13"
+        }
+      ],
+      "tcmbSlotKey": "2026-10-20_AFTER_1630"
+    },
+    "2026-10-18": {
+      "dateISO": "2026-10-18",
+      "euroRate": "55,6180",
+      "usdRate": "49,4463",
+      "prevInOverride": null,
+      "prevOutOverride": null,
+      "carryoverOverride": null,
+      "carryoverLabel": "17/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
+      "cashierName": "GÖKHAN ÖZBULUT",
+      "controllerName": "RAFET CANBEK",
+      "controllerApproved": false,
+      "isLocked": false,
+      "entries": [],
+      "tcmbSlotKey": "2026-10-18_HISTORICAL"
+    }
+  },
   "auditLogs": [
+    {
+      "timestamp": "20.10.2026 13:53:13",
+      "user": "ÖMER EREN",
+      "category": "MANUEL GİRİŞ",
+      "detail": "20.10.2026 [Gelen Havale] \"CARI HESABA ÖDEME\" (8.000,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "20.10.2026 13:52:42",
+      "user": "ÖMER EREN",
+      "category": "MANUEL GİRİŞ",
+      "detail": "20.10.2026 [Kredi Kartı (POS)] \"CARI ÖDEME\" (10.000,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "20.10.2026 13:52:11",
+      "user": "ÖMER EREN",
+      "category": "MANUEL GİRİŞ",
+      "detail": "20.10.2026 [Nakit Kasa Girişi] \"CEMAL DEMIR CARI ÖDEME\" (50.000,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "19.10.2026 15:49:10",
+      "user": "ÖMER EREN",
+      "category": "YETKİ DEĞİŞİKLİĞİ",
+      "detail": "RAFET CANBEK için \"edit\" izni KAPATILDI."
+    },
+    {
+      "timestamp": "19.10.2026 15:49:09",
+      "user": "ÖMER EREN",
+      "category": "YETKİ DEĞİŞİKLİĞİ",
+      "detail": "RAFET CANBEK için \"edit\" izni AÇILDI."
+    },
+    {
+      "timestamp": "19.10.2026 15:49:09",
+      "user": "ÖMER EREN",
+      "category": "YETKİ DEĞİŞİKLİĞİ",
+      "detail": "RAFET CANBEK için \"edit\" izni KAPATILDI."
+    },
+    {
+      "timestamp": "19.10.2026 15:49:08",
+      "user": "ÖMER EREN",
+      "category": "YETKİ DEĞİŞİKLİĞİ",
+      "detail": "RAFET CANBEK için \"edit\" izni AÇILDI."
+    },
+    {
+      "timestamp": "19.10.2026 15:48:04",
+      "user": "ÖMER EREN",
+      "category": "YETKİ DEĞİŞİKLİĞİ",
+      "detail": "RAFET CANBEK kullanıcısının yetki profili \"Sadece Ekleme Yetkisi\" olarak güncellendi."
+    },
+    {
+      "timestamp": "19.10.2026 15:47:57",
+      "user": "ÖMER EREN",
+      "category": "YETKİ DEĞİŞİKLİĞİ",
+      "detail": "GÖKHAN ÖZBULUT kullanıcısının yetki profili \"Sadece Ekleme Yetkisi\" olarak güncellendi."
+    },
+    {
+      "timestamp": "19.10.2026 15:46:25",
+      "user": "ÖMER EREN",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Nakit Kasa Girişi] \"CARİ HESABA MAHSUBEN\" (11.000,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "19.10.2026 15:45:46",
+      "user": "ÖMER EREN",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Günlük Nakit Ödeme] \"19AAJ501 YAKIT ALIMI\" (10.000,00 ₺) eklendi."
+    },
     {
       "timestamp": "19.10.2026 12:40:00",
       "user": "Sistem",

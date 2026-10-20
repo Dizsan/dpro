@@ -14,7 +14,7 @@
  * ==========================================================================
  */
 
-const CURRENT_APP_VERSION = "1.0.1";
+const CURRENT_APP_VERSION = "1.0.4";
 window.CURRENT_APP_VERSION = CURRENT_APP_VERSION;
 
 const OLD_DEMO_STORAGE_KEY = "dizsan_gunluk_kasa_state_v1";
@@ -99,7 +99,7 @@ const ROLE_PRESETS = {
     },
     EDITOR: {
         code: "EDITOR",
-        label: "Değişiklik & Düzenleme Yetkisi",
+        label: "Değişiklik & Düzenleme",
         badgeClass: "badge-info",
         permissions: { view: true, add: true, edit: true, delete: true, lockDay: true, manageUsers: false }
     },
@@ -111,9 +111,15 @@ const ROLE_PRESETS = {
     },
     VIEWER: {
         code: "VIEWER",
-        label: "Sadece Görüntüleme (Salt Okunur)",
-        badgeClass: "badge-danger",
+        label: "Sadece Görüntüleme",
+        badgeClass: "badge-info",
         permissions: { view: true, add: false, edit: false, delete: false, lockDay: false, manageUsers: false }
+    },
+    NONE: {
+        code: "NONE",
+        label: "Hiçbiri (Erişime Kapalı / Erişim Engeli)",
+        badgeClass: "badge-danger",
+        permissions: { view: false, add: false, edit: false, delete: false, lockDay: false, manageUsers: false }
     }
 };
 
@@ -320,6 +326,47 @@ function formatMoneyTR(amount) {
     return `${formatNumberTR(amount)} ₺`;
 }
 
+function parseMoneyInputTR(rawVal) {
+    if (rawVal === null || rawVal === undefined) return 0;
+    if (typeof rawVal === "number") return isFinite(rawVal) ? rawVal : 0;
+    let s = String(rawVal).trim().replace(/[₺\s]/g, "");
+    if (!s) return 0;
+    if (s.includes(",")) {
+        s = s.replace(/\./g, "").replace(",", ".");
+    } else {
+        const dotCount = (s.match(/\./g) || []).length;
+        if (dotCount > 1) {
+            s = s.replace(/\./g, "");
+        } else if (dotCount === 1) {
+            const parts = s.split(".");
+            if (parts[1] && parts[1].length === 3) {
+                s = s.replace(/\./g, "");
+            }
+        }
+    }
+    const n = parseFloat(s);
+    return isFinite(n) ? n : 0;
+}
+
+function formatMoneyInputLive(inputEl) {
+    if (!inputEl) return;
+    const raw = String(inputEl.value || "");
+    if (!raw) return;
+
+    const cleaned = raw.replace(/[^0-9,]/g, "");
+    const commaIdx = cleaned.indexOf(",");
+    let intPart = commaIdx !== -1 ? cleaned.slice(0, commaIdx) : cleaned;
+    let decPart = commaIdx !== -1 ? cleaned.slice(commaIdx + 1).replace(/,/g, "").slice(0, 2) : null;
+
+    intPart = intPart.replace(/^0+(?=\d)/, "");
+    const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+    const nextVal = decPart !== null ? `${formattedInt || "0"},${decPart}` : formattedInt;
+    if (inputEl.value !== nextVal) {
+        inputEl.value = nextVal;
+    }
+}
+
 function isTdrSupplyItem(entry) {
     if (!entry) return false;
     const code = String(entry.code || "").trim().toUpperCase();
@@ -335,7 +382,7 @@ const SECTION_LABELS = {
     CASH_IN: "Nakit Kasa Girişi",
     CASH_OUT: "Günlük Nakit Ödeme",
     POS_CC: "Kredi Kartı (POS)",
-    CARI_CC: "Cari Kredi Kartı Ödemesi",
+    CARI_CC: "Şirket Kredi Kartı ile Ödeme (Gider)",
     CHECK_OUT: "Çek - Senet Çıkışı",
     CHECK_CARI_BANK: "Çek Çıkış Cari / Banka",
     WIRE_IN: "Gelen Havale",
@@ -438,11 +485,8 @@ function calculateDayMetrics(targetDateISO) {
             .filter(e => e.section === sec)
             .reduce((acc, e) => acc + (Number(e.amount) || 0), 0);
 
-        const cashInEntriesSum = sumSection("CASH_IN");
-        const totalInWithCarry = Number((carryover + cashInEntriesSum).toFixed(2));
+        const cashInEntriesSum = Number(sumSection("CASH_IN").toFixed(2));
         const cashOutSum = Number(sumSection("CASH_OUT").toFixed(2));
-        const netClosing = Number((totalInWithCarry - cashOutSum).toFixed(2));
-
         const posCcSum = Number(sumSection("POS_CC").toFixed(2));
         const cariCcSum = Number(sumSection("CARI_CC").toFixed(2));
         const checkOutSum = Number(sumSection("CHECK_OUT").toFixed(2));
@@ -450,12 +494,19 @@ function calculateDayMetrics(targetDateISO) {
         const wireInSum = Number(sumSection("WIRE_IN").toFixed(2));
         const wireOutSum = Number(sumSection("WIRE_OUT").toFixed(2));
 
+        const totalGelirAll = Number((cashInEntriesSum + posCcSum + wireInSum).toFixed(2));
+        const totalGiderAll = Number((cashOutSum + wireOutSum + cariCcSum + checkOutSum + checkCariSum).toFixed(2));
+        const totalInWithCarry = Number((carryover + totalGelirAll).toFixed(2));
+        const netClosing = Number((carryover + totalGelirAll - totalGiderAll).toFixed(2));
+
         metricsByDate[iso] = {
             dateISO: iso,
             carrySourceDateISO,
             carryover,
             hasOverride,
             cashInEntriesSum,
+            totalGelirAll,
+            totalGiderAll,
             totalInWithCarry,
             cashOutSum,
             netClosing,
@@ -541,30 +592,65 @@ async function syncStateToServer() {
 }
 
 async function loadStateFromStorageAndServer() {
+    let localCandidate = null;
     try {
-        // Eski hazır/örnek veriyi kesin olarak temizle
         localStorage.removeItem(OLD_DEMO_STORAGE_KEY);
         const raw = localStorage.getItem(STORAGE_KEY_KASA_STATE);
         if (raw) {
             const parsed = JSON.parse(raw);
             if (parsed && parsed.days && Array.isArray(parsed.users)) {
-                appState = { ...buildInitialState(), ...parsed };
-                return;
+                localCandidate = parsed;
             }
         }
     } catch (e) {}
 
-    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    let remoteCandidate = null;
+    const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    if (isLocal) {
         try {
             const res = await fetch("/api/kasa-state?t=" + Date.now(), { cache: "no-store" });
             if (res.ok) {
                 const srv = await res.json();
                 if (srv && srv.days && Array.isArray(srv.users)) {
-                    appState = { ...buildInitialState(), ...srv };
-                    saveStateLocally();
+                    remoteCandidate = srv;
                 }
             }
         } catch (e) {}
+    }
+
+    if (!remoteCandidate) {
+        try {
+            const resFile = await fetch("shared_state.json?t=" + Date.now(), { cache: "no-store" });
+            if (resFile.ok) {
+                const fileData = await resFile.json();
+                if (fileData && fileData.days && Array.isArray(fileData.users)) {
+                    remoteCandidate = fileData;
+                }
+            }
+        } catch (e) {}
+    }
+
+    if (localCandidate && remoteCandidate) {
+        const localRev = Number(localCandidate.stateRevision) || 0;
+        const remoteRev = Number(remoteCandidate.stateRevision) || 0;
+        const localMs = Number(localCandidate.updatedAtMs) || 0;
+        const remoteMs = Number(remoteCandidate.updatedAtMs) || 0;
+
+        if (remoteRev > localRev || (remoteRev === localRev && remoteMs > localMs)) {
+            appState = { ...buildInitialState(), ...remoteCandidate };
+            saveStateLocally();
+        } else {
+            appState = { ...buildInitialState(), ...localCandidate };
+            if (isLocal && (localRev > remoteRev || localMs > remoteMs)) {
+                syncStateToServer();
+            }
+        }
+    } else if (remoteCandidate) {
+        appState = { ...buildInitialState(), ...remoteCandidate };
+        saveStateLocally();
+    } else if (localCandidate) {
+        appState = { ...buildInitialState(), ...localCandidate };
+        if (isLocal) syncStateToServer();
     }
 }
 
@@ -586,14 +672,23 @@ function applyRolePermissionsToDOM() {
     }
 
     if (banner) {
-        if (!perms.add && !perms.edit) {
+        if (!perms.view) {
             banner.style.display = "flex";
-            banner.style.background = "rgba(244, 63, 94, 0.14)";
-            banner.style.border = "1px solid rgba(244, 63, 94, 0.38)";
+            banner.style.background = "rgba(244, 63, 94, 0.22)";
+            banner.style.border = "1px solid rgba(244, 63, 94, 0.55)";
             banner.style.color = "#fecdd3";
             banner.innerHTML = `
-                <span><i class="fa-solid fa-eye"></i> <strong>Salt Okunur (Sadece Görüntüleme) Yetkisi:</strong> Günlük kasa formlarını inceleyebilir ve <strong>A4 / Excel çıktısı</strong> alabilirsiniz. Kayıt ekleme ve değiştirme kapalıdır.</span>
-                <span class="badge badge-danger">Salt Okunur</span>
+                <span><i class="fa-solid fa-ban"></i> <strong>Erişim Engeli / Erişime Kapalı:</strong> Bu kullanıcı hesabı için kasa erişim yetkisi kapatılmıştır.</span>
+                <span class="badge badge-danger">Erişime Kapalı</span>
+            `;
+        } else if (!perms.add && !perms.edit) {
+            banner.style.display = "flex";
+            banner.style.background = "rgba(56, 189, 248, 0.14)";
+            banner.style.border = "1px solid rgba(56, 189, 248, 0.38)";
+            banner.style.color = "#e0f2fe";
+            banner.innerHTML = `
+                <span><i class="fa-solid fa-eye"></i> <strong>Salt Okunur (Sadece Görüntüleme) Yetkisi:</strong> Günlük kasa formlarını inceleyebilir ve <strong>A4 / Excel çıktısı</strong> alabilirsiniz.</span>
+                <span class="badge badge-info">Sadece Görüntüleme</span>
             `;
         } else if (perms.add && !perms.edit) {
             banner.style.display = "flex";
@@ -601,8 +696,8 @@ function applyRolePermissionsToDOM() {
             banner.style.border = "1px solid rgba(245, 158, 11, 0.4)";
             banner.style.color = "#fde68a";
             banner.innerHTML = `
-                <span><i class="fa-solid fa-plus-circle"></i> <strong>Sadece Ekleme Yetkisi:</strong> Tablolara <strong>manuel yeni kayıt ekleyebilir</strong> ve <strong>A4 çıktı</strong> alabilirsiniz. Mevcut kayıtlar üzerinde değişiklik veya silme yapılamaz.</span>
-                <span class="badge badge-warning">Ekleme + Görüntüleme</span>
+                <span><i class="fa-solid fa-plus-circle"></i> <strong>Sadece Ekleme Yetkisi:</strong> Tablolara <strong>yeni kayıt ekleyebilir</strong> ve <strong>A4 çıktı</strong> alabilirsiniz. Mevcut kayıtlar üzerinde değişiklik veya silme yapılamaz.</span>
+                <span class="badge badge-warning">Sadece Ekleme</span>
             `;
         } else {
             banner.style.display = "none";
@@ -630,7 +725,30 @@ function applyRolePermissionsToDOM() {
     });
 }
 
-// ==================== 9. TABLO İÇİ DOĞRUDAN MANUEL SATIR EKLEME (INLINE ENTRY) ====================
+// ==================== 9. KART ALTI HIZLI KAYIT EKLEME & ALT SEKME GEÇİŞİ ====================
+let activeSubtableTab = "POS_CC";
+let showAllSubtablesMode = false;
+
+function switchSubtableTab(subKey) {
+    activeSubtableTab = subKey;
+    document.querySelectorAll(".subtable-tab-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.getAttribute("data-subtab") === subKey);
+    });
+    document.querySelectorAll(".subtable-pane").forEach(pane => {
+        pane.classList.toggle("active", pane.getAttribute("data-subpane") === subKey);
+    });
+}
+
+function toggleShowAllSubtables() {
+    showAllSubtablesMode = !showAllSubtablesMode;
+    const container = document.getElementById("subtables-body-container");
+    const tabsBar = document.getElementById("subtable-tabs-bar");
+    const lbl = document.getElementById("lbl-toggle-all-subtables");
+    if (container) container.classList.toggle("show-all-grid", showAllSubtablesMode);
+    if (tabsBar) tabsBar.style.display = showAllSubtablesMode ? "none" : "grid";
+    if (lbl) lbl.textContent = showAllSubtablesMode ? "Sekmeli Görünüme Dön" : "Tümünü Açık Göster";
+}
+
 function handleInlineQuickAdd(sectionKey) {
     if (!assertPermission("add", "Yeni manuel kayıt ekleme")) return;
     const iso = uiState.selectedDateISO;
@@ -640,15 +758,15 @@ function handleInlineQuickAdd(sectionKey) {
         return;
     }
 
-    const col1El = document.getElementById(`inline-col1-${sectionKey}`);
-    const dueEl = document.getElementById(`inline-due-${sectionKey}`);
-    const descEl = document.getElementById(`inline-desc-${sectionKey}`);
-    const amtEl = document.getElementById(`inline-amt-${sectionKey}`);
+    const col1El = document.getElementById(`q-col1-${sectionKey}`) || document.getElementById(`inline-col1-${sectionKey}`);
+    const dueEl = document.getElementById(`q-due-${sectionKey}`) || document.getElementById(`inline-due-${sectionKey}`);
+    const descEl = document.getElementById(`q-desc-${sectionKey}`) || document.getElementById(`inline-desc-${sectionKey}`);
+    const amtEl = document.getElementById(`q-amt-${sectionKey}`) || document.getElementById(`inline-amt-${sectionKey}`);
 
     const col1 = (col1El ? col1El.value : "").trim().toUpperCase();
     const dueDate = (dueEl ? dueEl.value : "").trim();
     const desc = (descEl ? descEl.value : "").trim().toUpperCase();
-    const amount = Number(amtEl ? amtEl.value : 0) || 0;
+    const amount = parseMoneyInputTR(amtEl ? amtEl.value : 0);
 
     if (!desc || amount <= 0) {
         alert("Lütfen açıklama ve 0'dan büyük bir tutar yazınız.");
@@ -670,9 +788,18 @@ function handleInlineQuickAdd(sectionKey) {
         createdAt: formatDateTimeTR()
     });
 
+    if (col1El) col1El.value = "";
+    if (dueEl) dueEl.value = "";
+    if (descEl) descEl.value = "";
+    if (amtEl) amtEl.value = "";
+
     addAuditLog("MANUEL GİRİŞ", `${formatDateToTR(iso)} [${SECTION_LABELS[sectionKey]}] "${desc}" (${formatMoneyTR(amount)}) manuel eklendi.`);
     syncStateToServer();
     renderAll();
+
+    setTimeout(() => {
+        if (descEl) descEl.focus();
+    }, 30);
 }
 
 function handleInlineKeydown(event, sectionKey) {
@@ -682,85 +809,42 @@ function handleInlineKeydown(event, sectionKey) {
     }
 }
 
-// ==================== 10. GÜNLÜK KASA FORMU RENDER MOTORU ====================
+// ==================== 10. GÜNLÜK KASA FORMU RENDER MOTORU (SADE VE TEMİZ EKRAN) ====================
+function isGelirSection(sectionKey) {
+    return sectionKey === "CASH_IN" || sectionKey === "POS_CC" || sectionKey === "WIRE_IN";
+}
+
 function renderDailyFormSection() {
     const iso = uiState.selectedDateISO;
-    const { dayObj, current, prev } = calculateDayMetrics(iso);
+    const { dayObj, current } = calculateDayMetrics(iso);
     const perms = getUserPerms(currentUser);
     const isDayLocked = Boolean(dayObj.isLocked);
     const canModifyToday = !isDayLocked || perms.manageUsers;
-    const canAddRow = perms.add && canModifyToday;
 
     const dateInput = document.getElementById("kasa-date-input");
     if (dateInput) dateInput.value = formatDateToTR(iso);
-
-    const pill = document.getElementById("active-date-pill");
-    if (pill) pill.textContent = formatDateToTR(iso);
-
-    const lblRightDate = document.getElementById("lbl-right-date");
-    if (lblRightDate) lblRightDate.textContent = formatDateToTR(iso);
 
     const eurIn = document.getElementById("fx-eur-input");
     const usdIn = document.getElementById("fx-usd-input");
     if (eurIn) eurIn.value = dayObj.euroRate || "--";
     if (usdIn) usdIn.value = dayObj.usdRate || "--";
+    updateTcmbBadgeLabel(iso);
 
-    const cashierIn = document.getElementById("sig-cashier-input");
-    const controllerIn = document.getElementById("sig-controller-input");
-    if (cashierIn) cashierIn.value = dayObj.cashierName || "GÖKHAN ÖZBULUT";
-    if (controllerIn) controllerIn.value = dayObj.controllerName || "RAFET CANBEK";
+    const entries = dayObj.entries || [];
 
-    const lockBtn = document.getElementById("btn-toggle-day-lock");
-    if (lockBtn) {
-        if (isDayLocked) {
-            lockBtn.className = "btn btn-danger btn-sm";
-            lockBtn.innerHTML = `<i class="fa-solid fa-lock"></i> <span>Gün Kilitli</span>`;
-        } else {
-            lockBtn.className = "btn btn-sm";
-            lockBtn.innerHTML = `<i class="fa-solid fa-lock-open" style="color:#10b981;"></i> <span>Gün Açık</span>`;
-        }
-    }
+    const totalGelirAll = Number((current.cashInEntriesSum + current.posCcSum + current.wireInSum).toFixed(2));
+    const totalGiderAll = Number((current.cashOutSum + current.wireOutSum + current.cariCcSum + current.checkOutSum + current.checkCariSum).toFixed(2));
+    const netKasaAll = Number((current.carryover + totalGelirAll - totalGiderAll).toFixed(2));
 
-    const ctrlBtn = document.getElementById("btn-controller-approve");
-    const ctrlSub = document.getElementById("sub-controller-approve");
-    if (ctrlBtn && ctrlSub) {
-        if (dayObj.controllerApproved) {
-            ctrlBtn.className = "btn btn-xs btn-success";
-            ctrlBtn.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>Kontrol Onaylandı</span>`;
-            ctrlSub.textContent = `${dayObj.controllerName || "RAFET CANBEK"} tarafından onaylı`;
-        } else {
-            ctrlBtn.className = "btn btn-xs btn-primary";
-            ctrlBtn.innerHTML = `<i class="fa-solid fa-check-double"></i> <span>Kontrol Onayı Ver</span>`;
-            ctrlSub.textContent = "Onay bekliyor";
-        }
-    }
+    const sumCarryEl = document.getElementById("clean-sum-carry");
+    const sumInEl = document.getElementById("clean-sum-in");
+    const sumOutEl = document.getElementById("clean-sum-out");
+    const sumNetEl = document.getElementById("clean-sum-net");
 
-    // KPI Kartları
-    const cashOutEntries = (dayObj.entries || []).filter(e => e.section === "CASH_OUT");
-    const cashInEntries = (dayObj.entries || []).filter(e => e.section === "CASH_IN");
-    const posEntries = (dayObj.entries || []).filter(e => e.section === "POS_CC");
-
-    document.getElementById("kpi-net-closing").textContent = formatMoneyTR(current.netClosing);
-    document.getElementById("kpi-net-closing-sub").textContent = `Girişler (${formatMoneyTR(current.totalInWithCarry)}) − Ödemeler (${formatMoneyTR(current.cashOutSum)})`;
-
-    document.getElementById("kpi-total-in").textContent = formatMoneyTR(current.totalInWithCarry);
-    document.getElementById("kpi-total-in-sub").textContent = `Devir: ${formatMoneyTR(current.carryover)} | Gün İçi: ${formatMoneyTR(current.cashInEntriesSum)}`;
-
-    document.getElementById("kpi-total-out").textContent = formatMoneyTR(current.cashOutSum);
-    document.getElementById("kpi-total-out-sub").textContent = `${cashOutEntries.length} Kalem Nakit Çıkış`;
-
-    document.getElementById("kpi-pos-total").textContent = formatMoneyTR(current.posCcSum);
-    document.getElementById("kpi-pos-sub").textContent = `${posEntries.length} Adet Kredi Kartı / POS Çekimi`;
-
-    const otherSum = current.cariCcSum + current.checkOutSum + current.checkCariSum + current.wireInSum + current.wireOutSum;
-    document.getElementById("kpi-other-total").textContent = formatMoneyTR(otherSum);
-    document.getElementById("kpi-other-sub").textContent = `Cari Kart: ${formatMoneyTR(current.cariCcSum)} | Havale/Çek: ${formatMoneyTR(otherSum - current.cariCcSum)}`;
-
-    // Önceki Gün Üst Şerit Özeti
-    document.getElementById("prev-summary-date-label").textContent = formatDateToTR(prev.dateISO);
-    document.getElementById("prev-summary-in-val").textContent = formatMoneyTR(prev.totalInWithCarry);
-    document.getElementById("prev-summary-out-val").textContent = formatMoneyTR(prev.cashOutSum);
-    document.getElementById("prev-summary-carry-val").textContent = formatMoneyTR(current.carryover);
+    if (sumCarryEl) sumCarryEl.textContent = formatMoneyTR(current.carryover);
+    if (sumInEl) sumInEl.textContent = formatMoneyTR(totalGelirAll);
+    if (sumOutEl) sumOutEl.textContent = formatMoneyTR(totalGiderAll);
+    if (sumNetEl) sumNetEl.textContent = formatMoneyTR(netKasaAll);
 
     const buildActionButtons = (entryId) => {
         const canEditRow = perms.edit && canModifyToday;
@@ -780,146 +864,36 @@ function renderDailyFormSection() {
         ? ` <span class="badge badge-tdr" title="TDR Kuralı: Tedarik Hizmetler / Parça Kalemi">TDR TEDARİK</span>`
         : "";
 
-    // 1. ÜST SOL TABLO: KASA DEVRİ VE GÜNLÜK NAKİT GİRİŞLER
-    const carryDesc = dayObj.carryoverLabel || `${formatDateSlashTR(current.carrySourceDateISO)} TARİHLİ KASA DEVRİ ( + ) BAKİYESİ`;
-    const tbodyCashIn = document.getElementById("tbody-cash-in");
-    if (tbodyCashIn) {
-        let html = `
-            <tr class="carryover-row">
-                <td>KASA DEVRİ</td>
-                <td>${escapeHtml(carryDesc)}</td>
-                <td class="amount-cell">${formatNumberTR(current.carryover)}</td>
-                <td style="text-align:right;">
-                    ${perms.edit && canModifyToday ? `<button class="btn btn-xs" onclick="openCarryoverOverrideModal()" title="Manuel Devir Tutarı Gir"><i class="fa-solid fa-pen"></i></button>` : `<i class="fa-solid fa-check-circle"></i>`}
-                </td>
-            </tr>
-        `;
-        html += cashInEntries.map(e => `
-            <tr>
-                <td><strong>${escapeHtml(e.col1 || "NAKİT GİRİŞ")}</strong></td>
-                <td>${escapeHtml(e.desc)}${renderTdrBadge(e)}</td>
-                <td class="amount-cell" style="color:#34d399;">${formatNumberTR(e.amount)}</td>
-                <td style="text-align:right;">${buildActionButtons(e.id)}</td>
-            </tr>
-        `).join("");
+    const tbodyClean = document.getElementById("tbody-clean-entries");
+    if (tbodyClean) {
+        if (entries.length === 0) {
+            tbodyClean.innerHTML = `<tr><td colspan="6" class="empty-row-placeholder">Henüz gelir veya gider kaydı eklenmedi. Üstteki "Ekle" düğmesine basarak kayıt ekleyebilirsiniz.</td></tr>`;
+        } else {
+            tbodyClean.innerHTML = entries.map(e => {
+                const isGelir = isGelirSection(e.section);
+                const flowBadge = isGelir
+                    ? `<span class="badge badge-success"><i class="fa-solid fa-arrow-down-long"></i> GELİR</span>`
+                    : `<span class="badge badge-danger"><i class="fa-solid fa-arrow-up-long"></i> GİDER</span>`;
+                const amtColor = isGelir ? "#34d399" : "#fb7185";
+                const sign = isGelir ? "+" : "-";
+                const dueExtra = e.dueDate ? ` <span class="badge badge-info" style="font-size:0.62rem;">Vade: ${escapeHtml(formatDateToTR(e.dueDate))}</span>` : "";
 
-        if (canAddRow) {
-            html += `
-                <tr style="background:rgba(16,185,129,0.05);">
-                    <td><input type="text" id="inline-col1-CASH_IN" class="form-control" style="padding:4px 7px; font-size:0.74rem;" placeholder="Tür (Örn: NAKİT)" onkeydown="handleInlineKeydown(event, 'CASH_IN')"></td>
-                    <td><input type="text" id="inline-desc-CASH_IN" class="form-control" style="padding:4px 7px; font-size:0.74rem;" placeholder="Manuel nakit giriş açıklaması yazın..." onkeydown="handleInlineKeydown(event, 'CASH_IN')"></td>
-                    <td><input type="number" step="0.01" id="inline-amt-CASH_IN" class="form-control" style="padding:4px 7px; font-size:0.74rem; text-align:right;" placeholder="0.00" onkeydown="handleInlineKeydown(event, 'CASH_IN')"></td>
-                    <td style="text-align:right;">
-                        <button type="button" class="btn btn-success btn-xs" onclick="handleInlineQuickAdd('CASH_IN')" title="Satırı Ekle"><i class="fa-solid fa-plus"></i> Ekle</button>
-                    </td>
-                </tr>
-            `;
-        }
-        tbodyCashIn.innerHTML = html;
-    }
-    document.getElementById("tfoot-cash-in-total").textContent = formatMoneyTR(current.totalInWithCarry);
-
-    // 2. ÜST SAĞ TABLO: GÜNLÜK NAKİT ÖDEMELER
-    const tbodyCashOut = document.getElementById("tbody-cash-out");
-    if (tbodyCashOut) {
-        let html = cashOutEntries.map(e => `
-            <tr>
-                <td>
-                    ${e.col1 && e.col1 !== "NAKİT ÖDEME" ? `<span class="badge badge-info" style="margin-right:5px; font-size:0.62rem;">${escapeHtml(e.col1)}</span>` : ""}
-                    <strong>${escapeHtml(e.desc)}</strong>${renderTdrBadge(e)}
-                </td>
-                <td class="amount-cell">${formatNumberTR(e.amount)}</td>
-                <td style="text-align:right;">${buildActionButtons(e.id)}</td>
-            </tr>
-        `).join("");
-
-        if (canAddRow) {
-            html += `
-                <tr style="background:rgba(244,63,94,0.05);">
-                    <td><input type="text" id="inline-desc-CASH_OUT" class="form-control" style="padding:4px 7px; font-size:0.74rem;" placeholder="Manuel ödeme açıklaması yazın..." onkeydown="handleInlineKeydown(event, 'CASH_OUT')"></td>
-                    <td><input type="number" step="0.01" id="inline-amt-CASH_OUT" class="form-control" style="padding:4px 7px; font-size:0.74rem; text-align:right;" placeholder="0.00" onkeydown="handleInlineKeydown(event, 'CASH_OUT')"></td>
-                    <td style="text-align:right;">
-                        <button type="button" class="btn btn-danger btn-xs" onclick="handleInlineQuickAdd('CASH_OUT')" title="Ödeme Satırı Ekle"><i class="fa-solid fa-plus"></i> Ekle</button>
-                    </td>
-                </tr>
-            `;
-        } else if (cashOutEntries.length === 0) {
-            html = `<tr><td colspan="3" style="color:var(--text-muted); font-size:0.73rem; text-align:center; padding:12px;">Kayıt yok (0,00 ₺)</td></tr>`;
-        }
-        tbodyCashOut.innerHTML = html;
-    }
-    document.getElementById("tfoot-cash-out-total").textContent = formatMoneyTR(current.cashOutSum);
-    document.getElementById("tfoot-grand-total").textContent = formatMoneyTR(current.netClosing);
-
-    // 3. ALT TABLO 1: ÇEK - SENET ÇIKIŞI
-    const checkOutList = (dayObj.entries || []).filter(e => e.section === "CHECK_OUT");
-    const tbodyCheckOut = document.getElementById("tbody-check-out");
-    if (tbodyCheckOut) {
-        let html = checkOutList.map(e => `
-            <tr>
-                <td><strong>${escapeHtml(e.col1 || "ÇEK")}</strong></td>
-                <td>${escapeHtml(formatDateToTR(e.dueDate))}</td>
-                <td>${escapeHtml(e.desc)}${renderTdrBadge(e)}</td>
-                <td class="amount-cell">${formatNumberTR(e.amount)}</td>
-                <td style="text-align:right;">${buildActionButtons(e.id)}</td>
-            </tr>
-        `).join("");
-        if (canAddRow) {
-            html += `
-                <tr>
-                    <td><input type="text" id="inline-col1-CHECK_OUT" class="form-control" style="padding:3px 6px; font-size:0.72rem;" placeholder="Çek/Senet" onkeydown="handleInlineKeydown(event, 'CHECK_OUT')"></td>
-                    <td><input type="text" id="inline-due-CHECK_OUT" class="form-control" style="padding:3px 6px; font-size:0.72rem;" placeholder="GG.AA.YYYY" onkeydown="handleInlineKeydown(event, 'CHECK_OUT')"></td>
-                    <td><input type="text" id="inline-desc-CHECK_OUT" class="form-control" style="padding:3px 6px; font-size:0.72rem;" placeholder="Müşteri ismi..." onkeydown="handleInlineKeydown(event, 'CHECK_OUT')"></td>
-                    <td><input type="number" step="0.01" id="inline-amt-CHECK_OUT" class="form-control" style="padding:3px 6px; font-size:0.72rem; text-align:right;" placeholder="0.00" onkeydown="handleInlineKeydown(event, 'CHECK_OUT')"></td>
-                    <td style="text-align:right;"><button type="button" class="btn btn-primary btn-xs" onclick="handleInlineQuickAdd('CHECK_OUT')"><i class="fa-solid fa-plus"></i></button></td>
-                </tr>
-            `;
-        } else if (checkOutList.length === 0) {
-            html = `<tr><td colspan="5" style="color:var(--text-muted); font-size:0.72rem; text-align:center;">Kayıt yok (0,00 ₺)</td></tr>`;
-        }
-        tbodyCheckOut.innerHTML = html;
-    }
-    document.getElementById("tfoot-check-out").textContent = formatMoneyTR(current.checkOutSum);
-
-    // 4. DİĞER ALT TABLOLAR (3 Kolonlu + Inline Girişli)
-    const renderThreeColTable = (sectionKey, tbodyId, tfootId, totalVal, col1Ph, descPh) => {
-        const list = (dayObj.entries || []).filter(e => e.section === sectionKey);
-        const tb = document.getElementById(tbodyId);
-        if (tb) {
-            let html = list.map(e => `
-                <tr>
-                    <td><strong>${escapeHtml(e.col1 || "-")}</strong></td>
-                    <td>${escapeHtml(e.desc)}${renderTdrBadge(e)}</td>
-                    <td class="amount-cell">${formatNumberTR(e.amount)}</td>
-                    <td style="text-align:right;">${buildActionButtons(e.id)}</td>
-                </tr>
-            `).join("");
-            if (canAddRow) {
-                html += `
+                return `
                     <tr>
-                        <td><input type="text" id="inline-col1-${sectionKey}" class="form-control" style="padding:3px 6px; font-size:0.72rem;" placeholder="${escapeHtml(col1Ph)}" onkeydown="handleInlineKeydown(event, '${sectionKey}')"></td>
-                        <td><input type="text" id="inline-desc-${sectionKey}" class="form-control" style="padding:3px 6px; font-size:0.72rem;" placeholder="${escapeHtml(descPh)}" onkeydown="handleInlineKeydown(event, '${sectionKey}')"></td>
-                        <td><input type="number" step="0.01" id="inline-amt-${sectionKey}" class="form-control" style="padding:3px 6px; font-size:0.72rem; text-align:right;" placeholder="0.00" onkeydown="handleInlineKeydown(event, '${sectionKey}')"></td>
-                        <td style="text-align:right;"><button type="button" class="btn btn-primary btn-xs" onclick="handleInlineQuickAdd('${sectionKey}')" title="Satır Ekle"><i class="fa-solid fa-plus"></i></button></td>
+                        <td>${flowBadge}</td>
+                        <td><strong>${escapeHtml(SECTION_LABELS[e.section] || e.section)}</strong></td>
+                        <td>${escapeHtml(e.col1 || "-")}</td>
+                        <td>${escapeHtml(e.desc)}${dueExtra}${renderTdrBadge(e)}</td>
+                        <td class="amount-cell" style="color:${amtColor}; font-weight:800;">${sign}${formatNumberTR(e.amount)} ₺</td>
+                        <td style="text-align:right;">${buildActionButtons(e.id)}</td>
                     </tr>
                 `;
-            } else if (list.length === 0) {
-                html = `<tr><td colspan="4" style="color:var(--text-muted); font-size:0.72rem; text-align:center;">Kayıt yok (0,00 ₺)</td></tr>`;
-            }
-            tb.innerHTML = html;
+            }).join("");
         }
-        const tf = document.getElementById(tfootId);
-        if (tf) tf.textContent = formatMoneyTR(totalVal);
-    };
-
-    renderThreeColTable("CHECK_CARI_BANK", "tbody-check-cari", "tfoot-check-cari", current.checkCariSum, "Cari / Banka", "Açıklama yazın...");
-    renderThreeColTable("CARI_CC", "tbody-cari-cc", "tfoot-cari-cc", current.cariCcSum, "Cari İsmi", "Kart çekim açıklaması...");
-    renderThreeColTable("WIRE_OUT", "tbody-wire-out", "tfoot-wire-out", current.wireOutSum, "Banka", "Alıcı cari / açıklama...");
-    renderThreeColTable("POS_CC", "tbody-pos-cc", "tfoot-pos-cc", current.posCcSum, "Banka (Örn: ZİRAAT)", "Cari / fatura açıklaması...");
-    renderThreeColTable("WIRE_IN", "tbody-wire-in", "tfoot-wire-in", current.wireInSum, "Banka", "Gönderen cari / açıklama...");
+    }
 
     const badgeToday = document.getElementById("nav-badge-today-items");
-    if (badgeToday) badgeToday.textContent = (dayObj.entries || []).length;
+    if (badgeToday) badgeToday.textContent = entries.length;
     const badgeDays = document.getElementById("nav-badge-days");
     if (badgeDays) badgeDays.textContent = Object.keys(appState.days || {}).length;
     const badgeUsers = document.getElementById("nav-badge-users");
@@ -1003,14 +977,17 @@ function renderA4SheetSection() {
         <table class="excel-top-title-table">
             <tr>
                 <td style="width:11%; font-weight:700; text-align:center;">Euro Kuru</td>
-                <td style="width:9%; text-align:center;">${escapeHtml(dayObj.euroRate || "--")}</td>
-                <td rowspan="2" class="main-form-heading" style="width:45%;">GÜNLÜK KASA FORMU</td>
-                <td style="width:35%;">&nbsp;</td>
+                <td style="width:9%; text-align:center; font-weight:700;">${escapeHtml(dayObj.euroRate || "--")}</td>
+                <td rowspan="2" class="main-form-heading" style="width:45%;">
+                    <div style="font-size:15px; font-weight:800; letter-spacing:0.6px; color:#000;">GÜNLÜK KASA FORMU</div>
+                </td>
+                <td rowspan="2" style="width:35%; padding:2px 8px; vertical-align:middle; text-align:center;">
+                    <img src="dizsan_full_logo.png" alt="Dizsan Logo" style="height:36px; width:auto; max-width:140px; object-fit:contain; display:inline-block; -webkit-print-color-adjust:exact; print-color-adjust:exact;">
+                </td>
             </tr>
             <tr>
                 <td style="font-weight:700; text-align:center;">Dolar Kuru</td>
-                <td style="text-align:center;">${escapeHtml(dayObj.usdRate || "--")}</td>
-                <td>&nbsp;</td>
+                <td style="text-align:center; font-weight:700;">${escapeHtml(dayObj.usdRate || "--")}</td>
             </tr>
         </table>
 
@@ -1286,11 +1263,16 @@ function renderAdminSection() {
                             <option value="EDITOR" ${u.rolePreset === "EDITOR" ? "selected" : ""}>Değişiklik &amp; Düzenleme</option>
                             <option value="CONTRIBUTOR" ${u.rolePreset === "CONTRIBUTOR" ? "selected" : ""}>Sadece Ekleme Yetkisi</option>
                             <option value="VIEWER" ${u.rolePreset === "VIEWER" ? "selected" : ""}>Sadece Görüntüleme</option>
+                            <option value="NONE" ${u.rolePreset === "NONE" ? "selected" : ""}>Hiçbiri (Erişime Kapalı / Erişim Engeli)</option>
                         </select>
                     </td>
                     <td>
                         <div style="display:flex; flex-wrap:wrap; gap:5px;">
-                            <label class="perm-pill-check"><input type="checkbox" checked disabled> <span>Görüntüleme</span></label>
+                            <label class="perm-pill-check">
+                                <input type="checkbox" ${up.view !== false ? "checked" : ""} ${disabledAttr}
+                                    onchange="quickToggleUserPerm('${escapeHtml(u.username)}', 'view', this.checked)">
+                                <span>Görüntüleme</span>
+                            </label>
                             <label class="perm-pill-check">
                                 <input type="checkbox" ${up.add ? "checked" : ""} ${disabledAttr}
                                     onchange="quickToggleUserPerm('${escapeHtml(u.username)}', 'add', this.checked)">
@@ -1354,6 +1336,7 @@ function quickChangeUserPreset(username, presetKey) {
     u.permissions = { ...preset.permissions };
     if (currentUser && currentUser.username === u.username) currentUser = u;
     addAuditLog("YETKİ DEĞİŞİKLİĞİ", `${u.name} kullanıcısının yetki profili "${preset.label}" olarak güncellendi.`);
+    renderQuickUserChips();
     syncStateToServer();
     renderAll();
 }
@@ -1365,18 +1348,68 @@ function quickToggleUserPerm(username, permKey, isChecked) {
     if (!u.permissions) u.permissions = { ...getUserPerms(u) };
     u.permissions[permKey] = Boolean(isChecked);
 
-    if (u.permissions.manageUsers) u.rolePreset = "ADMIN";
-    else if (u.permissions.edit || u.permissions.delete) u.rolePreset = "EDITOR";
-    else if (u.permissions.add) u.rolePreset = "CONTRIBUTOR";
-    else u.rolePreset = "VIEWER";
+    if (permKey === "view" && !isChecked) {
+        u.permissions.add = false;
+        u.permissions.edit = false;
+        u.permissions.delete = false;
+        u.permissions.lockDay = false;
+        u.permissions.manageUsers = false;
+        u.rolePreset = "NONE";
+    } else {
+        if (isChecked) u.permissions.view = true;
+        if (!u.permissions.view) u.rolePreset = "NONE";
+        else if (u.permissions.manageUsers) u.rolePreset = "ADMIN";
+        else if (u.permissions.edit || u.permissions.delete) u.rolePreset = "EDITOR";
+        else if (u.permissions.add) u.rolePreset = "CONTRIBUTOR";
+        else u.rolePreset = "VIEWER";
+    }
 
     if (currentUser && currentUser.username === u.username) currentUser = u;
     addAuditLog("YETKİ DEĞİŞİKLİĞİ", `${u.name} için "${permKey}" izni ${isChecked ? "AÇILDI" : "KAPATILDI"}.`);
+    renderQuickUserChips();
     syncStateToServer();
     renderAll();
 }
 
-// ==================== 14. DETAYLI MODAL İLE KAYIT EKLEME, DÜZENLEME VE SİLME ====================
+// ==================== 14. GELİR / GİDER SEÇMELİ MODAL İLE KAYIT EKLEME, DÜZENLEME VE SİLME ====================
+const FLOW_CATEGORY_OPTIONS = {
+    GELIR: [
+        { value: "CASH_IN", label: "Nakit Gelir (Kasa Girişi)" },
+        { value: "POS_CC", label: "Kredi Kartı (POS Çekimi)" },
+        { value: "WIRE_IN", label: "Gelen Havale / EFT" }
+    ],
+    GIDER: [
+        { value: "CASH_OUT", label: "Nakit Gider (Günlük Nakit Ödeme)" },
+        { value: "WIRE_OUT", label: "Giden Havale / EFT" },
+        { value: "CARI_CC", label: "Şirket Kredi Kartı ile Ödeme (Gider)" },
+        { value: "CHECK_OUT", label: "Çek - Senet Çıkışı" },
+        { value: "CHECK_CARI_BANK", label: "Çek Çıkış Cari Hesap / Banka" }
+    ]
+};
+
+function handleFlowTypeChange(flowVal, preferredSection = null) {
+    const flow = flowVal === "GIDER" ? "GIDER" : "GELIR";
+    const flowSelect = document.getElementById("entry-flow-type");
+    if (flowSelect) {
+        flowSelect.value = flow;
+        flowSelect.setAttribute("data-flow", flow);
+    }
+
+    const lblSec = document.getElementById("lbl-entry-section");
+    if (lblSec) {
+        lblSec.textContent = flow === "GELIR" ? "Gelir Türü" : "Gider Türü";
+    }
+
+    const secSelect = document.getElementById("entry-section");
+    const opts = FLOW_CATEGORY_OPTIONS[flow] || FLOW_CATEGORY_OPTIONS.GELIR;
+    if (secSelect) {
+        secSelect.innerHTML = opts.map(o => `<option value="${o.value}">${escapeHtml(o.label)}</option>`).join("");
+        const validPref = opts.some(o => o.value === preferredSection) ? preferredSection : opts[0].value;
+        secSelect.value = validPref;
+        handleEntrySectionChange(validPref);
+    }
+}
+
 function handleEntrySectionChange(sectionVal) {
     const lblCol1 = document.getElementById("lbl-entry-col1");
     const inpCol1 = document.getElementById("entry-col1");
@@ -1388,21 +1421,21 @@ function handleEntrySectionChange(sectionVal) {
     if (grpCol1) grpCol1.style.display = "block";
 
     if (sectionVal === "CASH_IN") {
-        lblCol1.textContent = "Giriş Türü / Kaynak";
-        inpCol1.placeholder = "Örn: NAKİT TAHSİLAT, KASA GİRİŞİ";
-        lblDesc.textContent = "Açıklama / Müşteri / Fatura Bilgisi";
+        lblCol1.textContent = "Gelir Kaynağı / Cari";
+        inpCol1.placeholder = "Örn: NAKİT TAHSİLAT, MÜŞTERİ ADI";
+        lblDesc.textContent = "Gelir Açıklaması";
     } else if (sectionVal === "CASH_OUT") {
-        lblCol1.textContent = "Gider Grubu (Opsiyonel)";
+        lblCol1.textContent = "Gider Grubu / Cari";
         inpCol1.placeholder = "Örn: MUTFAK, ARAÇ GİDERİ, TEDARİK";
-        lblDesc.textContent = "Ödeme Açıklaması";
+        lblDesc.textContent = "Gider / Ödeme Açıklaması";
     } else if (sectionVal === "POS_CC") {
         lblCol1.textContent = "POS Bankası";
         inpCol1.placeholder = "Örn: ZİRAAT, GARANTİ, İŞ BANKASI";
         lblDesc.textContent = "Cari Hesap / Fatura Açıklaması";
     } else if (sectionVal === "CARI_CC") {
-        lblCol1.textContent = "Cari / Müşteri İsmi";
-        inpCol1.placeholder = "Cari veya müşteri adı";
-        lblDesc.textContent = "Kart Çekim Açıklaması";
+        lblCol1.textContent = "Ödeme Yapılan Cari / Firma";
+        inpCol1.placeholder = "Örn: TEDARİKÇİ ADI, FİRMA";
+        lblDesc.textContent = "Şirket Kredi Kartı Ödeme Açıklaması";
     } else if (sectionVal === "CHECK_OUT") {
         lblCol1.textContent = "Senet / Çek Bilgisi";
         inpCol1.placeholder = "Örn: ÇEK / SENET";
@@ -1422,27 +1455,28 @@ function handleEntrySectionChange(sectionVal) {
     }
 }
 
-function openEntryModal(defaultSection = "CASH_OUT") {
-    if (!assertPermission("add", "Yeni kasa kaydı ekleme")) return;
+function openEntryModal(defaultSection = "CASH_IN") {
+    if (!assertPermission("add", "Yeni gelir/gider kaydı ekleme")) return;
     const dayObj = ensureDayObject(uiState.selectedDateISO);
     if (dayObj.isLocked && !hasPermission("manageUsers")) {
         alert("Bu gün kilitlenmiştir.");
         return;
     }
 
-    document.getElementById("modal-entry-title").innerHTML = `<i class="fa-solid fa-plus-circle" style="color:var(--dizsan-cyan);"></i> <span>Yeni Manuel Kasa Kaydı Ekle</span>`;
+    const defaultFlow = isGelirSection(defaultSection) ? "GELIR" : "GIDER";
+
+    document.getElementById("modal-entry-title").innerHTML = `<i class="fa-solid fa-plus-circle" style="color:var(--dizsan-cyan);"></i> <span>Gelir / Gider Ekle</span>`;
     document.getElementById("entry-id").value = "";
     document.getElementById("entry-date").value = formatDateToTR(uiState.selectedDateISO);
-    document.getElementById("entry-section").value = defaultSection;
     document.getElementById("entry-col1").value = "";
     document.getElementById("entry-due-date").value = "";
     document.getElementById("entry-desc").value = "";
     document.getElementById("entry-amount").value = "";
     document.getElementById("entry-code").value = "";
 
-    handleEntrySectionChange(defaultSection);
+    handleFlowTypeChange(defaultFlow, defaultSection);
     openModal("modal-entry");
-    setTimeout(() => document.getElementById("entry-desc")?.focus(), 80);
+    setTimeout(() => document.getElementById("entry-flow-type")?.focus(), 80);
 }
 
 function openEditEntryModal(entryId) {
@@ -1455,17 +1489,21 @@ function openEditEntryModal(entryId) {
     const entry = (dayObj.entries || []).find(e => e.id === entryId);
     if (!entry) return;
 
-    document.getElementById("modal-entry-title").innerHTML = `<i class="fa-solid fa-pen-to-square" style="color:var(--amber-warn);"></i> <span>Kasa Kaydını Değiştir / Düzenle</span>`;
+    const entryFlow = isGelirSection(entry.section) ? "GELIR" : "GIDER";
+
+    document.getElementById("modal-entry-title").innerHTML = `<i class="fa-solid fa-pen-to-square" style="color:var(--amber-warn);"></i> <span>Gelir / Gider Kaydını Düzenle</span>`;
     document.getElementById("entry-id").value = entry.id;
     document.getElementById("entry-date").value = formatDateToTR(entry.dateISO || uiState.selectedDateISO);
-    document.getElementById("entry-section").value = entry.section;
+
+    handleFlowTypeChange(entryFlow, entry.section);
+
     document.getElementById("entry-col1").value = entry.col1 || "";
     document.getElementById("entry-due-date").value = entry.dueDate ? formatDateToTR(entry.dueDate) : "";
     document.getElementById("entry-desc").value = entry.desc || "";
-    document.getElementById("entry-amount").value = entry.amount;
+    const amtNum = Number(entry.amount) || 0;
+    document.getElementById("entry-amount").value = amtNum % 1 === 0 ? amtNum.toLocaleString("tr-TR") : formatNumberTR(amtNum);
     document.getElementById("entry-code").value = entry.code || "";
 
-    handleEntrySectionChange(entry.section);
     openModal("modal-entry");
 }
 
@@ -1483,7 +1521,7 @@ function handleSaveEntry(e) {
     const col1 = document.getElementById("entry-col1").value.trim().toUpperCase();
     const dueDate = document.getElementById("entry-due-date").value.trim();
     const desc = document.getElementById("entry-desc").value.trim().toUpperCase();
-    const amount = Number(document.getElementById("entry-amount").value) || 0;
+    const amount = parseMoneyInputTR(document.getElementById("entry-amount").value);
     const code = document.getElementById("entry-code").value.trim().toUpperCase();
 
     if (!desc || amount <= 0) {
@@ -1552,11 +1590,186 @@ function deleteEntry(entryId) {
     renderAll();
 }
 
-// ==================== 15. TARİH GEZGİNİ, MANUEL DEVİR VE SIFIRLAMA ====================
+// ==================== 15. TARİH GEZGİNİ, TCMB 16:30 OTOMATİK KUR MOTORU, MANUEL DEVİR VE SIFIRLAMA ====================
+let tcmbRateCache = {};
+let tcmb1630TimerId = null;
+let tcmbWatchdogIntervalId = null;
+
+function isBefore1630Now() {
+    const now = new Date();
+    return now.getHours() < 16 || (now.getHours() === 16 && now.getMinutes() < 30);
+}
+
+function getExpectedTcmbSlot(dateISO) {
+    const iso = parseAnyDateToISO(dateISO || uiState.selectedDateISO);
+    if (iso === todayISO()) {
+        return isBefore1630Now() ? `${iso}_BEFORE_1630` : `${iso}_AFTER_1630`;
+    }
+    return `${iso}_HISTORICAL`;
+}
+
+function updateTcmbBadgeLabel(dateISO, rateData = null) {
+    const lblStatus = document.getElementById("lbl-tcmb-status");
+    const btnTcmb = document.getElementById("btn-fetch-tcmb");
+    if (!lblStatus) return;
+
+    const iso = parseAnyDateToISO(dateISO || uiState.selectedDateISO);
+    if (iso === todayISO()) {
+        if (isBefore1630Now()) {
+            lblStatus.textContent = "TCMB Önceki Gün (16:30'da Yenilenir)";
+            if (btnTcmb) btnTcmb.title = "Saat 16:30'dan önceki kur, bir gün önceki resmi TCMB gösterge kurudur. Saat 16:30'da otomatik yenilenir.";
+        } else {
+            lblStatus.textContent = "TCMB 16:30 Güncel ✓";
+            if (btnTcmb) btnTcmb.title = `TCMB 16:30 Resmi Gösterge Döviz Satış Kuru aktif${rateData?.bulletinDate ? ` (Bülten: ${rateData.bulletinDate})` : ""}.`;
+        }
+    } else {
+        lblStatus.textContent = "TCMB Resmi Kur ✓";
+        if (btnTcmb) btnTcmb.title = `${formatDateToTR(iso)} tarihli TCMB Resmi Döviz Satış Kuru`;
+    }
+}
+
+async function fetchTcmbForexSellingRates(dateISO) {
+    const iso = parseAnyDateToISO(dateISO || uiState.selectedDateISO);
+    const slotKey = getExpectedTcmbSlot(iso);
+    if (tcmbRateCache[slotKey]) return tcmbRateCache[slotKey];
+
+    // 1. Öncelik: Yerel portal sunucusundan 16:30 kurallı TCMB Döviz Satış (ForexSelling) çekimi
+    try {
+        const res = await fetch(`/api/tcmb-rates?date=${encodeURIComponent(iso)}&slot=${encodeURIComponent(slotKey)}&t=${Date.now()}`, { cache: "no-store" });
+        if (res.ok) {
+            const data = await res.json();
+            if (data && data.status === "ok" && data.eurFormatted && data.usdFormatted) {
+                tcmbRateCache[slotKey] = data;
+                return data;
+            }
+        }
+    } catch (e) {}
+
+    // 2. Yedek (Canlı PWA / GitHub Pages üzerinde backend olmadan çalışırken):
+    try {
+        if (iso === todayISO() && isBefore1630Now()) {
+            // 16:30 öncesinde dün kaydedilmiş kur varsa onu koru
+            const prevISO = addDaysISO(iso, -1);
+            const prevDay = appState.days && appState.days[prevISO];
+            if (prevDay && prevDay.euroRate && prevDay.euroRate !== "--" && prevDay.usdRate && prevDay.usdRate !== "--") {
+                const prevFallback = {
+                    status: "ok",
+                    source: "TCMB Önceki Gün Gösterge Kuru",
+                    ratePeriod: "BEFORE_1630",
+                    usdFormatted: prevDay.usdRate,
+                    eurFormatted: prevDay.euroRate
+                };
+                tcmbRateCache[slotKey] = prevFallback;
+                return prevFallback;
+            }
+        }
+
+        const res = await fetch("https://finans.truncgil.com/today.json", { cache: "no-store" });
+        if (res.ok) {
+            const j = await res.json();
+            const usdRaw = j?.USD?.["Satış"] || j?.USD?.Satis;
+            const eurRaw = j?.EUR?.["Satış"] || j?.EUR?.Satis;
+            if (usdRaw && eurRaw) {
+                const parseRate = (s) => parseFloat(String(s).replace(/\./g, "").replace(",", "."));
+                const uVal = parseRate(usdRaw);
+                const eVal = parseRate(eurRaw);
+                if (uVal > 0 && eVal > 0) {
+                    const fallbackData = {
+                        status: "ok",
+                        source: "TCMB Döviz Satış",
+                        ratePeriod: (iso === todayISO() && isBefore1630Now()) ? "BEFORE_1630" : "AFTER_1630",
+                        usd: uVal,
+                        eur: eVal,
+                        usdFormatted: uVal.toFixed(4).replace(".", ","),
+                        eurFormatted: eVal.toFixed(4).replace(".", ",")
+                    };
+                    tcmbRateCache[slotKey] = fallbackData;
+                    return fallbackData;
+                }
+            }
+        }
+    } catch (e) {}
+
+    return null;
+}
+
+async function fetchAndApplyTcmbRates(dateISO, forceOverwrite = false) {
+    const iso = parseAnyDateToISO(dateISO || uiState.selectedDateISO);
+    const dayObj = ensureDayObject(iso);
+    const expectedSlot = getExpectedTcmbSlot(iso);
+
+    const hasEur = dayObj.euroRate && dayObj.euroRate !== "--" && dayObj.euroRate !== "0" && dayObj.euroRate !== "0,00";
+    const hasUsd = dayObj.usdRate && dayObj.usdRate !== "--" && dayObj.usdRate !== "0" && dayObj.usdRate !== "0,00";
+    const slotMismatch = dayObj.tcmbSlotKey !== expectedSlot;
+
+    // Eğer kur zaten mevcutsa ve 16:30 dilimi değişmemişse tekrar çekmeye gerek yok
+    if (!forceOverwrite && !slotMismatch && hasEur && hasUsd) {
+        updateTcmbBadgeLabel(iso);
+        return;
+    }
+
+    const lblStatus = document.getElementById("lbl-tcmb-status");
+    if (lblStatus) lblStatus.textContent = "TCMB Çekiliyor...";
+
+    if (forceOverwrite || slotMismatch) {
+        delete tcmbRateCache[expectedSlot];
+    }
+
+    const rateData = await fetchTcmbForexSellingRates(iso);
+    if (rateData && rateData.eurFormatted && rateData.usdFormatted) {
+        dayObj.euroRate = rateData.eurFormatted;
+        dayObj.usdRate = rateData.usdFormatted;
+        dayObj.tcmbSlotKey = expectedSlot;
+
+        updateTcmbBadgeLabel(iso, rateData);
+        saveStateLocally();
+        syncStateToServer();
+        renderAll();
+    } else {
+        updateTcmbBadgeLabel(iso);
+    }
+}
+
+function scheduleNext1630Timer() {
+    if (tcmb1630TimerId) clearTimeout(tcmb1630TimerId);
+    const now = new Date();
+    const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 16, 30, 2, 0);
+    if (now >= target) {
+        target.setDate(target.getDate() + 1);
+    }
+    const msUntil1630 = Math.max(1000, target.getTime() - now.getTime());
+    tcmb1630TimerId = setTimeout(async () => {
+        tcmbRateCache = {};
+        const today = todayISO();
+        await fetchAndApplyTcmbRates(today, true);
+        if (uiState.selectedDateISO !== today) {
+            await fetchAndApplyTcmbRates(uiState.selectedDateISO, false);
+        }
+        scheduleNext1630Timer();
+    }, msUntil1630);
+}
+
+function initTcmb1630AutoRefreshScheduler() {
+    scheduleNext1630Timer();
+    if (tcmbWatchdogIntervalId) clearInterval(tcmbWatchdogIntervalId);
+    tcmbWatchdogIntervalId = setInterval(() => {
+        const today = todayISO();
+        const todayObj = ensureDayObject(today);
+        const expectedTodaySlot = getExpectedTcmbSlot(today);
+        if (todayObj.tcmbSlotKey !== expectedTodaySlot) {
+            fetchAndApplyTcmbRates(today, true);
+        }
+        if (uiState.selectedDateISO === today) {
+            updateTcmbBadgeLabel(today);
+        }
+    }, 20000);
+}
+
 function stepSelectedDate(deltaDays) {
     uiState.selectedDateISO = addDaysISO(uiState.selectedDateISO, deltaDays);
     ensureDayObject(uiState.selectedDateISO);
     renderAll();
+    fetchAndApplyTcmbRates(uiState.selectedDateISO, false);
 }
 
 function handleDateInputChanged(val) {
@@ -1564,12 +1777,14 @@ function handleDateInputChanged(val) {
     uiState.selectedDateISO = parseAnyDateToISO(val);
     ensureDayObject(uiState.selectedDateISO);
     renderAll();
+    fetchAndApplyTcmbRates(uiState.selectedDateISO, false);
 }
 
 function jumpToDateISO(iso) {
     uiState.selectedDateISO = parseAnyDateToISO(iso);
     ensureDayObject(uiState.selectedDateISO);
     renderAll();
+    fetchAndApplyTcmbRates(uiState.selectedDateISO, false);
 }
 
 function jumpToToday() {
@@ -1589,22 +1804,31 @@ function updateDayMetaField(field, value) {
 }
 
 function autoCalcCarryFromPrevInputs() {
-    const pIn = Number(document.getElementById("carry-modal-prev-in")?.value || 0);
-    const pOut = Number(document.getElementById("carry-modal-prev-out")?.value || 0);
+    const pIn = parseMoneyInputTR(document.getElementById("carry-modal-prev-in")?.value || 0);
+    const pOut = parseMoneyInputTR(document.getElementById("carry-modal-prev-out")?.value || 0);
     if (pIn > 0 || pOut > 0) {
         const carryInput = document.getElementById("carry-modal-amount");
-        if (carryInput) carryInput.value = (pIn - pOut).toFixed(2);
+        if (carryInput) {
+            const diff = pIn - pOut;
+            carryInput.value = diff % 1 === 0 ? diff.toLocaleString("tr-TR") : formatNumberTR(diff);
+        }
     }
 }
 
 function openCarryoverOverrideModal() {
     if (!assertPermission("edit", "Manuel kasa devri girişi")) return;
     const { dayObj, current, prev } = calculateDayMetrics(uiState.selectedDateISO);
+    const fmtVal = (v) => {
+        if (v === null || v === undefined || v === "") return "";
+        const n = Number(v) || 0;
+        if (n === 0) return "";
+        return n % 1 === 0 ? n.toLocaleString("tr-TR") : formatNumberTR(n);
+    };
     document.getElementById("carry-modal-date").value = formatDateToTR(uiState.selectedDateISO);
-    document.getElementById("carry-modal-prev-in").value = dayObj.prevInOverride !== null && dayObj.prevInOverride !== undefined ? dayObj.prevInOverride : (prev.totalInWithCarry || "");
-    document.getElementById("carry-modal-prev-out").value = dayObj.prevOutOverride !== null && dayObj.prevOutOverride !== undefined ? dayObj.prevOutOverride : (prev.cashOutSum || "");
+    document.getElementById("carry-modal-prev-in").value = dayObj.prevInOverride !== null && dayObj.prevInOverride !== undefined ? fmtVal(dayObj.prevInOverride) : fmtVal(prev.totalInWithCarry);
+    document.getElementById("carry-modal-prev-out").value = dayObj.prevOutOverride !== null && dayObj.prevOutOverride !== undefined ? fmtVal(dayObj.prevOutOverride) : fmtVal(prev.cashOutSum);
     document.getElementById("carry-modal-label").value = dayObj.carryoverLabel || `${formatDateSlashTR(current.carrySourceDateISO)} TARİHLİ KASA DEVRİ ( + ) BAKİYESİ`;
-    document.getElementById("carry-modal-amount").value = dayObj.carryoverOverride !== null && dayObj.carryoverOverride !== undefined ? dayObj.carryoverOverride : (current.carryover || "");
+    document.getElementById("carry-modal-amount").value = dayObj.carryoverOverride !== null && dayObj.carryoverOverride !== undefined ? fmtVal(dayObj.carryoverOverride) : fmtVal(current.carryover);
     openModal("modal-carryover");
 }
 
@@ -1618,9 +1842,9 @@ function handleSaveCarryoverOverride(e) {
     const rawAmt = document.getElementById("carry-modal-amount").value.trim();
 
     if (lbl) dayObj.carryoverLabel = lbl;
-    dayObj.prevInOverride = rawPrevIn === "" ? null : Number(rawPrevIn);
-    dayObj.prevOutOverride = rawPrevOut === "" ? null : Number(rawPrevOut);
-    dayObj.carryoverOverride = rawAmt === "" ? null : Number(rawAmt);
+    dayObj.prevInOverride = rawPrevIn === "" ? null : parseMoneyInputTR(rawPrevIn);
+    dayObj.prevOutOverride = rawPrevOut === "" ? null : parseMoneyInputTR(rawPrevOut);
+    dayObj.carryoverOverride = rawAmt === "" ? null : parseMoneyInputTR(rawAmt);
 
     addAuditLog("MANUEL KASA DEVRİ", `${formatDateToTR(uiState.selectedDateISO)} kasa devri ${dayObj.carryoverOverride === null ? "0,00 TL / Otomatik" : formatMoneyTR(dayObj.carryoverOverride)} olarak kaydedildi.`);
     closeModal("modal-carryover");
@@ -1648,6 +1872,7 @@ function clearCurrentDayEntries() {
     addAuditLog("GÜN SIFIRLAMA", `${dTR} tarihli kasa formu 0,00 TL olarak sıfırlandı.`);
     syncStateToServer();
     renderAll();
+    fetchAndApplyTcmbRates(uiState.selectedDateISO, true);
 }
 
 function resetAllKasaDataToZero() {
@@ -1659,6 +1884,7 @@ function resetAllKasaDataToZero() {
     addAuditLog("TAM SIFIRLAMA", "Tüm kasa günleri temizlendi; 0,00 TL manuel başlangıç durumuna geçildi.");
     syncStateToServer();
     renderAll();
+    fetchAndApplyTcmbRates(uiState.selectedDateISO, true);
 }
 
 function toggleDayLockStatus() {
@@ -1754,6 +1980,8 @@ function exportArchiveSearchCSV() {
 function applyRolePresetCheckboxes(presetKey) {
     const preset = ROLE_PRESETS[presetKey] || ROLE_PRESETS.VIEWER;
     const p = preset.permissions;
+    const chkView = document.getElementById("perm-chk-view");
+    if (chkView) chkView.checked = Boolean(p.view);
     document.getElementById("perm-chk-add").checked = Boolean(p.add);
     document.getElementById("perm-chk-edit").checked = Boolean(p.edit);
     document.getElementById("perm-chk-delete").checked = Boolean(p.delete);
@@ -1788,6 +2016,8 @@ function openEditUserModal(username) {
     document.getElementById("user-pass-input").value = "";
     document.getElementById("user-role-preset").value = u.rolePreset || "VIEWER";
 
+    const chkView = document.getElementById("perm-chk-view");
+    if (chkView) chkView.checked = Boolean(up.view);
     document.getElementById("perm-chk-add").checked = Boolean(up.add);
     document.getElementById("perm-chk-edit").checked = Boolean(up.edit);
     document.getElementById("perm-chk-delete").checked = Boolean(up.delete);
@@ -1806,16 +2036,24 @@ function handleSaveUser(e) {
     const username = normalizeTR(document.getElementById("user-username-input").value.trim());
     const dept = document.getElementById("user-dept-input").value.trim();
     const pass = document.getElementById("user-pass-input").value.trim();
-    const rolePreset = document.getElementById("user-role-preset").value;
+    let rolePreset = document.getElementById("user-role-preset").value;
+
+    const isNoneRole = rolePreset === "NONE";
+    const chkView = document.getElementById("perm-chk-view");
+    const canView = isNoneRole ? false : (chkView ? chkView.checked : true);
 
     const permissions = {
-        view: true,
-        add: document.getElementById("perm-chk-add").checked,
-        edit: document.getElementById("perm-chk-edit").checked,
-        delete: document.getElementById("perm-chk-delete").checked,
-        lockDay: document.getElementById("perm-chk-lock").checked,
-        manageUsers: document.getElementById("perm-chk-admin").checked
+        view: canView,
+        add: canView ? document.getElementById("perm-chk-add").checked : false,
+        edit: canView ? document.getElementById("perm-chk-edit").checked : false,
+        delete: canView ? document.getElementById("perm-chk-delete").checked : false,
+        lockDay: canView ? document.getElementById("perm-chk-lock").checked : false,
+        manageUsers: canView ? document.getElementById("perm-chk-admin").checked : false
     };
+
+    if (!canView) {
+        rolePreset = "NONE";
+    }
 
     if (origUser) {
         const existing = (appState.users || []).find(u => u.username === origUser);
@@ -1920,10 +2158,11 @@ function renderQuickUserChips() {
     if (!box) return;
     box.innerHTML = (appState.users || []).map(u => {
         const p = ROLE_PRESETS[u.rolePreset] || ROLE_PRESETS.VIEWER;
+        const shortTag = p.code === "ADMIN" ? "Tam" : p.code === "EDITOR" ? "Düzenle" : p.code === "CONTRIBUTOR" ? "Ekle" : p.code === "NONE" ? "Engelli" : "İzle";
         return `
             <button type="button" class="user-chip" onclick="fillQuickLogin('${escapeHtml(u.username)}')" title="Yetki: ${escapeHtml(p.label)}">
                 <span>${escapeHtml(u.name)}</span>
-                <span style="font-size:0.6rem; color:#38bdf8;">(${escapeHtml(p.code === "ADMIN" ? "Tam" : p.code === "EDITOR" ? "Düzenle" : p.code === "CONTRIBUTOR" ? "Ekle" : "İzle")})</span>
+                <span style="font-size:0.6rem; color:${p.code === "NONE" ? "#fb7185" : "#38bdf8"};">(${escapeHtml(shortTag)})</span>
             </button>
         `;
     }).join("");
@@ -1956,6 +2195,15 @@ function handleLogin(e) {
         return;
     }
 
+    const userPerms = getUserPerms(matched);
+    if (matched.rolePreset === "NONE" || userPerms.view === false) {
+        if (errEl) {
+            errEl.style.display = "block";
+            errEl.innerHTML = `<i class="fa-solid fa-ban"></i> Bu kullanıcının sisteme erişim yetkisi kapatılmıştır (Hiçbiri / Erişime Kapalı).`;
+        }
+        return;
+    }
+
     if (errEl) errEl.style.display = "none";
     currentUser = matched;
 
@@ -1974,7 +2222,7 @@ function handleLogin(e) {
 
 function applyAuthenticatedSession() {
     const overlay = document.getElementById("login-overlay");
-    if (!currentUser) {
+    if (!currentUser || currentUser.rolePreset === "NONE" || getUserPerms(currentUser).view === false) {
         overlay?.classList.remove("hidden");
         return;
     }
@@ -2098,7 +2346,7 @@ function switchTab(tabId) {
         form: ["GÜNLÜK KASA FORMU", "%100 Manuel Giriş — Nakit devir, günlük giriş/ödemeler, POS kredi kartı, cari kart, çek/senet ve havale"],
         a4: ["A4 ÇIKTI & KLASİK EXCEL FORMU", "Eski Excel Günlük Kasa Formunun birebir A4 kağıt önizlemesi ve tek sayfa baskı motoru"],
         archive: ["KASA ARŞİVİ & HAREKET ARAMA", "Manuel girilen tüm kasa, kart, çek ve havale kayıtlarında cari, plaka ve TDR tedarik arama"],
-        admin: ["KULLANICI & YETKİ SINIRLAMASI YÖNETİMİ", "Görüntüleme, Ekleme, Değişiklik ve Tam Yetki atamaları ile işlem denetim logları"]
+        admin: ["KULLANICI & YETKİ SINIRLAMASI YÖNETİMİ", "Görüntüleme, Ekleme, Değişiklik, Tam Yetki ve Erişime Kapalı (Hiçbiri) atamaları"]
     };
 
     const info = titles[tabId] || titles.form;
@@ -2193,7 +2441,11 @@ window.addEventListener("DOMContentLoaded", async () => {
         if (sessRaw) {
             const parsedUser = JSON.parse(sessRaw);
             const matched = (appState.users || []).find(u => u.username === parsedUser.username);
-            if (matched) currentUser = matched;
+            if (matched && matched.rolePreset !== "NONE" && getUserPerms(matched).view !== false) {
+                currentUser = matched;
+            } else {
+                currentUser = appState.users[0];
+            }
         } else {
             currentUser = appState.users[0];
         }
@@ -2203,8 +2455,10 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     applyAuthenticatedSession();
     setSyncBadge("ok");
+    await fetchAndApplyTcmbRates(uiState.selectedDateISO, false);
+    initTcmb1630AutoRefreshScheduler();
 
     if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("sw.js?v=1.0.1").catch(() => {});
+        navigator.serviceWorker.register("sw.js?v=1.0.3").catch(() => {});
     }
 });

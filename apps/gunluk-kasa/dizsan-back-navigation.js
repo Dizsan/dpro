@@ -251,7 +251,7 @@
 
     function isHomeTab(tabId) {
         if (!tabId) return true;
-        const homeIds = ['dashboard-tab', 'tab-dashboard', 'kokpit-tab', 'home-tab', 'main-tab', 'summary-tab'];
+        const homeIds = ['dashboard-tab', 'tab-dashboard', 'kokpit-tab', 'home-tab', 'main-tab', 'summary-tab', 'tab-form', 'form'];
         return homeIds.includes(tabId);
     }
 
@@ -280,7 +280,7 @@
             if (prevTab && prevTab !== curTab && document.getElementById(prevTab)) {
                 isInternalTabSwitch = true;
                 if (typeof window.switchTab === 'function') {
-                    window.switchTab(prevTab);
+                    window.switchTab(prevTab.replace(/^tab-/, ''));
                 } else {
                     const btn = document.querySelector(`[data-tab="${prevTab}"], [onclick*="${prevTab}"]`);
                     if (btn) btn.click();
@@ -296,9 +296,10 @@
         if (curTab && !isHomeTab(curTab)) {
             isInternalTabSwitch = true;
             if (typeof window.switchTab === 'function') {
-                window.switchTab('dashboard-tab');
+                const defaultHome = document.getElementById('tab-form') ? 'form' : 'dashboard-tab';
+                window.switchTab(defaultHome);
             } else {
-                const homeBtn = document.querySelector('[data-tab="dashboard-tab"], [onclick*="dashboard-tab"]');
+                const homeBtn = document.querySelector('[data-tab="form"], [data-tab="dashboard-tab"], [onclick*="dashboard-tab"]');
                 if (homeBtn) homeBtn.click();
             }
             isInternalTabSwitch = false;
@@ -352,7 +353,7 @@
                 btn = document.createElement('button');
                 btn.type = 'button';
                 btn.id = 'dizsan-global-back-btn';
-                btn.className = 'dizsan-global-back-btn visible';
+                btn.className = 'dizsan-global-back-btn';
                 btn.title = 'Geri Dön';
                 btn.innerHTML = '<i class="fa-solid fa-arrow-left"></i> <span>Geri</span>';
                 btn.onclick = handleInAppBack;
@@ -384,13 +385,9 @@
         const btn = document.getElementById('dizsan-global-back-btn');
         if (!btn) return;
 
-        const isEmbedded = (window.parent && window.parent !== window);
-        const hasModal = !!getActiveModal();
-        const hasSidebar = !!getActiveSidebar();
         const curTab = getActiveTabId();
-        const hasHistory = tabHistoryStack.length > 0;
-        const isNotHome = curTab && !isHomeTab(curTab);
-        const shouldBeVisible = !!(isEmbedded || hasModal || hasSidebar || hasHistory || isNotHome || true);
+        const isNotHome = Boolean(curTab && !isHomeTab(curTab));
+        const shouldBeVisible = isNotHome;
 
         if (btn.classList.contains('visible') !== shouldBeVisible) {
             btn.classList.toggle('visible', shouldBeVisible);
