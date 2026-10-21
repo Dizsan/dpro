@@ -1,8 +1,8 @@
 {
-  "version": "1.0.4",
-  "updatedAt": "20.10.2026 16:54:54",
-  "updatedAtMs": 1792504494501,
-  "stateRevision": 22,
+  "version": "1.0.5",
+  "updatedAt": "22.10.2026 02:39:00",
+  "updatedAtMs": 1792625940000,
+  "stateRevision": 25,
   "users": [
     {
       "order": 0,
@@ -231,9 +231,43 @@
       "isLocked": false,
       "entries": [],
       "tcmbSlotKey": "2026-10-18_HISTORICAL"
+    },
+    "2026-10-22": {
+      "dateISO": "2026-10-22",
+      "euroRate": "55,8879",
+      "usdRate": "49,6392",
+      "prevInOverride": null,
+      "prevOutOverride": null,
+      "carryoverOverride": null,
+      "carryoverLabel": "21/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
+      "cashierName": "GÖKHAN ÖZBULUT",
+      "controllerName": "RAFET CANBEK",
+      "controllerApproved": false,
+      "isLocked": false,
+      "entries": [
+        {
+          "id": "ENT-1792625699623-145",
+          "dateISO": "2026-10-22",
+          "section": "CARI_CC",
+          "col1": "GARANTİ BBVA - 4360 (CORPORATE (DIZSAN OTOMOTIV)) · MUTFAK & İKRAM / MİSAFİR İKRAM GİDERİ",
+          "desc": "DOĞUŞ OTO SUAT BEY ÖĞLE YEMEĞİ",
+          "dueDate": "",
+          "amount": 12500,
+          "code": "",
+          "createdBy": "ÖMER EREN",
+          "createdAt": "22.10.2026 02:34:59"
+        }
+      ],
+      "tcmbSlotKey": "2026-10-22_BEFORE_1630"
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "22.10.2026 02:34:59",
+      "user": "ÖMER EREN",
+      "category": "MANUEL GİRİŞ",
+      "detail": "22.10.2026 [Şirket Kredi Kartı ile Ödeme (Gider)] \"GARANTİ BBVA - 4360 (CORPORATE (DIZSAN OTOMOTIV)) · MUTFAK & İKRAM / MİSAFİR İKRAM GİDERİ - DOĞUŞ OTO SUAT BEY ÖĞLE YEMEĞİ\" (12.500,00 ₺) eklendi."
+    },
     {
       "timestamp": "20.10.2026 13:53:13",
       "user": "ÖMER EREN",

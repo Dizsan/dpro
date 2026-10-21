@@ -14,7 +14,7 @@
  * ==========================================================================
  */
 
-const CURRENT_APP_VERSION = "1.0.4";
+const CURRENT_APP_VERSION = "1.0.5";
 window.CURRENT_APP_VERSION = CURRENT_APP_VERSION;
 
 const OLD_DEMO_STORAGE_KEY = "dizsan_gunluk_kasa_state_v1";
@@ -1387,6 +1387,365 @@ const FLOW_CATEGORY_OPTIONS = {
     ]
 };
 
+// 2 Kademeli Ana Kategori -> Alt Kalem Öneri Ağacı
+const CATEGORY_SUBITEMS_TREE = {
+    GIDER: [
+        {
+            group: "ARAÇ GİDERLERİ",
+            items: [
+                "YAKIT (MAZOT / BENZİN)",
+                "HGS / OGS / KÖPRÜ GEÇİŞ",
+                "ARAÇ MUAYENE (TÜVTÜRK)",
+                "ARAÇ BAKIM & TAMİR",
+                "LASTİK / AKÜ / YEDEK PARÇA",
+                "TRAFİK SİGORTASI & KASKO",
+                "MTV (MOTORLU TAŞITLAR VERGİSİ)",
+                "ARAÇ YIKAMA & OTOPARK",
+                "DİĞER ARAÇ GİDERİ"
+            ]
+        },
+        {
+            group: "TEDARİK & ATÖLYE",
+            items: [
+                "TEDARİK PARÇA ALIMI (TDR)",
+                "DIŞ SERVİS / TORNA / İŞÇİLİK (TDR)",
+                "SARF MALZEME & HIRDAVAT",
+                "EL ALETLERİ & EKİPMAN",
+                "SANAYİ TÜPÜ / OKSİJEN / GAZ",
+                "İŞ GÜVENLİĞİ (KKD) MALZEMELERİ",
+                "DİĞER ATÖLYE GİDERİ"
+            ]
+        },
+        {
+            group: "CARİ / FİRMA ÖDEMELERİ",
+            items: [
+                "YEDEK PARÇA TEDARİKÇİ ÖDEMESİ",
+                "FATURALI CARİ HESAP ÖDEMESİ",
+                "PEŞİN MALZEME ALIMI",
+                "EMANET / İADE ÖDEMESİ",
+                "DİĞER CARİ ÖDEME"
+            ]
+        },
+        {
+            group: "MUTFAK & İKRAM",
+            items: [
+                "GÜNLÜK YEMEK / LOKANTA",
+                "ÇAY / KAHVE / ŞEKER",
+                "DAMACANA & BARDAK SU",
+                "MARKET / GIDA ALIŞVERİŞİ",
+                "MİSAFİR İKRAM GİDERİ",
+                "TEMİZLİK MALZEMESİ"
+            ]
+        },
+        {
+            group: "PERSONEL GİDERLERİ",
+            items: [
+                "MAAŞ ÖDEMESİ",
+                "MAAŞ AVANSI",
+                "İŞ / SAHA AVANSI",
+                "FAZLA MESAİ ÖDEMESİ",
+                "YOL & YEMEK ÜCRETİ",
+                "PRİM / İKRAMİYE",
+                "TAZMİNAT / ÇIKIŞ ÖDEMESİ"
+            ]
+        },
+        {
+            group: "KARGO & NAKLİYE",
+            items: [
+                "KARGO GÖNDERİM ÜCRETİ",
+                "AMBAR / NAKLİYE ÖDEMESİ",
+                "ŞEHİR İÇİ KURYE / TAKSİ",
+                "GÜMRÜK / LOJİSTİK MASRAFI"
+            ]
+        },
+        {
+            group: "FATURA & ABONELİK",
+            items: [
+                "ELEKTRİK FATURASI",
+                "SU FATURASI",
+                "DOĞALGAZ FATURASI",
+                "İNTERNET & SABİT TELEFON",
+                "CEP TELEFONU (GSM) FATURALARI",
+                "YAZILIM / SUNUCU / DOMAİN"
+            ]
+        },
+        {
+            group: "OFİS & İDARİ GİDERLER",
+            items: [
+                "KIRTASİYE & KAĞIT / TONER",
+                "MATBAA / FATURA / EVRAK BASIMI",
+                "BİLGİSAYAR & DONANIM",
+                "AİDAT & GÜVENLİK",
+                "TEMSİL & AĞIRLAMA"
+            ]
+        },
+        {
+            group: "VERGİ / SGK / RESMİ",
+            items: [
+                "SGK PRİM ÖDEMESİ",
+                "VERGİ ÖDEMESİ (KDV / MUHTASAR / KURUMLAR)",
+                "NOTER MASRAFI",
+                "BELEDİYE / ÇEVRE / İLAN VERGİSİ",
+                "TİCARET ODASI / RESMİ HARÇLAR",
+                "MALİ MÜŞAVİR / MUHASEBE ÜCRETİ"
+            ]
+        },
+        {
+            group: "BİNA BAKIM & DEMİRBAŞ",
+            items: [
+                "ELEKTRİK / AYDINLATMA TAMİRİ",
+                "SU / TESİSAT TAMİRİ",
+                "MAKİNE / KOMPRESÖR / LİFT BAKIMI",
+                "DEMİRBAŞ / MOBİLYA / KLİMA ALIMI",
+                "TADİLAT & BOYA"
+            ]
+        },
+        {
+            group: "BANKA & FİNANSMAN",
+            items: [
+                "KREDİ TAKSİT ÖDEMESİ",
+                "KREDİ KARTI EKSTRE ÖDEMESİ",
+                "ÇEK / SENET ÖDEMESİ",
+                "EFT / HAVALE / HESAP İŞLETİM MASRAFI",
+                "KASADAN BANKAYA YATIRILAN"
+            ]
+        },
+        {
+            group: "DİĞER GİDERLER",
+            items: [
+                "BAĞIŞ / YARDIM",
+                "CEZA ÖDEMELERİ",
+                "ORTAK / ŞİRKET SAHİBİ ÇEKİMİ",
+                "DİĞER (SERBEST GİRİŞ)"
+            ]
+        }
+    ],
+    GELIR: [
+        {
+            group: "SERVİS & İŞÇİLİK GELİRİ",
+            items: [
+                "ARAÇ SERVİS BAKIM TAHSİLATI",
+                "ARIZA / ONARIM İŞÇİLİK",
+                "DIŞ SERVİS / MOBİL HİZMET"
+            ]
+        },
+        {
+            group: "YEDEK PARÇA & TEDARİK",
+            items: [
+                "YEDEK PARÇA PEŞİN SATIŞ",
+                "TEDARİK HİZMET / PARÇA (TDR)",
+                "HURDA / ÇIKMA PARÇA SATIŞI"
+            ]
+        },
+        {
+            group: "CARİ HESAP TAHSİLATI",
+            items: [
+                "MÜŞTERİ CARİ NAKİT TAHSİLAT",
+                "POS / KREDİ KARTI CARİ TAHSİLAT",
+                "GELEN HAVALE / EFT CARİ TAHSİLAT",
+                "ÇEK / SENET TAHSİLATI"
+            ]
+        },
+        {
+            group: "BANKA & DİĞER GİRİŞLER",
+            items: [
+                "BANKADAN KASAYA NAKİT ÇEKİLEN",
+                "ORTAK / ŞİRKET SAHİBİ KASA GİRİŞİ",
+                "İADE / FAZLA ÖDEME DÖNÜŞÜ",
+                "DİĞER GELİR (SERBEST GİRİŞ)"
+            ]
+        }
+    ]
+};
+
+// Kayıtlı Kredi Kartları (CardFlow Kredi Kartı Takip sistemindeki kartlarınız: Banka Adı + Son 4 Hane)
+const REGISTERED_COMPANY_CARDS = [
+    { id: "card-8",  bank: "GARANTİ BBVA",   number: "4360", name: "Corporate (Dizsan Otomotiv)",        type: "corporate" },
+    { id: "card-9",  bank: "GARANTİ BBVA",   number: "4352", name: "Corporate (Dizsan Lojistik)",        type: "corporate" },
+    { id: "card-1",  bank: "GARANTİ BBVA",   number: "6010", name: "Bonus Trink (Dizsan Lojistik)",      type: "corporate" },
+    { id: "card-10", bank: "GARANTİ BBVA",   number: "3017", name: "Bonus Trink (Dizsan Otomotiv)",      type: "corporate" },
+    { id: "card-3",  bank: "AKBANK",         number: "6539", name: "Axess (Dizsan Otomotiv)",            type: "corporate" },
+    { id: "card-2",  bank: "AKBANK",         number: "3481", name: "Axess (Dizsan Lojistik)",            type: "corporate" },
+    { id: "card-12", bank: "ZİRAAT BANKASI", number: "3232", name: "Başak (Dizsan Otomotiv)",            type: "corporate" },
+    { id: "card-13", bank: "İŞ BANKASI",     number: "4635", name: "Maximum Business (Dizsan Otomotiv)", type: "corporate" },
+    { id: "card-14", bank: "İŞ BANKASI",     number: "6298", name: "Maximum Business (Dizsan Lojistik)", type: "corporate" },
+    { id: "card-15", bank: "İŞ BANKASI",     number: "4593", name: "Maximum Business (DsMot)",           type: "corporate" },
+    { id: "card-11", bank: "VAKIFBANK",      number: "1634", name: "World (Dizsan Lojistik)",            type: "corporate" },
+    { id: "card-7",  bank: "GARANTİ BBVA",   number: "0031", name: "Bonus Platinum (Şahsi)",             type: "personal"  },
+    { id: "card-16", bank: "İŞ BANKASI",     number: "8815", name: "Maximiles Black (Şahsi)",            type: "personal"  },
+    { id: "card-6",  bank: "ZİRAAT BANKASI", number: "7265", name: "Combo (Şahsi)",                      type: "personal"  },
+    { id: "card-5",  bank: "HALKBANK",       number: "8765", name: "Paraf (Şahsi)",                      type: "personal"  },
+    { id: "card-4",  bank: "TEB",            number: "9097", name: "Bonus (Şahsi)",                      type: "personal"  }
+];
+
+function getAvailableCreditCards() {
+    try {
+        const raw = localStorage.getItem("cardflow_cards_v3");
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                return parsed.map(c => ({
+                    bank: String(c.bank || "").toUpperCase(),
+                    number: String(c.number || ""),
+                    name: String(c.name || ""),
+                    type: c.type || "corporate"
+                }));
+            }
+        }
+    } catch (e) {}
+    return REGISTERED_COMPANY_CARDS;
+}
+
+function formatCreditCardValue(c) {
+    return `${c.bank} - ${c.number} (${c.name})`;
+}
+
+function populateCreditCardSelector(existingCol1 = "") {
+    const sel = document.getElementById("entry-cc-card-select");
+    if (!sel) return;
+    const cards = getAvailableCreditCards();
+    const corpCards = cards.filter(c => c.type !== "personal");
+    const persCards = cards.filter(c => c.type === "personal");
+
+    let html = `<optgroup label="ŞİRKET / KURUMSAL KREDİ KARTLARI">`;
+    for (const c of corpCards) {
+        const val = formatCreditCardValue(c);
+        html += `<option value="${escapeHtml(val)}">${escapeHtml(c.bank)} •••• ${escapeHtml(c.number)} — ${escapeHtml(c.name)}</option>`;
+    }
+    html += `</optgroup>`;
+
+    if (persCards.length > 0) {
+        html += `<optgroup label="ŞAHSİ KREDİ KARTLARI">`;
+        for (const c of persCards) {
+            const val = formatCreditCardValue(c);
+            html += `<option value="${escapeHtml(val)}">${escapeHtml(c.bank)} •••• ${escapeHtml(c.number)} — ${escapeHtml(c.name)}</option>`;
+        }
+        html += `</optgroup>`;
+    }
+
+    sel.innerHTML = html;
+
+    if (existingCol1) {
+        for (const c of cards) {
+            if (existingCol1.includes(c.number)) {
+                sel.value = formatCreditCardValue(c);
+                break;
+            }
+        }
+    }
+}
+
+function syncCol1FromSelectors() {
+    const sectionVal = document.getElementById("entry-section")?.value || "";
+    const mainVal = document.getElementById("entry-main-cat")?.value || "";
+    const subItemVal = document.getElementById("entry-sub-cat")?.value || "";
+    const ccVal = document.getElementById("entry-cc-card-select")?.value || "";
+    const inpCol1 = document.getElementById("entry-col1");
+    const inpCode = document.getElementById("entry-code");
+    if (!inpCol1) return;
+
+    const isFreeInput = subItemVal.includes("SERBEST GİRİŞ");
+    const catPart = isFreeInput ? mainVal : `${mainVal} / ${subItemVal}`;
+
+    if (sectionVal === "CARI_CC" && ccVal) {
+        inpCol1.value = `${ccVal} · ${catPart}`;
+    } else if (isFreeInput) {
+        inpCol1.value = mainVal;
+        inpCol1.placeholder = "Özel cari / firma / gider başlığını buraya yazınız...";
+    } else {
+        inpCol1.value = catPart;
+    }
+
+    if (inpCode) {
+        if (subItemVal.includes("(TDR)") || mainVal.includes("TEDARİK")) {
+            inpCode.value = "TDR";
+        } else if (inpCode.value === "TDR") {
+            inpCode.value = "";
+        }
+    }
+}
+
+function handleCreditCardSelectChange() {
+    syncCol1FromSelectors();
+}
+
+function populateCategoryTreeSelectors(flow, sectionVal, existingCol1 = "") {
+    const mainSel = document.getElementById("entry-main-cat");
+    const subSel = document.getElementById("entry-sub-cat");
+    const lblMain = document.getElementById("lbl-entry-main-cat");
+    const lblSub = document.getElementById("lbl-entry-sub-cat");
+    if (!mainSel || !subSel) return;
+
+    const tree = CATEGORY_SUBITEMS_TREE[flow] || CATEGORY_SUBITEMS_TREE.GIDER;
+    if (lblMain) lblMain.textContent = flow === "GELIR" ? "Ana Gelir Grubu" : "Ana Gider Grubu";
+    if (lblSub) lblSub.textContent = "Alt Kalem";
+
+    mainSel.innerHTML = tree.map(g => `<option value="${escapeHtml(g.group)}">${escapeHtml(g.group)}</option>`).join("");
+
+    // Varsayılan grup seçimi (işlem türüne göre akıllı başlangıç)
+    let defaultMain = tree[0].group;
+    if (flow === "GIDER") {
+        if (sectionVal === "WIRE_OUT" || sectionVal === "CARI_CC") defaultMain = "CARİ / FİRMA ÖDEMELERİ";
+        else if (sectionVal === "CHECK_OUT" || sectionVal === "CHECK_CARI_BANK") defaultMain = "BANKA & FİNANSMAN";
+        else defaultMain = "ARAÇ GİDERLERİ";
+    } else {
+        if (sectionVal === "POS_CC" || sectionVal === "WIRE_IN") defaultMain = "CARİ HESAP TAHSİLATI";
+        else defaultMain = "SERVİS & İŞÇİLİK GELİRİ";
+    }
+
+    let matchedMain = null;
+    let matchedSub = null;
+    if (existingCol1) {
+        const cleanCol1 = existingCol1.includes(" · ") ? existingCol1.split(" · ").pop().trim() : existingCol1;
+        const parts = cleanCol1.split(" / ").map(s => s.trim());
+        if (parts.length >= 2) {
+            const foundGrp = tree.find(g => g.group === parts[0]);
+            if (foundGrp) {
+                matchedMain = foundGrp.group;
+                if (foundGrp.items.includes(parts[1])) {
+                    matchedSub = parts[1];
+                }
+            }
+        } else {
+            for (const g of tree) {
+                if (g.group === cleanCol1) {
+                    matchedMain = g.group;
+                    break;
+                }
+                if (g.items.includes(cleanCol1)) {
+                    matchedMain = g.group;
+                    matchedSub = cleanCol1;
+                    break;
+                }
+            }
+        }
+    }
+
+    mainSel.value = matchedMain || defaultMain;
+    handleMainCategoryChange(mainSel.value, matchedSub, Boolean(existingCol1 && !matchedMain));
+}
+
+function handleMainCategoryChange(mainGroupVal, preferredSub = null, preserveExistingCol1 = false) {
+    const flow = document.getElementById("entry-flow-type")?.value === "GIDER" ? "GIDER" : "GELIR";
+    const tree = CATEGORY_SUBITEMS_TREE[flow] || CATEGORY_SUBITEMS_TREE.GIDER;
+    const foundGrp = tree.find(g => g.group === mainGroupVal) || tree[0];
+
+    const subSel = document.getElementById("entry-sub-cat");
+    if (!subSel || !foundGrp) return;
+
+    subSel.innerHTML = foundGrp.items.map(it => `<option value="${escapeHtml(it)}">${escapeHtml(it)}</option>`).join("");
+    const targetSub = (preferredSub && foundGrp.items.includes(preferredSub)) ? preferredSub : foundGrp.items[0];
+    subSel.value = targetSub;
+
+    if (!preserveExistingCol1) {
+        handleSubCategoryChange(targetSub);
+    }
+}
+
+function handleSubCategoryChange() {
+    syncCol1FromSelectors();
+}
+
 function handleFlowTypeChange(flowVal, preferredSection = null) {
     const flow = flowVal === "GIDER" ? "GIDER" : "GELIR";
     const flowSelect = document.getElementById("entry-flow-type");
@@ -1415,26 +1774,36 @@ function handleEntrySectionChange(sectionVal) {
     const inpCol1 = document.getElementById("entry-col1");
     const grpCol1 = document.getElementById("group-entry-col1");
     const grpDue = document.getElementById("group-entry-due");
+    const grpCcCard = document.getElementById("group-entry-cc-card");
     const lblDesc = document.getElementById("lbl-entry-desc");
+    const flow = isGelirSection(sectionVal) ? "GELIR" : "GIDER";
 
     if (grpDue) grpDue.style.display = sectionVal === "CHECK_OUT" ? "block" : "none";
     if (grpCol1) grpCol1.style.display = "block";
+    if (grpCcCard) {
+        grpCcCard.style.display = sectionVal === "CARI_CC" ? "block" : "none";
+        if (sectionVal === "CARI_CC") {
+            populateCreditCardSelector();
+        }
+    }
+
+    populateCategoryTreeSelectors(flow, sectionVal);
 
     if (sectionVal === "CASH_IN") {
-        lblCol1.textContent = "Gelir Kaynağı / Cari";
-        inpCol1.placeholder = "Örn: NAKİT TAHSİLAT, MÜŞTERİ ADI";
+        lblCol1.textContent = "Seçilen Gelir Grubu / Cari (İsterseniz Değiştirin)";
+        inpCol1.placeholder = "Örn: SERVİS & İŞÇİLİK GELİRİ / ARAÇ SERVİS BAKIM TAHSİLATI";
         lblDesc.textContent = "Gelir Açıklaması";
     } else if (sectionVal === "CASH_OUT") {
-        lblCol1.textContent = "Gider Grubu / Cari";
-        inpCol1.placeholder = "Örn: MUTFAK, ARAÇ GİDERİ, TEDARİK";
+        lblCol1.textContent = "Seçilen Gider Grubu / Alt Kalem (İsterseniz Değiştirin)";
+        inpCol1.placeholder = "Örn: ARAÇ GİDERLERİ / YAKIT (MAZOT / BENZİN)";
         lblDesc.textContent = "Gider / Ödeme Açıklaması";
     } else if (sectionVal === "POS_CC") {
-        lblCol1.textContent = "POS Bankası";
+        lblCol1.textContent = "POS Bankası / Seçilen Grup";
         inpCol1.placeholder = "Örn: ZİRAAT, GARANTİ, İŞ BANKASI";
         lblDesc.textContent = "Cari Hesap / Fatura Açıklaması";
     } else if (sectionVal === "CARI_CC") {
-        lblCol1.textContent = "Ödeme Yapılan Cari / Firma";
-        inpCol1.placeholder = "Örn: TEDARİKÇİ ADI, FİRMA";
+        lblCol1.textContent = "Seçilen Kart & Gider Grubu (Otomatik Dolar / Değiştirilebilir)";
+        inpCol1.placeholder = "Örn: GARANTİ BBVA - 4360 · CARİ / FİRMA ÖDEMELERİ";
         lblDesc.textContent = "Şirket Kredi Kartı Ödeme Açıklaması";
     } else if (sectionVal === "CHECK_OUT") {
         lblCol1.textContent = "Senet / Çek Bilgisi";
@@ -1445,11 +1814,11 @@ function handleEntrySectionChange(sectionVal) {
         inpCol1.placeholder = "Cari veya banka adı";
         lblDesc.textContent = "Açıklama";
     } else if (sectionVal === "WIRE_IN") {
-        lblCol1.textContent = "Alıcı Bankamız";
+        lblCol1.textContent = "Alıcı Bankamız / Seçilen Grup";
         inpCol1.placeholder = "Banka adı";
         lblDesc.textContent = "Gönderen Cari / Havale Açıklaması";
     } else if (sectionVal === "WIRE_OUT") {
-        lblCol1.textContent = "Gönderen Bankamız";
+        lblCol1.textContent = "Gönderen Bankamız / Seçilen Grup";
         inpCol1.placeholder = "Banka adı";
         lblDesc.textContent = "Alıcı Cari / Ödeme Açıklaması";
     }
@@ -1476,7 +1845,7 @@ function openEntryModal(defaultSection = "CASH_IN") {
 
     handleFlowTypeChange(defaultFlow, defaultSection);
     openModal("modal-entry");
-    setTimeout(() => document.getElementById("entry-flow-type")?.focus(), 80);
+    setTimeout(() => document.getElementById("entry-main-cat")?.focus(), 80);
 }
 
 function openEditEntryModal(entryId) {
@@ -1496,6 +1865,10 @@ function openEditEntryModal(entryId) {
     document.getElementById("entry-date").value = formatDateToTR(entry.dateISO || uiState.selectedDateISO);
 
     handleFlowTypeChange(entryFlow, entry.section);
+    if (entry.section === "CARI_CC") {
+        populateCreditCardSelector(entry.col1 || "");
+    }
+    populateCategoryTreeSelectors(entryFlow, entry.section, entry.col1 || "");
 
     document.getElementById("entry-col1").value = entry.col1 || "";
     document.getElementById("entry-due-date").value = entry.dueDate ? formatDateToTR(entry.dueDate) : "";
@@ -1518,7 +1891,13 @@ function handleSaveEntry(e) {
 
     const targetISO = parseAnyDateToISO(document.getElementById("entry-date").value);
     const section = document.getElementById("entry-section").value;
-    const col1 = document.getElementById("entry-col1").value.trim().toUpperCase();
+    const mainCat = (document.getElementById("entry-main-cat")?.value || "").trim().toUpperCase();
+    const subCat = (document.getElementById("entry-sub-cat")?.value || "").trim().toUpperCase();
+    let col1 = document.getElementById("entry-col1").value.trim().toUpperCase();
+    if (!col1 && mainCat) {
+        col1 = subCat && !subCat.includes("SERBEST GİRİŞ") ? `${mainCat} / ${subCat}` : mainCat;
+    }
+
     const dueDate = document.getElementById("entry-due-date").value.trim();
     const desc = document.getElementById("entry-desc").value.trim().toUpperCase();
     const amount = parseMoneyInputTR(document.getElementById("entry-amount").value);
@@ -1550,7 +1929,7 @@ function handleSaveEntry(e) {
             createdBy: currentUser ? currentUser.name : "Sistem",
             createdAt: formatDateTimeTR()
         });
-        addAuditLog("KAYIT DÜZENLEME", `${formatDateToTR(targetISO)} [${SECTION_LABELS[section]}] "${desc}" (${formatMoneyTR(amount)}) güncellendi.`);
+        addAuditLog("KAYIT DÜZENLEME", `${formatDateToTR(targetISO)} [${SECTION_LABELS[section]}] "${col1} - ${desc}" (${formatMoneyTR(amount)}) güncellendi.`);
     } else {
         dayObj.entries.push({
             id: `ENT-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -1564,7 +1943,7 @@ function handleSaveEntry(e) {
             createdBy: currentUser ? currentUser.name : "Sistem",
             createdAt: formatDateTimeTR()
         });
-        addAuditLog("MANUEL GİRİŞ", `${formatDateToTR(targetISO)} [${SECTION_LABELS[section]}] "${desc}" (${formatMoneyTR(amount)}) eklendi.`);
+        addAuditLog("MANUEL GİRİŞ", `${formatDateToTR(targetISO)} [${SECTION_LABELS[section]}] "${col1} - ${desc}" (${formatMoneyTR(amount)}) eklendi.`);
     }
 
     uiState.selectedDateISO = targetISO;

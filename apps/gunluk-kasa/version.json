@@ -1,9 +1,9 @@
 {
   "appId": "dizsan-kasa",
   "appName": "Dizsan Günlük Kasa Formu & Kasa Takip",
-  "version": "1.0.4",
-  "build": 104,
-  "releasedAt": "2026-10-20 16:50:00",
-  "releaseNotes": "Sadeleştirilmiş Ana Ekran, TCMB Döviz Satış Kurları (16:30 Kuralı), Gelir/Gider Seçmeli Ekle Modalı, Net Kasa Bakiyesi Düzeltmesi ve Şirket Kredi Kartı ile Ödeme (Gider) Güncellemesi.",
+  "version": "1.0.5",
+  "build": 105,
+  "releasedAt": "2026-10-22 02:39:00",
+  "releaseNotes": "2 Kademeli Ana Grup / Alt Kalem Seçmeli Kategori Listesi, Kayıtlı Şirket Kredi Kartları (Banka Adı + Son 4 Hane) Seçimi ve Veri Güvenliği İyileştirmeleri.",
   "author": "Ömer Eren & DİZSAN"
 }

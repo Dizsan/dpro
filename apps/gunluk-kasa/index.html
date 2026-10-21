@@ -421,7 +421,7 @@
                             <div class="kasa-panel-header">
                                 <div class="kasa-panel-title">
                                     <i class="fa-solid fa-database" style="color:#10b981;"></i>
-                                    <span>VERİ YEDEKLEME, GERİ YÜKLEME &amp; SIFIRLAMA</span>
+                                    <span>VERİ YEDEKLEME &amp; GERİ YÜKLEME</span>
                                 </div>
                             </div>
                             <div style="padding:14px; display:flex; flex-direction:column; gap:10px;">
@@ -436,9 +436,6 @@
                                         <i class="fa-solid fa-upload"></i> <span>Yedek Dosyası Yükle</span>
                                         <input type="file" accept=".json" style="display:none;" onchange="importFullBackupJSON(event)">
                                     </label>
-                                    <button class="btn btn-danger btn-sm perm-require-admin" onclick="resetAllKasaDataToZero()">
-                                        <i class="fa-solid fa-trash-can"></i> <span>Tüm Günleri Sıfırla (0,00 ₺)</span>
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -509,11 +506,34 @@
                         </div>
                     </div>
 
-                    <!-- 3. CARİ / BANKA VE VADE TARİHİ -->
+                    <!-- 2B. ŞİRKET KREDİ KARTI SEÇİLDİĞİNDE KAYITLI KARTLAR LİSTESİ (BANKA ADI + SON 4 HANE) -->
+                    <div class="form-group" id="group-entry-cc-card" style="display:none; padding:10px 12px; border-radius:10px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.28); margin-bottom:10px;">
+                        <label for="entry-cc-card-select" style="color:var(--dizsan-cyan); font-weight:800;">
+                            <i class="fa-solid fa-credit-card"></i> Ödeme Yapılan Kredi Kartı (Banka Adı &amp; Son 4 Hane)
+                        </label>
+                        <select id="entry-cc-card-select" class="form-control" onchange="handleCreditCardSelectChange(this.value)">
+                        </select>
+                    </div>
+
+                    <!-- 3. ANA GRUP & ALT KALEM (YAN YANA 2 KADEMELİ SEÇMELİ LİSTE) -->
+                    <div class="form-grid-2" id="entry-row-cat-sub">
+                        <div class="form-group">
+                            <label for="entry-main-cat" id="lbl-entry-main-cat">Ana Gider Grubu</label>
+                            <select id="entry-main-cat" class="form-control" onchange="handleMainCategoryChange(this.value)">
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="entry-sub-cat" id="lbl-entry-sub-cat">Alt Kalem</label>
+                            <select id="entry-sub-cat" class="form-control" onchange="handleSubCategoryChange(this.value)">
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 4. CARİ / BANKA (OTOMATİK DOLAR VEYA SERBEST YAZILABİLİR) VE VADE TARİHİ -->
                     <div class="form-grid-2" id="entry-row-party-due">
                         <div class="form-group" id="group-entry-col1">
-                            <label for="entry-col1" id="lbl-entry-col1">Kaynak / Banka / Cari</label>
-                            <input type="text" id="entry-col1" class="form-control" placeholder="Örn: NAKİT, ZİRAAT, MÜŞTERİ ADI">
+                            <label for="entry-col1" id="lbl-entry-col1">Seçilen Grup / Cari / Banka Başlığı</label>
+                            <input type="text" id="entry-col1" class="form-control" placeholder="Yukarıdan seçince otomatik dolar veya özel cari yazabilirsiniz">
                         </div>
                         <div class="form-group" id="group-entry-due" style="display:none;">
                             <label for="entry-due-date">Vade Tarihi (GG.AA.YYYY)</label>
@@ -521,7 +541,7 @@
                         </div>
                     </div>
 
-                    <!-- 4. AÇIKLAMA -->
+                    <!-- 5. AÇIKLAMA -->
                     <div class="form-group">
                         <label for="entry-desc" id="lbl-entry-desc">Açıklama</label>
                         <input type="text" id="entry-desc" class="form-control" placeholder="Açıklama yazınız..." required>
@@ -738,8 +758,8 @@
 
     <!-- SCRIPTS -->
     <script src="auto-date-helper.js"></script>
-    <script src="app.js?v=1.0.4"></script>
-    <script src="dizsan-back-navigation.js?v=1.0.4"></script>
-    <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.0.4"></script>
+    <script src="app.js?v=1.0.5"></script>
+    <script src="dizsan-back-navigation.js?v=1.0.5"></script>
+    <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.0.5"></script>
 </body>
 </html>
