@@ -1,8 +1,8 @@
 {
   "version": "1.0.5",
-  "updatedAt": "22.10.2026 02:39:00",
-  "updatedAtMs": 1792625940000,
-  "stateRevision": 25,
+  "updatedAt": "22.10.2026 03:26:24",
+  "updatedAtMs": 1792628784302,
+  "stateRevision": 28,
   "users": [
     {
       "order": 0,
@@ -234,8 +234,8 @@
     },
     "2026-10-22": {
       "dateISO": "2026-10-22",
-      "euroRate": "55,8879",
-      "usdRate": "49,6392",
+      "euroRate": "55,8801",
+      "usdRate": "49,6349",
       "prevInOverride": null,
       "prevOutOverride": null,
       "carryoverOverride": null,

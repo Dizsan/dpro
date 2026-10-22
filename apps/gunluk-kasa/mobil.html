@@ -24,7 +24,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <link rel="stylesheet" href="style.css?v=1.0.3">
+    <link rel="stylesheet" href="style.css?v=1.0.6">
 </head>
 <body>
 
@@ -480,6 +480,82 @@
             <form id="form-entry" onsubmit="handleSaveEntry(event)">
                 <div class="modal-body">
                     <input type="hidden" id="entry-id">
+                    <input type="hidden" id="entry-ocr-meta" value="">
+
+                    <!-- 0. YAPAY ZEKÂ DESTEKLİ GENEL BELGE TARAMA (TÜM FİŞ, FATURA, DEKONT & POS SLİPLERİ) -->
+                    <div id="ai-scanner-panel" style="padding:11px 12px; border-radius:11px; background:linear-gradient(145deg, rgba(14,165,233,0.10), rgba(16,185,129,0.07)); border:1px solid rgba(56,189,248,0.32); margin-bottom:12px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+                            <div style="display:flex; align-items:center; gap:7px; font-size:0.8rem; font-weight:800; color:var(--text-white);">
+                                <i class="fa-solid fa-camera-viewfinder" style="color:var(--dizsan-cyan);"></i>
+                                <span>Belge Tara &amp; Otomatik Oku (Yemek, Market, Yakıt, Fatura, POS Slipi)</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
+                                <button type="button" class="btn btn-xs" onclick="loadSampleMealReceiptForTest()" title="Örnek Yemek Fişi + POS Slipi ile sistemi test edin (Alt kategoriyi elle seçmenizi ister)" style="font-size:0.66rem;">
+                                    <i class="fa-solid fa-utensils" style="color:#34d399;"></i> Örnek Yemek Fişi
+                                </button>
+                                <button type="button" class="btn btn-xs" onclick="loadSampleFuelAndPosForTest()" title="Örnek Yakıt Fişi + POS Slipi ile sistemi test edin" style="font-size:0.66rem;">
+                                    <i class="fa-solid fa-gas-pump" style="color:var(--amber-warn);"></i> Örnek Yakıt Fişi
+                                </button>
+                                <button type="button" class="btn btn-xs" onclick="toggleAiKeyConfigBox()" title="İsteğe bağlı ücretsiz Google Gemini API anahtarı ayarı" style="font-size:0.66rem;">
+                                    <i class="fa-solid fa-key" style="color:var(--dizsan-cyan);"></i> AI Ayarı
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="ai-key-config-box" style="display:none; padding:8px 10px; border-radius:8px; background:rgba(15,23,42,0.75); border:1px solid var(--border-subtle); margin-bottom:8px;">
+                            <div style="font-size:0.7rem; color:var(--text-secondary); margin-bottom:5px;">
+                                Sistem varsayılan olarak <strong>Ücretsiz Yerel Apple Vision Neural OCR + Türkçe Belge Motoru</strong> ile anahtarsız çalışır. İsterseniz ücretsiz Google AI Studio (Gemini Flash) anahtarınızı da ekleyebilirsiniz:
+                            </div>
+                            <div style="display:flex; gap:6px;">
+                                <input type="password" id="ai-gemini-key-input" class="form-control" style="font-size:0.73rem; padding:5px 8px;" placeholder="AIzaSy... (İsteğe Bağlı Ücretsiz Gemini API Anahtarı)">
+                                <button type="button" class="btn btn-xs btn-primary" onclick="saveLocalGeminiKey()">Kaydet</button>
+                            </div>
+                        </div>
+
+                        <div class="form-grid-2" style="gap:8px; margin-bottom:8px;">
+                            <!-- 1. BELGE: GENEL BELGE TARA (FİŞ / FATURA / MAKBUZ) -->
+                            <div style="padding:8px 10px; border-radius:9px; background:rgba(15,23,42,0.55); border:1px dashed rgba(52,211,153,0.45); display:flex; flex-direction:column; gap:6px;">
+                                <div style="display:flex; align-items:center; justify-content:space-between;">
+                                    <span style="font-size:0.72rem; font-weight:700; color:#34d399;"><i class="fa-solid fa-file-invoice"></i> 1. Belge Tara (Fiş / Fatura / Makbuz)</span>
+                                    <button type="button" id="btn-clear-receipt-img" class="btn btn-xs" style="display:none; padding:2px 6px; font-size:0.64rem;" onclick="clearScannedImage('receipt')">Kaldır</button>
+                                </div>
+                                <div style="font-size:0.63rem; color:var(--text-muted); margin-top:-3px;">Yemek, Market, Yakıt, Yedek Parça, Kargo, Otopark vb. tüm belgeler</div>
+                                <label class="btn btn-xs" style="justify-content:center; cursor:pointer; background:rgba(16,185,129,0.14); border-color:rgba(16,185,129,0.35); color:#d1fae5; padding:6px;">
+                                    <i class="fa-solid fa-camera"></i> <span>Belge Tara (Kamera / Galeri)</span>
+                                    <input type="file" id="scan-receipt-input" accept="image/*" style="display:none;" onchange="handleScanFileSelect('receipt', this)">
+                                </label>
+                                <div id="preview-wrap-receipt" style="display:none; align-items:center; gap:8px;">
+                                    <img id="preview-img-receipt" src="" alt="Belge Önizleme" style="width:46px; height:46px; object-fit:cover; border-radius:6px; border:1px solid rgba(255,255,255,0.2);">
+                                    <span id="preview-lbl-receipt" style="font-size:0.68rem; color:var(--text-secondary);">Belge yüklendi</span>
+                                </div>
+                            </div>
+
+                            <!-- 2. BELGE: KREDİ KARTI POS SLİPİ / ÖDEME DEKONTU (VARSA) -->
+                            <div style="padding:8px 10px; border-radius:9px; background:rgba(15,23,42,0.55); border:1px dashed rgba(56,189,248,0.45); display:flex; flex-direction:column; gap:6px;">
+                                <div style="display:flex; align-items:center; justify-content:space-between;">
+                                    <span style="font-size:0.72rem; font-weight:700; color:#38bdf8;"><i class="fa-solid fa-receipt"></i> 2. Kredi Kartı POS Slipi / Dekont (Varsa)</span>
+                                    <button type="button" id="btn-clear-pos-img" class="btn btn-xs" style="display:none; padding:2px 6px; font-size:0.64rem;" onclick="clearScannedImage('pos')">Kaldır</button>
+                                </div>
+                                <div style="font-size:0.63rem; color:var(--text-muted); margin-top:-3px;">Ödeme kredi kartı veya banka ile yapıldıysa slipi/dekontu ekleyin</div>
+                                <label class="btn btn-xs" style="justify-content:center; cursor:pointer; background:rgba(56,189,248,0.14); border-color:rgba(56,189,248,0.35); color:#e0f2fe; padding:6px;">
+                                    <i class="fa-solid fa-camera"></i> <span>POS Slipi / Dekont Tara</span>
+                                    <input type="file" id="scan-pos-input" accept="image/*" style="display:none;" onchange="handleScanFileSelect('pos', this)">
+                                </label>
+                                <div id="preview-wrap-pos" style="display:none; align-items:center; gap:8px;">
+                                    <img id="preview-img-pos" src="" alt="POS Önizleme" style="width:46px; height:46px; object-fit:cover; border-radius:6px; border:1px solid rgba(255,255,255,0.2);">
+                                    <span id="preview-lbl-pos" style="font-size:0.68rem; color:var(--text-secondary);">POS slipi yüklendi</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button" id="btn-run-ai-scan" class="btn btn-primary btn-sm" style="width:100%; justify-content:center; font-weight:800;" onclick="runReceiptAndPosAnalysis()">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> <span>Belgeyi Tara, Analiz Et ve Bilgileri Çıkar</span>
+                        </button>
+
+                        <!-- OKUMA, ÇAPRAZ KONTROL VE KULLANICIDAN İSTENEN MANUEL BİLGİLER KUTUSU -->
+                        <div id="ai-scan-result-box" style="display:none; margin-top:8px; padding:9px 10px; border-radius:8px; background:rgba(15,23,42,0.82); border:1px solid rgba(255,255,255,0.12); font-size:0.72rem;">
+                        </div>
+                    </div>
 
                     <!-- 1. GELİR / GİDER SEÇMELİ LİSTE -->
                     <div class="form-group">
@@ -559,6 +635,21 @@
                     <button type="submit" class="btn btn-primary" style="padding:8px 20px; font-weight:700;"><i class="fa-solid fa-check"></i> Kaydet</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- FİŞ & POS SLİPİ BELGE EKLERİ VE DETAY GÖRÜNTÜLEME MODALI -->
+    <div id="modal-doc-preview" class="modal-backdrop">
+        <div class="modal-dialog" style="max-width:640px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-file-invoice" style="color:var(--dizsan-cyan);"></i> <span>Belge Ekleri &amp; Okunan Fiş / POS Detayları</span></h3>
+                <button class="btn btn-xs" onclick="closeModal('modal-doc-preview')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" id="modal-doc-preview-body" style="max-height:75vh; overflow-y:auto;">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="closeModal('modal-doc-preview')">Kapat</button>
+            </div>
         </div>
     </div>
 
@@ -758,8 +849,8 @@
 
     <!-- SCRIPTS -->
     <script src="auto-date-helper.js"></script>
-    <script src="app.js?v=1.0.5"></script>
-    <script src="dizsan-back-navigation.js?v=1.0.5"></script>
+    <script src="app.js?v=1.0.6"></script>
+    <script src="dizsan-back-navigation.js?v=1.0.6"></script>
     <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.0.5"></script>
 </body>
 </html>

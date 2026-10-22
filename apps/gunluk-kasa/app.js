@@ -846,14 +846,19 @@ function renderDailyFormSection() {
     if (sumOutEl) sumOutEl.textContent = formatMoneyTR(totalGiderAll);
     if (sumNetEl) sumNetEl.textContent = formatMoneyTR(netKasaAll);
 
-    const buildActionButtons = (entryId) => {
+    const buildActionButtons = (entry) => {
+        const entryId = entry.id;
         const canEditRow = perms.edit && canModifyToday;
         const canDelRow = perms.delete && canModifyToday;
+        const docBtn = entry.ocrMeta
+            ? `<button class="btn btn-xs" onclick="openDocPreviewModal('${escapeHtml(entryId)}')" title="Okunan Fiş &amp; POS Slipi Detaylarını Gör"><i class="fa-solid fa-file-invoice" style="color:#34d399;"></i></button>`
+            : "";
         if (!canEditRow && !canDelRow) {
-            return `<span style="font-size:0.66rem; color:var(--text-muted);" title="Değişiklik yetkisi kapalı"><i class="fa-solid fa-lock"></i></span>`;
+            return `<div class="row-actions">${docBtn}<span style="font-size:0.66rem; color:var(--text-muted);" title="Değişiklik yetkisi kapalı"><i class="fa-solid fa-lock"></i></span></div>`;
         }
         return `
             <div class="row-actions">
+                ${docBtn}
                 ${canEditRow ? `<button class="btn btn-xs" onclick="openEditEntryModal('${escapeHtml(entryId)}')" title="Değiştir / Düzenle"><i class="fa-solid fa-pen" style="color:var(--dizsan-cyan);"></i></button>` : ""}
                 ${canDelRow ? `<button class="btn btn-xs" onclick="deleteEntry('${escapeHtml(entryId)}')" title="Kaydı Sil"><i class="fa-solid fa-trash" style="color:var(--rose-danger);"></i></button>` : ""}
             </div>
@@ -862,6 +867,10 @@ function renderDailyFormSection() {
 
     const renderTdrBadge = (entry) => isTdrSupplyItem(entry)
         ? ` <span class="badge badge-tdr" title="TDR Kuralı: Tedarik Hizmetler / Parça Kalemi">TDR TEDARİK</span>`
+        : "";
+
+    const renderOcrBadge = (entry) => entry.ocrMeta
+        ? ` <span class="badge badge-info" style="cursor:pointer; font-size:0.62rem;" onclick="openDocPreviewModal('${escapeHtml(entry.id)}')" title="Fiş ve POS Slipi detaylarını görmek için tıklayın"><i class="fa-solid fa-camera"></i> Fiş+Slip Ekli</span>`
         : "";
 
     const tbodyClean = document.getElementById("tbody-clean-entries");
@@ -883,9 +892,9 @@ function renderDailyFormSection() {
                         <td>${flowBadge}</td>
                         <td><strong>${escapeHtml(SECTION_LABELS[e.section] || e.section)}</strong></td>
                         <td>${escapeHtml(e.col1 || "-")}</td>
-                        <td>${escapeHtml(e.desc)}${dueExtra}${renderTdrBadge(e)}</td>
+                        <td>${escapeHtml(e.desc)}${dueExtra}${renderTdrBadge(e)}${renderOcrBadge(e)}</td>
                         <td class="amount-cell" style="color:${amtColor}; font-weight:800;">${sign}${formatNumberTR(e.amount)} ₺</td>
-                        <td style="text-align:right;">${buildActionButtons(e.id)}</td>
+                        <td style="text-align:right;">${buildActionButtons(e)}</td>
                     </tr>
                 `;
             }).join("");
@@ -1725,7 +1734,7 @@ function populateCategoryTreeSelectors(flow, sectionVal, existingCol1 = "") {
     handleMainCategoryChange(mainSel.value, matchedSub, Boolean(existingCol1 && !matchedMain));
 }
 
-function handleMainCategoryChange(mainGroupVal, preferredSub = null, preserveExistingCol1 = false) {
+function handleMainCategoryChange(mainGroupVal, preferredSub = null, preserveExistingCol1 = false, requireManualSub = false) {
     const flow = document.getElementById("entry-flow-type")?.value === "GIDER" ? "GIDER" : "GELIR";
     const tree = CATEGORY_SUBITEMS_TREE[flow] || CATEGORY_SUBITEMS_TREE.GIDER;
     const foundGrp = tree.find(g => g.group === mainGroupVal) || tree[0];
@@ -1733,17 +1742,41 @@ function handleMainCategoryChange(mainGroupVal, preferredSub = null, preserveExi
     const subSel = document.getElementById("entry-sub-cat");
     if (!subSel || !foundGrp) return;
 
-    subSel.innerHTML = foundGrp.items.map(it => `<option value="${escapeHtml(it)}">${escapeHtml(it)}</option>`).join("");
-    const targetSub = (preferredSub && foundGrp.items.includes(preferredSub)) ? preferredSub : foundGrp.items[0];
+    const promptOptionHtml = `<option value="">-- LÜTFEN ALT KATEGORİYİ ELLE SEÇİNİZ --</option>`;
+    const itemsHtml = foundGrp.items.map(it => `<option value="${escapeHtml(it)}">${escapeHtml(it)}</option>`).join("");
+    subSel.innerHTML = (requireManualSub ? promptOptionHtml : "") + itemsHtml;
+
+    let targetSub = "";
+    if (!requireManualSub) {
+        targetSub = (preferredSub && foundGrp.items.includes(preferredSub)) ? preferredSub : foundGrp.items[0];
+    } else if (preferredSub && foundGrp.items.includes(preferredSub)) {
+        targetSub = preferredSub;
+    }
     subSel.value = targetSub;
+
+    // Eğer belge tarama panelindeki alt kategori kutusu açıksa onu da güncelle
+    const ocrSubSel = document.getElementById("ocr-manual-sub-cat");
+    if (ocrSubSel) {
+        ocrSubSel.innerHTML = promptOptionHtml + itemsHtml;
+        ocrSubSel.value = targetSub;
+    }
 
     if (!preserveExistingCol1) {
         handleSubCategoryChange(targetSub);
     }
 }
 
-function handleSubCategoryChange() {
+function handleSubCategoryChange(subVal) {
+    const subSel = document.getElementById("entry-sub-cat");
+    const effectiveSub = subVal !== undefined ? subVal : (subSel?.value || "");
+    const ocrSubSel = document.getElementById("ocr-manual-sub-cat");
+    if (ocrSubSel && ocrSubSel.value !== effectiveSub) {
+        ocrSubSel.value = effectiveSub;
+    }
     syncCol1FromSelectors();
+    if (document.getElementById("ai-scan-result-box")?.style.display === "block") {
+        syncEditableOcrFieldsToForm(true);
+    }
 }
 
 function handleFlowTypeChange(flowVal, preferredSection = null) {
@@ -1824,6 +1857,1146 @@ function handleEntrySectionChange(sectionVal) {
     }
 }
 
+// ==================== 14B. YAPAY ZEKÂ & APPLE VISION FİŞ + POS SLİPİ OKUMA VE ÇAPRAZ KONTROL MOTORU ====================
+const STORAGE_KEY_KASA_GEMINI = "dizsan_kasa_local_gemini_key";
+let scannedReceiptDataUrl = "";
+let scannedPosDataUrl = "";
+let scannedReceiptThumbUrl = "";
+let scannedPosThumbUrl = "";
+
+function toggleAiKeyConfigBox() {
+    const box = document.getElementById("ai-key-config-box");
+    if (!box) return;
+    const isHidden = box.style.display === "none";
+    box.style.display = isHidden ? "block" : "none";
+    if (isHidden) {
+        const inp = document.getElementById("ai-gemini-key-input");
+        if (inp) inp.value = localStorage.getItem(STORAGE_KEY_KASA_GEMINI) || "";
+    }
+}
+
+function saveLocalGeminiKey() {
+    const inp = document.getElementById("ai-gemini-key-input");
+    const val = (inp?.value || "").trim();
+    if (val) {
+        localStorage.setItem(STORAGE_KEY_KASA_GEMINI, val);
+        alert("Gemini API Anahtarı yalnızca bu tarayıcıya güvenli şekilde kaydedildi.");
+    } else {
+        localStorage.removeItem(STORAGE_KEY_KASA_GEMINI);
+        alert("Gemini API Anahtarı kaldırıldı. Ücretsiz Yerel Apple Vision Neural OCR motoru aktif.");
+    }
+    const box = document.getElementById("ai-key-config-box");
+    if (box) box.style.display = "none";
+}
+
+function compressImageFileToDataUrl(file, maxDim = 1280, quality = 0.84) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+                let w = img.width;
+                let h = img.height;
+                if (w > maxDim || h > maxDim) {
+                    if (w > h) {
+                        h = Math.round((h * maxDim) / w);
+                        w = maxDim;
+                    } else {
+                        w = Math.round((w * maxDim) / h);
+                        h = maxDim;
+                    }
+                }
+                const canvas = document.createElement("canvas");
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext("2d");
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(0, 0, w, h);
+                ctx.drawImage(img, 0, 0, w, h);
+                resolve(canvas.toDataURL("image/jpeg", quality));
+            };
+            img.onerror = reject;
+            img.src = ev.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+async function handleScanFileSelect(slot, inputEl) {
+    const file = inputEl?.files?.[0];
+    if (!file) return;
+    try {
+        const fullDataUrl = await compressImageFileToDataUrl(file, 1400, 0.86);
+        const thumbDataUrl = await compressImageFileToDataUrl(file, 520, 0.68);
+        setScannedSlotImage(slot, fullDataUrl, thumbDataUrl, file.name);
+    } catch (err) {
+        alert("Görsel okunamadı: " + err.message);
+    }
+}
+
+function setScannedSlotImage(slot, fullDataUrl, thumbDataUrl, labelText = "Belge hazır") {
+    if (slot === "receipt") {
+        scannedReceiptDataUrl = fullDataUrl;
+        scannedReceiptThumbUrl = thumbDataUrl || fullDataUrl;
+        const wrap = document.getElementById("preview-wrap-receipt");
+        const img = document.getElementById("preview-img-receipt");
+        const lbl = document.getElementById("preview-lbl-receipt");
+        const btnClr = document.getElementById("btn-clear-receipt-img");
+        if (wrap) wrap.style.display = "flex";
+        if (img) img.src = scannedReceiptThumbUrl;
+        if (lbl) lbl.textContent = labelText;
+        if (btnClr) btnClr.style.display = "inline-flex";
+    } else {
+        scannedPosDataUrl = fullDataUrl;
+        scannedPosThumbUrl = thumbDataUrl || fullDataUrl;
+        const wrap = document.getElementById("preview-wrap-pos");
+        const img = document.getElementById("preview-img-pos");
+        const lbl = document.getElementById("preview-lbl-pos");
+        const btnClr = document.getElementById("btn-clear-pos-img");
+        if (wrap) wrap.style.display = "flex";
+        if (img) img.src = scannedPosThumbUrl;
+        if (lbl) lbl.textContent = labelText;
+        if (btnClr) btnClr.style.display = "inline-flex";
+    }
+}
+
+function clearScannedImage(slot) {
+    if (slot === "receipt") {
+        scannedReceiptDataUrl = "";
+        scannedReceiptThumbUrl = "";
+        const wrap = document.getElementById("preview-wrap-receipt");
+        const inp = document.getElementById("scan-receipt-input");
+        const btnClr = document.getElementById("btn-clear-receipt-img");
+        if (wrap) wrap.style.display = "none";
+        if (inp) inp.value = "";
+        if (btnClr) btnClr.style.display = "none";
+    } else {
+        scannedPosDataUrl = "";
+        scannedPosThumbUrl = "";
+        const wrap = document.getElementById("preview-wrap-pos");
+        const inp = document.getElementById("scan-pos-input");
+        const btnClr = document.getElementById("btn-clear-pos-img");
+        if (wrap) wrap.style.display = "none";
+        if (inp) inp.value = "";
+        if (btnClr) btnClr.style.display = "none";
+    }
+}
+
+function resetAiScannerState() {
+    clearScannedImage("receipt");
+    clearScannedImage("pos");
+    const resBox = document.getElementById("ai-scan-result-box");
+    if (resBox) {
+        resBox.style.display = "none";
+        resBox.innerHTML = "";
+    }
+    const metaInp = document.getElementById("entry-ocr-meta");
+    if (metaInp) metaInp.value = "";
+}
+
+function generateSyntheticReceiptCanvas(lines, titleColor = "#111827") {
+    const canvas = document.createElement("canvas");
+    canvas.width = 520;
+    canvas.height = 460;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = titleColor;
+    ctx.font = "bold 20px monospace";
+    let y = 42;
+    for (const ln of lines) {
+        ctx.fillText(ln, 24, y);
+        y += 34;
+    }
+    return {
+        full: canvas.toDataURL("image/png"),
+        thumb: canvas.toDataURL("image/jpeg", 0.7)
+    };
+}
+
+const DOC_TYPE_PROFILES = {
+    MEAL: {
+        label: "Yemek / Restoran / Lokanta Fişi",
+        mainGroup: "MUTFAK & İKRAM",
+        noteLabel: "Kim İçin / Kaç Kişi / Yemek Açıklaması (Elle Giriniz)",
+        notePlaceholder: "Örn: 3 Kişi Personel Öğle Yemeği veya Müşteri Misafir Ağırlama",
+        promptText: "Yemek fişi tarandı. Lütfen Alt Kategoriyi (Günlük Yemek, Misafir Ağırlama, Mesai Yemeği vb.) elle seçiniz ve yemek notunu giriniz."
+    },
+    MARKET: {
+        label: "Market / Gıda / Alışveriş Fişi",
+        mainGroup: "MUTFAK & İKRAM",
+        noteLabel: "Alınan Malzemeler / Kullanım Yeri (Elle Giriniz)",
+        notePlaceholder: "Örn: Mutfak Çay-Şeker-Kahve veya Ofis Temizlik Malzemesi",
+        promptText: "Market/Alışveriş fişi tarandı. Lütfen Alt Kategoriyi elle seçiniz ve alınan malzemeleri kısaca belirtiniz."
+    },
+    FUEL: {
+        label: "Akaryakıt / İstasyon Fişi",
+        mainGroup: "ARAÇ GİDERLERİ",
+        noteLabel: "Sürücü / KM / Güzergâh Ek Notu (İsteğe Bağlı)",
+        notePlaceholder: "Örn: Şehir Dışı Sevkiyat / Servis Aracı",
+        promptText: "Yakıt fişi tarandı. Lütfen Alt Kategoriyi (Yakıt, AdBlue vb.) elle seçiniz ve plaka/litre bilgilerini kontrol ediniz."
+    },
+    PARKING: {
+        label: "Otopark / Araç Yıkama Fişi",
+        mainGroup: "ARAÇ GİDERLERİ",
+        noteLabel: "Araç Plakası / Açıklama Notu (Elle Giriniz)",
+        notePlaceholder: "Örn: 19 ABC 123 Otopark / Yıkama",
+        promptText: "Otopark / Yıkama belgesi tarandı. Lütfen Alt Kategoriyi elle seçiniz ve araç plakasını giriniz."
+    },
+    HGS: {
+        label: "HGS / OGS / Otoyol Geçiş Belgesi",
+        mainGroup: "ARAÇ GİDERLERİ",
+        noteLabel: "Araç Plakası / Güzergâh Notu (Elle Giriniz)",
+        notePlaceholder: "Örn: 19 ABC 123 Ankara Otoyol Geçişi",
+        promptText: "Geçiş belgesi tarandı. Lütfen Alt Kategoriyi elle seçiniz ve araç plakasını belirtiniz."
+    },
+    PARTS: {
+        label: "Yedek Parça / Bakım / Tamir Faturası",
+        mainGroup: "TEDARİK & ATÖLYE",
+        noteLabel: "Hangi Araç / Müşteri İşi / Parça Detayı (Elle Giriniz)",
+        notePlaceholder: "Örn: Müşteri Aracı Bakım Parçası veya Atölye Sarf Malzemesi",
+        promptText: "Parça / Tamir faturası tarandı. Lütfen Alt Kategoriyi elle seçiniz ve hangi iş için alındığını yazınız."
+    },
+    CARGO: {
+        label: "Kargo / Nakliye / Ambar Belgesi",
+        mainGroup: "KARGO & NAKLİYE",
+        noteLabel: "Gönderi / Müşteri / İçerik Bilgisi (Elle Giriniz)",
+        notePlaceholder: "Örn: Müşteriye Gönderilen Parça Kargosu",
+        promptText: "Kargo / Nakliye belgesi tarandı. Lütfen Alt Kategoriyi elle seçiniz ve gönderi bilgisini giriniz."
+    },
+    OTHER: {
+        label: "Genel Fiş / Fatura / Dekont",
+        mainGroup: "CARİ / FİRMA ÖDEMELERİ",
+        noteLabel: "Harcama / Belge Detay Notu (Elle Giriniz)",
+        notePlaceholder: "Örn: Fatura / Makbuz Açıklaması",
+        promptText: "Belge tarandı. Lütfen Ana Gider Grubunu, Alt Kategoriyi ve belge açıklamasını elle seçip tamamlayınız."
+    }
+};
+
+async function loadSampleMealReceiptForTest() {
+    const todayTR = formatDateToTR(uiState.selectedDateISO || todayISO());
+    const mealImg = generateSyntheticReceiptCanvas([
+        "CORUM KEBAP & PIDE SALONU",
+        "MERKEZ / CORUM",
+        `TARIH: ${todayTR} SAAT: 13:15`,
+        "FIS NO: 0084",
+        "3 ADET ISKENDER KEBAP",
+        "3 ADET AYRAN + SALATA",
+        "KDV %10: 131,82 TL",
+        "TOPLAM: *1.450,00 TL",
+        "ODEME: KREDI KARTI"
+    ]);
+    const posImg = generateSyntheticReceiptCanvas([
+        "AKBANK POS",
+        "CORUM KEBAP SALONU",
+        `TARIH: ${todayTR} SAAT: 13:16`,
+        "KART NO: **** **** **** 0667",
+        "SATIS TUTAR: 1.450,00 TL",
+        "ONAY KODU: 419023",
+        "REF NO: 8841209541",
+        "TEK CEKIM"
+    ]);
+
+    setScannedSlotImage("receipt", mealImg.full, mealImg.thumb, "Örnek Yemek Fişi (Kebap Salonu)");
+    setScannedSlotImage("pos", posImg.full, posImg.thumb, "Örnek POS Slipi (Akbank 0667)");
+    await runReceiptAndPosAnalysis();
+}
+
+async function loadSampleFuelAndPosForTest() {
+    const todayTR = formatDateToTR(uiState.selectedDateISO || todayISO());
+    const fuelImg = generateSyntheticReceiptCanvas([
+        "PETROL OFISI A.S.",
+        "CORUM MERKEZ ISTASYONU",
+        `TARIH: ${todayTR} SAAT: 14:35`,
+        "FIS NO: 0148",
+        "PLAKA: 19 ABC 123",
+        "YAKIT: MOTORIN",
+        "250,00 LT X 55,00 TL",
+        "KDV %20: 2.291,67 TL",
+        "TOPLAM: *13.750,00 TL",
+        "ODEME: KREDI KARTI"
+    ]);
+    const posImg = generateSyntheticReceiptCanvas([
+        "GARANTI BBVA POS",
+        "PETROL OFISI CORUM",
+        `TARIH: ${todayTR} SAAT: 14:36`,
+        "KART NO: **** **** **** 4360",
+        "SATIS TUTAR: 13.750,00 TL",
+        "ONAY KODU: 784512",
+        "REF NO: 6295001482",
+        "TEK CEKIM"
+    ]);
+
+    setScannedSlotImage("receipt", fuelImg.full, fuelImg.thumb, "Örnek Yakıt Fişi (Petrol Ofisi)");
+    setScannedSlotImage("pos", posImg.full, posImg.thumb, "Örnek POS Slipi (Garanti 4360)");
+    await runReceiptAndPosAnalysis();
+}
+
+function parseTurkishNumberFromOCR(rawStr) {
+    if (!rawStr) return 0;
+    // "*13. 750, 00" -> "13.750,00" -> 13750
+    let s = String(rawStr).replace(/\*/g, "").replace(/\s+/g, "").replace(/[^0-9.,]/g, "");
+    if (!s) return 0;
+    if (s.includes(",") && s.includes(".")) {
+        s = s.replace(/\./g, "").replace(",", ".");
+    } else if (s.includes(",")) {
+        s = s.replace(",", ".");
+    }
+    const val = parseFloat(s);
+    return Number.isFinite(val) ? Number(val.toFixed(2)) : 0;
+}
+
+function parseReceiptTextToStructured(text) {
+    const rawLines = String(text || "").split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const upperText = String(text || "").toUpperCase();
+
+    const result = {
+        plate: "",
+        date: "",
+        time: "",
+        station: "",
+        location: "",
+        fuelType: "",
+        liters: 0,
+        unitPrice: 0,
+        totalAmount: 0,
+        vatAmount: 0,
+        receiptNo: "",
+        paymentMethod: "",
+        docType: "OTHER"
+    };
+
+    // 1. Plaka Tespiti (Örn: PLAKA: 19 ABC 123 veya 19ABC123)
+    const plateExplicit = upperText.match(/PLAKA\s*[:.\-]?\s*([0-8][0-9])\s*([A-ZÇĞİÖŞÜ]{1,3})\s*([0-9]{2,4})/);
+    if (plateExplicit) {
+        result.plate = `${plateExplicit[1]} ${plateExplicit[2]} ${plateExplicit[3]}`;
+    } else {
+        const plateGeneric = upperText.match(/\b(0[1-9]|[1-7][0-9]|8[01])\s*([A-Z]{1,3})\s*([0-9]{2,4})\b/);
+        if (plateGeneric && !["TL", "LT", "NO", "KDV", "SAAT"].includes(plateGeneric[2])) {
+            result.plate = `${plateGeneric[1]} ${plateGeneric[2]} ${plateGeneric[3]}`;
+        }
+    }
+
+    // 2. Tarih ve Saat
+    const dateMatch = upperText.match(/\b([0-3][0-9])[.\/\-]([0-1][0-9])[.\/\-](20[2-3][0-9])\b/);
+    if (dateMatch) {
+        result.date = `${dateMatch[1]}.${dateMatch[2]}.${dateMatch[3]}`;
+    }
+    const timeMatch = upperText.match(/(?:SAAT\s*[:.]?\s*)?\b([0-2][0-9])\s*:\s*([0-5][0-9])\b/);
+    if (timeMatch) {
+        result.time = `${timeMatch[1]}:${timeMatch[2]}`;
+    }
+
+    // 3. İstasyon / İşyeri Adı ve Konumu
+    const knownStations = [
+        { key: "PETROL OF", label: "PETROL OFİSİ" },
+        { key: "OPET", label: "OPET" },
+        { key: "SHELL", label: "SHELL" },
+        { key: "BP ", label: "BP PETROLLERİ" },
+        { key: "TOTAL", label: "TOTAL ENERGIES" },
+        { key: "AYTEM", label: "AYTEMİZ" },
+        { key: "TURKIYE PETROL", label: "TÜRKİYE PETROLLERİ" },
+        { key: "TÜRKIYE PETROL", label: "TÜRKİYE PETROLLERİ" },
+        { key: "KADO", label: "KADOİL" },
+        { key: "SUNPET", label: "SUNPET" },
+        { key: "LUKOIL", label: "LUKOIL" },
+        { key: "MIGROS", label: "MİGROS" },
+        { key: "BIM ", label: "BİM MARKET" },
+        { key: "A101", label: "A101 MARKET" },
+        { key: "SOK MARKET", label: "ŞOK MARKET" }
+    ];
+    for (const st of knownStations) {
+        if (upperText.includes(st.key)) {
+            result.station = st.label;
+            break;
+        }
+    }
+    if (!result.station && rawLines.length > 0) {
+        result.station = rawLines[0].toUpperCase();
+    }
+    if (rawLines.length > 1 && !rawLines[1].toUpperCase().includes("TARIH") && !rawLines[1].toUpperCase().includes("TARİH")) {
+        result.location = rawLines[1].toUpperCase().replace(/^ORUM\b/, "ÇORUM");
+    }
+
+    // 4. Yakıt Türü
+    if (upperText.match(/MOTOR[Iİ]N|D[Iİ]ESEL|V\/MAX|ULTIMATE|MAZOT/)) {
+        result.fuelType = "MOTORİN";
+        result.docType = "FUEL";
+    } else if (upperText.match(/KUR[SŞ]UNSUZ|BENZ[Iİ]N/)) {
+        result.fuelType = "BENZİN";
+        result.docType = "FUEL";
+    } else if (upperText.match(/ADBLUE/)) {
+        result.fuelType = "ADBLUE";
+        result.docType = "FUEL";
+    } else if (upperText.match(/LPG|OTOGAZ/)) {
+        result.fuelType = "LPG / OTOGAZ";
+        result.docType = "FUEL";
+    }
+
+    // 5. Litre ve Litre Birim Fiyatı (Örn: 250,00 LT X 55,00 TL)
+    const ltMatch = upperText.match(/([0-9]{1,4}(?:\s*[.,]\s*[0-9]{1,3})?)\s*(?:LT|LİTRE|LITRE|L)\s*[X*]\s*([0-9]{1,4}(?:\s*[.,]\s*[0-9]{1,3})?)/);
+    if (ltMatch) {
+        result.liters = parseTurkishNumberFromOCR(ltMatch[1]);
+        result.unitPrice = parseTurkishNumberFromOCR(ltMatch[2]);
+        result.docType = "FUEL";
+    }
+
+    // 6. Toplam Tutar ve KDV
+    const totMatch = upperText.match(/(?:TOPLAM|TUTAR|ODENECEK|ÖDENECEK|GENEL TOPLAM)\s*[:.]?\s*\*?\s*([0-9]{1,3}(?:\s*\.\s*[0-9]{3})*(?:\s*,\s*[0-9]{2})|[0-9]+(?:\s*,\s*[0-9]{2}))/);
+    if (totMatch) {
+        result.totalAmount = parseTurkishNumberFromOCR(totMatch[1]);
+    }
+    const kdvMatch = upperText.match(/KDV[^0-9\n]*[:.]?\s*\*?\s*([0-9]{1,3}(?:\s*\.\s*[0-9]{3})*(?:\s*,\s*[0-9]{2})|[0-9]+(?:\s*,\s*[0-9]{2}))/);
+    if (kdvMatch) {
+        result.vatAmount = parseTurkishNumberFromOCR(kdvMatch[1]);
+    }
+
+    // 7. Fiş / Fatura No
+    const fisMatch = upperText.match(/(?:F[Iİ][SŞ]\s*NO|FATURA\s*NO|BELGE\s*NO)\s*[:.]?\s*([A-Z0-9\-]{2,16})/);
+    if (fisMatch) {
+        result.receiptNo = fisMatch[1].trim();
+    }
+
+    // 8. Ödeme Şekli
+    if (upperText.match(/KRED[Iİ]\s*KART|POS|BANKA\s*KART/)) {
+        result.paymentMethod = "KREDİ KARTI";
+    } else if (upperText.match(/NAK[Iİ]T/)) {
+        result.paymentMethod = "NAKİT";
+    }
+
+    // 9. Diğer belge türlerini sınıflandırma (Yemek, Market, Otopark, HGS, Kargo, Parça vb.)
+    if (result.docType === "OTHER") {
+        if (upperText.match(/YEMEK|RESTORAN|LOKANTA|KEBAP|P[Iİ]DE|CAFE|KÖFTE|DÖNER|ÇORBA|LAHMACUN|TATLI|PASTA/)) {
+            result.docType = "MEAL";
+            if (!result.fuelType) result.fuelType = "YEMEK / RESTORAN HARCAMASI";
+        } else if (upperText.match(/MARKET|GIDA|M[Iİ]GROS|B[Iİ]M|A101|[SŞ]OK|ÇAY|KAHVE|ŞEKER|TEM[Iİ]ZL[Iİ]K/)) {
+            result.docType = "MARKET";
+            if (!result.fuelType) result.fuelType = "MARKET / MUTFAK ALIŞVERİŞİ";
+        } else if (upperText.match(/OTOPARK|PARK\s*ÜCRET|YIKAMA|OTO\s*KUAFÖR/)) {
+            result.docType = "PARKING";
+            if (!result.fuelType) result.fuelType = "OTOPARK / ARAÇ YIKAMA";
+        } else if (upperText.match(/HGS|OGS|OTOYOL|KÖPRÜ|GEÇ[Iİ][SŞ]/)) {
+            result.docType = "HGS";
+            if (!result.fuelType) result.fuelType = "HGS / OTOYOL GEÇİŞ";
+        } else if (upperText.match(/KARGO|NAKL[Iİ]YE|YURT[Iİ]Ç[Iİ]|ARAS|MNG|DHL|SÜRAT|AMBAR/)) {
+            result.docType = "CARGO";
+            if (!result.fuelType) result.fuelType = "KARGO / NAKLİYE";
+        } else if (upperText.match(/YEDEK\s*PARÇA|TEDAR[Iİ]K|TDR|SANAY[Iİ]|TORNA|BAKIM|TAM[Iİ]R|CIVATA|RULMAN|F[Iİ]LTRE/)) {
+            result.docType = "PARTS";
+            if (!result.fuelType) result.fuelType = "PARÇA / BAKIM / TEDARİK";
+        } else if (!result.fuelType) {
+            result.fuelType = "GENEL BELGE / FATURA";
+        }
+    }
+
+    return result;
+}
+
+function parsePosTextToStructured(text) {
+    const rawLines = String(text || "").split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const upperText = String(text || "").toUpperCase();
+
+    const pos = {
+        bankName: "",
+        cardLast4: "",
+        posDate: "",
+        posTime: "",
+        posAmount: 0,
+        merchantName: "",
+        authCode: "",
+        refNo: "",
+        installment: "TEK ÇEKİM"
+    };
+
+    const banks = [
+        { key: "GARANT", label: "GARANTİ BBVA" },
+        { key: "AKBANK", label: "AKBANK" },
+        { key: "AXESS", label: "AKBANK" },
+        { key: "ZIRAAT", label: "ZİRAAT BANKASI" },
+        { key: "ZİRAAT", label: "ZİRAAT BANKASI" },
+        { key: "IS BANK", label: "İŞ BANKASI" },
+        { key: "İŞ BANK", label: "İŞ BANKASI" },
+        { key: "MAXIMUM", label: "İŞ BANKASI" },
+        { key: "VAKIF", label: "VAKIFBANK" },
+        { key: "HALK", label: "HALKBANK" },
+        { key: "PARAF", label: "HALKBANK" },
+        { key: "TEB", label: "TEB" },
+        { key: "YAPI KRED", label: "YAPI KREDİ" },
+        { key: "QNB", label: "QNB" },
+        { key: "DENIZ", label: "DENİZBANK" }
+    ];
+    for (const b of banks) {
+        if (upperText.includes(b.key)) {
+            pos.bankName = b.label;
+            break;
+        }
+    }
+
+    // Kart Son 4 Hane (Hassas 16 hane asla kaydedilmez, yalnızca son 4 hane alınır)
+    const maskedCardMatch = upperText.match(/(?:\*{2,}|X{2,}|•{2,})[\s\*X•\-]*([0-9]{4})\b/) ||
+                            upperText.match(/KART\s*(?:NO)?\s*[:.]?\s*[^\n]*?([0-9]{4})\b/);
+    if (maskedCardMatch) {
+        pos.cardLast4 = maskedCardMatch[1];
+    }
+
+    const dateMatch = upperText.match(/\b([0-3][0-9])[.\/\-]([0-1][0-9])[.\/\-](20[2-3][0-9])\b/);
+    if (dateMatch) {
+        pos.posDate = `${dateMatch[1]}.${dateMatch[2]}.${dateMatch[3]}`;
+    }
+    const timeMatch = upperText.match(/(?:SAAT\s*[:.]?\s*)?\b([0-2][0-9])\s*:\s*([0-5][0-9])\b/);
+    if (timeMatch) {
+        pos.posTime = `${timeMatch[1]}:${timeMatch[2]}`;
+    }
+
+    const amtMatch = upperText.match(/(?:TUTAR|SATIS|SATIŞ|TOPLAM)\s*[:.]?\s*\*?\s*([0-9]{1,3}(?:\s*\.\s*[0-9]{3})*(?:\s*,\s*[0-9]{2})|[0-9]+(?:\s*,\s*[0-9]{2}))/);
+    if (amtMatch) {
+        pos.posAmount = parseTurkishNumberFromOCR(amtMatch[1]);
+    }
+
+    const authMatch = upperText.match(/(?:ONAY\s*KODU|ONAY|AUTH\s*CODE|AUTH)\s*[:.]?\s*([A-Z0-9]{4,10})/);
+    if (authMatch) {
+        pos.authCode = authMatch[1];
+    }
+
+    const refMatch = upperText.match(/(?:REF\s*NO|REFERANS|SIRA\s*NO|STAN)\s*[:.]?\s*([A-Z0-9]{4,16})/);
+    if (refMatch) {
+        pos.refNo = refMatch[1];
+    }
+
+    const taksitMatch = upperText.match(/([0-9]{1,2})\s*TAKS[Iİ]T/);
+    if (taksitMatch) {
+        pos.installment = `${taksitMatch[1]} TAKSİT`;
+    }
+
+    if (rawLines.length > 1) {
+        pos.merchantName = rawLines[1].toUpperCase();
+    } else if (rawLines.length === 1) {
+        pos.merchantName = rawLines[0].toUpperCase();
+    }
+
+    return pos;
+}
+
+function checkDuplicateReceiptInHistory(rec, pos, currentEditingId = "") {
+    for (const [dISO, dayData] of Object.entries(appState.days || {})) {
+        for (const ent of (dayData?.entries || [])) {
+            if (currentEditingId && ent.id === currentEditingId) continue;
+            const meta = ent.ocrMeta;
+            if (meta) {
+                if (rec.receiptNo && meta.receiptNo && rec.receiptNo === meta.receiptNo && rec.station && meta.station === rec.station) {
+                    return `${formatDateToTR(dISO)} tarihinde aynı Fiş/Belge No (${rec.receiptNo}) ile kayıt mevcut ("${ent.desc}").`;
+                }
+                if (pos.authCode && meta.authCode && pos.authCode === meta.authCode) {
+                    return `${formatDateToTR(dISO)} tarihinde aynı POS Onay Kodu (${pos.authCode}) ile kayıt mevcut ("${ent.desc}").`;
+                }
+            }
+            const effAmt = rec.totalAmount || pos.posAmount;
+            if (effAmt > 0 && Math.abs((ent.amount || 0) - effAmt) < 0.01) {
+                const targetDateTR = rec.date || pos.posDate || formatDateToTR(uiState.selectedDateISO);
+                if (formatDateToTR(dISO) === targetDateTR && rec.plate && (ent.desc || "").includes(rec.plate)) {
+                    return `${targetDateTR} tarihinde ${rec.plate} plakası ve ${formatMoneyTR(effAmt)} tutarıyla aynı kayıt zaten girilmiş.`;
+                }
+            }
+        }
+    }
+    return null;
+}
+
+async function runReceiptAndPosAnalysis() {
+    if (!scannedReceiptDataUrl && !scannedPosDataUrl) {
+        alert("Lütfen önce taranacak belgeyi (Fiş / Fatura / POS Slipi) seçiniz veya üstteki 'Örnek Yemek Fişi' / 'Örnek Yakıt Fişi' düğmelerinden birine basınız.");
+        return;
+    }
+
+    const btn = document.getElementById("btn-run-ai-scan");
+    const resBox = document.getElementById("ai-scan-result-box");
+    const origBtnHtml = btn ? btn.innerHTML : "";
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Belge Taranıyor ve Analiz Ediliyor...</span>`;
+    }
+
+    try {
+        const localGeminiKey = localStorage.getItem(STORAGE_KEY_KASA_GEMINI) || "";
+        let ocrData = null;
+
+        // 1. Yerel Portal Sunucusu (/api/kasa-ocr -> Apple Vision Neural OCR + Gemini Flash)
+        try {
+            const resp = await fetch("/api/kasa-ocr", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    receiptImage: scannedReceiptDataUrl,
+                    posImage: scannedPosDataUrl,
+                    geminiApiKey: localGeminiKey
+                })
+            });
+            if (resp.ok) {
+                ocrData = await resp.json();
+            }
+        } catch (e) {}
+
+        // 2. Eğer sunucu kapalıysa (GitHub Pages mobil kullanım) ve kullanıcı Gemini anahtarı girdiyse doğrudan çağır
+        if (!ocrData && localGeminiKey) {
+            try {
+                const parts = [{
+                    text: "Aşağıdaki Türkiye fiş, fatura ve POS slipi görsellerini analiz et. Tahmin yürütme. Tam kart numarası, CVV, PIN asla döndürme. JSON döndür: {\"plate\":\"\",\"date\":\"GG.AA.YYYY\",\"time\":\"SS:DD\",\"station\":\"\",\"location\":\"\",\"fuelType\":\"\",\"liters\":0,\"unitPrice\":0,\"totalAmount\":0,\"vatAmount\":0,\"receiptNo\":\"\",\"paymentMethod\":\"\",\"bankName\":\"\",\"cardLast4\":\"\",\"posDate\":\"GG.AA.YYYY\",\"posTime\":\"SS:DD\",\"posAmount\":0,\"merchantName\":\"\",\"authCode\":\"\",\"refNo\":\"\",\"installment\":\"\",\"docType\":\"FUEL|MARKET|MEAL|PARKING|HGS|PARTS|CARGO|OTHER\"}"
+                }];
+                for (const b64 of [scannedReceiptDataUrl, scannedPosDataUrl]) {
+                    if (b64) {
+                        parts.push({ inline_data: { mime_type: "image/jpeg", data: b64.split(",")[1] } });
+                    }
+                }
+                const gRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(localGeminiKey)}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts }],
+                        generationConfig: { responseMimeType: "application/json", temperature: 0.0 }
+                    })
+                });
+                if (gRes.ok) {
+                    const gJson = await gRes.json();
+                    const parsed = JSON.parse(gJson.candidates[0].content.parts[0].text);
+                    ocrData = { status: "ok", engine: "Google Gemini 2.5 Flash Vision", geminiStructured: parsed };
+                }
+            } catch (e) {}
+        }
+
+        if (!ocrData || ocrData.status !== "ok") {
+            throw new Error("Belge okuma servisine ulaşılamadı. Lütfen bağlantınızı kontrol edin.");
+        }
+
+        const recParsed = parseReceiptTextToStructured(ocrData.receiptText || "");
+        const posParsed = parsePosTextToStructured(ocrData.posText || "");
+        const g = ocrData.geminiStructured || {};
+
+        const rec = {
+            plate: g.plate || recParsed.plate || "",
+            date: g.date || recParsed.date || "",
+            time: g.time || recParsed.time || "",
+            station: g.station || recParsed.station || "",
+            location: g.location || recParsed.location || "",
+            fuelType: g.fuelType || recParsed.fuelType || "",
+            liters: Number(g.liters || recParsed.liters || 0),
+            unitPrice: Number(g.unitPrice || recParsed.unitPrice || 0),
+            totalAmount: Number(g.totalAmount || recParsed.totalAmount || 0),
+            vatAmount: Number(g.vatAmount || recParsed.vatAmount || 0),
+            receiptNo: g.receiptNo || recParsed.receiptNo || "",
+            paymentMethod: g.paymentMethod || recParsed.paymentMethod || "",
+            docType: g.docType || recParsed.docType || "OTHER",
+            userNote: ""
+        };
+
+        const pos = {
+            bankName: g.bankName || posParsed.bankName || "",
+            cardLast4: String(g.cardLast4 || posParsed.cardLast4 || "").replace(/[^0-9]/g, "").slice(-4),
+            posDate: g.posDate || posParsed.posDate || "",
+            posTime: g.posTime || posParsed.posTime || "",
+            posAmount: Number(g.posAmount || posParsed.posAmount || 0),
+            merchantName: g.merchantName || posParsed.merchantName || "",
+            authCode: g.authCode || posParsed.authCode || "",
+            refNo: g.refNo || posParsed.refNo || "",
+            installment: g.installment || posParsed.installment || "TEK ÇEKİM"
+        };
+
+        // ==================== FORM ALANLARINA OTOMATİK AKTARIM & ALT KATEGORİYİ KULLANICIDAN İSTEME ====================
+        const isCardPayment = Boolean(scannedPosDataUrl || pos.cardLast4 || pos.posAmount > 0 || rec.paymentMethod === "KREDİ KARTI");
+        const targetSection = isCardPayment ? "CARI_CC" : "CASH_OUT";
+
+        handleFlowTypeChange("GIDER", targetSection);
+
+        // Belge türüne göre yalnızca Ana Gider Grubunu öner; Alt Kategoriyi kullanıcının elle seçmesi için boş bırak (requireManualSub = true)
+        const docProfile = DOC_TYPE_PROFILES[rec.docType] || DOC_TYPE_PROFILES.OTHER;
+        const autoMainGroup = docProfile.mainGroup;
+
+        const mainCatEl = document.getElementById("entry-main-cat");
+        if (mainCatEl) {
+            mainCatEl.value = autoMainGroup;
+            handleMainCategoryChange(autoMainGroup, null, false, true);
+        }
+
+        // Düzenlenebilir OCR paneli + Kullanıcıdan istenen manuel alanlar kutusunu oluştur
+        renderEditableOcrResultPanel(rec, pos, ocrData.engine || "Apple Vision Neural OCR");
+        syncEditableOcrFieldsToForm(true);
+
+        const effectiveAmount = rec.totalAmount > 0 ? rec.totalAmount : pos.posAmount;
+        addAuditLog("BELGE TARAMA (AI/OCR)", `Belge tarandı (${docProfile.label}): İşyeri=${rec.station || "-"}, Tutar=${formatMoneyTR(effectiveAmount)}, Kart=****${pos.cardLast4 || "-"}`);
+    } catch (err) {
+        if (resBox) {
+            resBox.style.display = "block";
+            resBox.innerHTML = `<div style="color:#fca5a5;"><i class="fa-solid fa-circle-exclamation"></i> ${escapeHtml(err.message)}</div>`;
+        }
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = origBtnHtml;
+        }
+    }
+}
+
+function handleOcrManualMainGroupChange(newMainGroup) {
+    const mainCatEl = document.getElementById("entry-main-cat");
+    if (mainCatEl) {
+        mainCatEl.value = newMainGroup;
+    }
+    handleMainCategoryChange(newMainGroup, null, false, true);
+    syncEditableOcrFieldsToForm(true);
+}
+
+function handleOcrManualSubCatChange(newSubCat) {
+    const subCatEl = document.getElementById("entry-sub-cat");
+    if (subCatEl) {
+        subCatEl.value = newSubCat;
+    }
+    handleSubCategoryChange(newSubCat);
+}
+
+function handleOcrDocTypeChange(newDocType) {
+    const profile = DOC_TYPE_PROFILES[newDocType] || DOC_TYPE_PROFILES.OTHER;
+    const lblNote = document.getElementById("ocr-lbl-user-note");
+    const inpNote = document.getElementById("ocr-manual-user-note");
+    const promptBanner = document.getElementById("ocr-user-prompt-banner");
+    if (lblNote) lblNote.textContent = profile.noteLabel;
+    if (inpNote) inpNote.placeholder = profile.notePlaceholder;
+    if (promptBanner) promptBanner.textContent = profile.promptText;
+    handleOcrManualMainGroupChange(profile.mainGroup);
+}
+
+function renderEditableOcrResultPanel(rec, pos, engineLabel = "Apple Vision Neural OCR") {
+    const resBox = document.getElementById("ai-scan-result-box");
+    if (!resBox) return;
+    resBox.style.display = "block";
+
+    const fmtNumInput = (n) => {
+        const val = Number(n) || 0;
+        if (val <= 0) return "";
+        return val % 1 === 0 ? val.toLocaleString("tr-TR") : formatNumberTR(val);
+    };
+
+    const inpStyle = "width:100%; padding:3px 6px; font-size:0.71rem; font-weight:700; border-radius:5px; background:rgba(15,23,42,0.85); border:1px solid rgba(148,163,184,0.3); color:#f8fafc;";
+    const warnStyle = "width:100%; padding:3px 6px; font-size:0.71rem; font-weight:700; border-radius:5px; background:rgba(245,158,11,0.14); border:1px solid rgba(251,191,36,0.65); color:#fde68a;";
+
+    const docTypeKey = DOC_TYPE_PROFILES[rec.docType] ? rec.docType : "OTHER";
+    const profile = DOC_TYPE_PROFILES[docTypeKey];
+    const currentMainGroup = document.getElementById("entry-main-cat")?.value || profile.mainGroup;
+    const currentSubCat = document.getElementById("entry-sub-cat")?.value || "";
+    const giderTree = CATEGORY_SUBITEMS_TREE.GIDER || [];
+    const activeGroupObj = giderTree.find(g => g.group === currentMainGroup) || giderTree[0];
+
+    const docTypeOptionsHtml = Object.entries(DOC_TYPE_PROFILES).map(([k, v]) =>
+        `<option value="${k}" ${k === docTypeKey ? "selected" : ""}>${escapeHtml(v.label)}</option>`
+    ).join("");
+
+    const mainCatOptionsHtml = giderTree.map(g =>
+        `<option value="${escapeHtml(g.group)}" ${g.group === currentMainGroup ? "selected" : ""}>${escapeHtml(g.group)}</option>`
+    ).join("");
+
+    const subCatOptionsHtml = `<option value="">-- LÜTFEN ALT KATEGORİYİ ELLE SEÇİNİZ --</option>` +
+        (activeGroupObj?.items || []).map(it =>
+            `<option value="${escapeHtml(it)}" ${it === currentSubCat ? "selected" : ""}>${escapeHtml(it)}</option>`
+        ).join("");
+
+    resBox.innerHTML = `
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; padding-bottom:5px; border-bottom:1px solid rgba(255,255,255,0.1); flex-wrap:wrap; gap:4px;">
+            <div id="ocr-validation-header" style="font-size:0.74rem;"></div>
+            <div style="display:flex; align-items:center; gap:6px;">
+                <span style="font-size:0.65rem; color:#94a3b8;"><i class="fa-solid fa-pen-to-square" style="color:#38bdf8;"></i> Tüm kutuları doğrudan elle düzeltebilirsiniz</span>
+                <span class="badge badge-info" style="font-size:0.6rem;" id="ocr-engine-badge">${escapeHtml(engineLabel)}</span>
+            </div>
+        </div>
+
+        <!-- 3. KULLANICIDAN DOLDURMASI İSTENEN ZORUNLU / MANUEL ALANLAR (ALT KATEGORİ & DETAY NOTU) -->
+        <div style="padding:8px 10px; border-radius:8px; background:rgba(245,158,11,0.10); border:1px solid rgba(251,191,36,0.45); margin-bottom:8px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:6px; flex-wrap:wrap;">
+                <span style="font-size:0.73rem; font-weight:800; color:#fbbf24;">
+                    <i class="fa-solid fa-hand-pointer"></i> Kullanıcı Tarafından Girilecek Bilgiler (Alt Kategori &amp; Detay)
+                </span>
+                <span id="ocr-user-prompt-banner" style="font-size:0.66rem; color:#fde68a;">${escapeHtml(profile.promptText)}</span>
+            </div>
+            <div class="form-grid-2" style="gap:6px; margin-bottom:6px;">
+                <div>
+                    <label style="display:block; color:#cbd5e1; font-size:0.63rem; font-weight:700; margin-bottom:2px;">Algılanan Belge Türü (Değiştirilebilir)</label>
+                    <select id="ocr-edit-doc-type" style="${inpStyle}" onchange="handleOcrDocTypeChange(this.value)">
+                        ${docTypeOptionsHtml}
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block; color:#cbd5e1; font-size:0.63rem; font-weight:700; margin-bottom:2px;">Ana Gider Grubu</label>
+                    <select id="ocr-manual-main-cat" style="${inpStyle}" onchange="handleOcrManualMainGroupChange(this.value)">
+                        ${mainCatOptionsHtml}
+                    </select>
+                </div>
+            </div>
+            <div class="form-grid-2" style="gap:6px;">
+                <div>
+                    <label style="display:block; color:#fbbf24; font-size:0.65rem; font-weight:800; margin-bottom:2px;">
+                        <i class="fa-solid fa-list-check"></i> Alt Kategori Seçimi (Lütfen Elle Seçiniz) *
+                    </label>
+                    <select id="ocr-manual-sub-cat" style="${currentSubCat ? inpStyle : warnStyle}" onchange="handleOcrManualSubCatChange(this.value)">
+                        ${subCatOptionsHtml}
+                    </select>
+                </div>
+                <div>
+                    <label id="ocr-lbl-user-note" style="display:block; color:#38bdf8; font-size:0.65rem; font-weight:800; margin-bottom:2px;">
+                        ${escapeHtml(profile.noteLabel)}
+                    </label>
+                    <input type="text" id="ocr-manual-user-note" value="${escapeHtml(rec.userNote || "")}" placeholder="${escapeHtml(profile.notePlaceholder)}" style="${inpStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-grid-2" style="gap:8px; margin-bottom:8px; font-size:0.68rem;">
+            <!-- 1. TARANAN BELGE (FİŞ / FATURA / MAKBUZ) DÜZENLENEBİLİR ALANLAR -->
+            <div style="padding:7px 8px; border-radius:7px; background:rgba(16,185,129,0.05); border:1px solid rgba(16,185,129,0.22);">
+                <div style="font-weight:800; color:#34d399; margin-bottom:5px; display:flex; justify-content:space-between; align-items:center;">
+                    <span><i class="fa-solid fa-file-invoice"></i> 1. Okunan Belge Bilgileri (Elle Düzeltilebilir)</span>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
+                    <div>
+                        <label style="display:block; color:#94a3b8; font-size:0.62rem;">İşyeri / Lokanta / Firma Adı</label>
+                        <input type="text" id="ocr-edit-station" value="${escapeHtml(rec.station || "")}" placeholder="Örn: KEBAP SALONU / MARKET / PO" style="${rec.station ? inpStyle : warnStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                    </div>
+                    <div>
+                        <label style="display:block; color:#94a3b8; font-size:0.62rem;">Belge Toplam Tutarı (TL)</label>
+                        <input type="text" id="ocr-edit-rec-total" value="${escapeHtml(fmtNumInput(rec.totalAmount))}" placeholder="0,00" style="${rec.totalAmount > 0 ? inpStyle : warnStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                    </div>
+                    <div>
+                        <label style="display:block; color:#94a3b8; font-size:0.62rem;">Belge Tarihi (GG.AA.YYYY)</label>
+                        <input type="text" id="ocr-edit-rec-date" value="${escapeHtml(rec.date || "")}" placeholder="GG.AA.YYYY" style="${rec.date ? inpStyle : warnStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                    </div>
+                    <div>
+                        <label style="display:block; color:#94a3b8; font-size:0.62rem;">Saat &amp; Fiş / Fatura No</label>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
+                            <input type="text" id="ocr-edit-rec-time" value="${escapeHtml(rec.time || "")}" placeholder="13:15" style="${inpStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                            <input type="text" id="ocr-edit-rec-no" value="${escapeHtml(rec.receiptNo || "")}" placeholder="Fiş No" style="${inpStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                        </div>
+                    </div>
+                    <div>
+                        <label style="display:block; color:#94a3b8; font-size:0.62rem;">Okunan Kalem / İçerik Özeti</label>
+                        <input type="text" id="ocr-edit-fuel" value="${escapeHtml(rec.fuelType || "")}" placeholder="YEMEK / MARKET / MOTORİN vb." style="${inpStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                    </div>
+                    <div>
+                        <label style="display:block; color:#94a3b8; font-size:0.62rem;">KDV Tutarı (TL) &amp; Şehir/Konum</label>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
+                            <input type="text" id="ocr-edit-vat" value="${escapeHtml(fmtNumInput(rec.vatAmount))}" placeholder="KDV TL" style="${inpStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                            <input type="text" id="ocr-edit-location" value="${escapeHtml(rec.location || "")}" placeholder="Konum" style="${inpStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                        </div>
+                    </div>
+                    <div>
+                        <label style="display:block; color:#94a3b8; font-size:0.62rem;">Araç Plakası (Araç/Yakıt İse)</label>
+                        <input type="text" id="ocr-edit-plate" value="${escapeHtml(rec.plate || "")}" placeholder="Örn: 19 ABC 123 (Varsa)" style="${inpStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                    </div>
+                    <div>
+                        <label style="display:block; color:#94a3b8; font-size:0.62rem;">Miktar (Lt/Adet) × Birim Fiyat</label>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
+                            <input type="text" id="ocr-edit-liters" value="${escapeHtml(fmtNumInput(rec.liters))}" placeholder="Miktar" style="${inpStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                            <input type="text" id="ocr-edit-unit-price" value="${escapeHtml(fmtNumInput(rec.unitPrice))}" placeholder="Birim TL" style="${inpStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. KREDİ KARTI POS SLİPİ / DEKONT DÜZENLENEBİLİR ALANLAR -->
+            <div style="padding:7px 8px; border-radius:7px; background:rgba(56,189,248,0.05); border:1px solid rgba(56,189,248,0.22);">
+                <div style="font-weight:800; color:#38bdf8; margin-bottom:5px; display:flex; justify-content:space-between; align-items:center;">
+                    <span><i class="fa-solid fa-credit-card"></i> 2. POS Slipi / Ödeme Bilgileri (Elle Düzeltilebilir)</span>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
+                    <div>
+                        <label style="display:block; color:#94a3b8; font-size:0.62rem;">Banka Adı</label>
+                        <input type="text" id="ocr-edit-bank" value="${escapeHtml(pos.bankName || "")}" placeholder="Örn: AKBANK / GARANTİ" style="${inpStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                    </div>
+                    <div>
+                        <label style="display:block; color:#94a3b8; font-size:0.62rem;">Kart Son 4 Hane</label>
+                        <input type="text" id="ocr-edit-last4" maxlength="4" value="${escapeHtml(pos.cardLast4 || "")}" placeholder="Örn: 0667 / 4360" style="${pos.cardLast4 ? inpStyle : warnStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                    </div>
+                    <div>
+                        <label style="display:block; color:#94a3b8; font-size:0.62rem;">POS Tarihi (GG.AA.YYYY)</label>
+                        <input type="text" id="ocr-edit-pos-date" value="${escapeHtml(pos.posDate || "")}" placeholder="GG.AA.YYYY" style="${inpStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                    </div>
+                    <div>
+                        <label style="display:block; color:#94a3b8; font-size:0.62rem;">POS Saati &amp; Taksit</label>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
+                            <input type="text" id="ocr-edit-pos-time" value="${escapeHtml(pos.posTime || "")}" placeholder="13:16" style="${inpStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                            <input type="text" id="ocr-edit-installment" value="${escapeHtml(pos.installment || "TEK ÇEKİM")}" placeholder="TEK ÇEKİM" style="${inpStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                        </div>
+                    </div>
+                    <div>
+                        <label style="display:block; color:#94a3b8; font-size:0.62rem;">POS Ödeme Tutarı (TL)</label>
+                        <input type="text" id="ocr-edit-pos-amount" value="${escapeHtml(fmtNumInput(pos.posAmount))}" placeholder="0,00" style="${pos.posAmount > 0 ? inpStyle : warnStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                    </div>
+                    <div>
+                        <label style="display:block; color:#94a3b8; font-size:0.62rem;">POS İşyeri Adı</label>
+                        <input type="text" id="ocr-edit-merchant" value="${escapeHtml(pos.merchantName || "")}" placeholder="İşyeri Adı" style="${inpStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                    </div>
+                    <div>
+                        <label style="display:block; color:#94a3b8; font-size:0.62rem;">Onay Kodu</label>
+                        <input type="text" id="ocr-edit-auth" value="${escapeHtml(pos.authCode || "")}" placeholder="Onay Kodu" style="${inpStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                    </div>
+                    <div>
+                        <label style="display:block; color:#94a3b8; font-size:0.62rem;">Referans No</label>
+                        <input type="text" id="ocr-edit-ref" value="${escapeHtml(pos.refNo || "")}" placeholder="Ref No" style="${inpStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="ocr-validation-checks-list" style="display:flex; flex-direction:column; gap:3px; font-size:0.7rem;"></div>
+        <div style="margin-top:6px; font-size:0.68rem; color:var(--text-secondary);">
+            * Belgedeki tutar, işyeri ve tarih otomatik okundu. <strong>Alt Kategoriyi</strong> ve varsa <strong>Detay Notunu</strong> elle seçip kontrol ettikten sonra alttaki <strong>Kaydet</strong> düğmesine basabilirsiniz.
+        </div>
+    `;
+}
+
+function syncEditableOcrFieldsToForm(updateMainFormFields = true) {
+    const valStr = (id) => (document.getElementById(id)?.value || "").trim().toUpperCase();
+    const rec = {
+        docType: valStr("ocr-edit-doc-type") || "OTHER",
+        userNote: valStr("ocr-manual-user-note"),
+        plate: valStr("ocr-edit-plate"),
+        station: valStr("ocr-edit-station"),
+        location: valStr("ocr-edit-location"),
+        date: valStr("ocr-edit-rec-date"),
+        time: valStr("ocr-edit-rec-time"),
+        receiptNo: valStr("ocr-edit-rec-no"),
+        fuelType: valStr("ocr-edit-fuel"),
+        liters: parseTurkishNumberFromOCR(document.getElementById("ocr-edit-liters")?.value || ""),
+        unitPrice: parseTurkishNumberFromOCR(document.getElementById("ocr-edit-unit-price")?.value || ""),
+        totalAmount: parseTurkishNumberFromOCR(document.getElementById("ocr-edit-rec-total")?.value || ""),
+        vatAmount: parseTurkishNumberFromOCR(document.getElementById("ocr-edit-vat")?.value || "")
+    };
+
+    const pos = {
+        bankName: valStr("ocr-edit-bank"),
+        cardLast4: String(document.getElementById("ocr-edit-last4")?.value || "").replace(/[^0-9]/g, "").slice(-4),
+        posDate: valStr("ocr-edit-pos-date"),
+        posTime: valStr("ocr-edit-pos-time"),
+        installment: valStr("ocr-edit-installment") || "TEK ÇEKİM",
+        posAmount: parseTurkishNumberFromOCR(document.getElementById("ocr-edit-pos-amount")?.value || ""),
+        merchantName: valStr("ocr-edit-merchant"),
+        authCode: valStr("ocr-edit-auth"),
+        refNo: valStr("ocr-edit-ref")
+    };
+
+    const selectedSubCat = (document.getElementById("entry-sub-cat")?.value || "").trim();
+    const ocrSubSel = document.getElementById("ocr-manual-sub-cat");
+    if (ocrSubSel) {
+        ocrSubSel.style.background = selectedSubCat ? "rgba(15,23,42,0.85)" : "rgba(245,158,11,0.14)";
+        ocrSubSel.style.borderColor = selectedSubCat ? "rgba(52,211,153,0.55)" : "rgba(251,191,36,0.75)";
+        ocrSubSel.style.color = selectedSubCat ? "#a7f3d0" : "#fde68a";
+    }
+
+    const checks = [];
+    let hasWarning = false;
+    const hasBothDocs = Boolean((scannedReceiptDataUrl && scannedPosDataUrl) || (rec.totalAmount > 0 && pos.posAmount > 0));
+
+    // 0. Kullanıcı Alt Kategori Seçimi Kontrolü
+    if (selectedSubCat) {
+        checks.push({ ok: true, text: `Alt Kategori seçildi: ${selectedSubCat}` });
+    } else {
+        hasWarning = true;
+        checks.push({ ok: false, text: `KULLANICI GİRİŞİ BEKLENİYOR: Lütfen yukarıdaki 'Alt Kategori Seçimi' kutusundan uygun alt kategoriyi elle seçiniz.` });
+    }
+
+    // 1. Tutar Karşılaştırması
+    if (rec.totalAmount > 0 && pos.posAmount > 0) {
+        const diff = Math.abs(rec.totalAmount - pos.posAmount);
+        if (diff < 0.05) {
+            checks.push({ ok: true, text: `Belge Tutarı (${formatMoneyTR(rec.totalAmount)}) ile POS Slipi Tutarı (${formatMoneyTR(pos.posAmount)}) birebir uyumlu.` });
+        } else {
+            hasWarning = true;
+            checks.push({ ok: false, text: `DİKKAT: Belge tutarı (${formatMoneyTR(rec.totalAmount)}) ile POS slipi tutarı (${formatMoneyTR(pos.posAmount)}) FARKLI! Kutulardan elle düzeltebilirsiniz.` });
+        }
+    }
+
+    // 2. Tarih Uyumu
+    if (rec.date && pos.posDate) {
+        if (rec.date === pos.posDate) {
+            checks.push({ ok: true, text: `İki belgedeki işlem tarihi uyumlu (${rec.date}).` });
+        } else {
+            hasWarning = true;
+            checks.push({ ok: false, text: `DİKKAT: Belge tarihi (${rec.date}) ile POS slipi tarihi (${pos.posDate}) farklı! Elle düzeltebilirsiniz.` });
+        }
+    }
+
+    // 3. Litre × Birim Fiyat Matematiksel Sağlaması (Varsa)
+    if (rec.liters > 0 && rec.unitPrice > 0 && rec.totalAmount > 0) {
+        const calcTot = Number((rec.liters * rec.unitPrice).toFixed(2));
+        if (Math.abs(calcTot - rec.totalAmount) <= 1.0) {
+            checks.push({ ok: true, text: `Matematiksel sağlama doğrulandı: ${formatNumberTR(rec.liters)} × ${formatMoneyTR(rec.unitPrice)} = ${formatMoneyTR(calcTot)}.` });
+        } else {
+            hasWarning = true;
+            checks.push({ ok: false, text: `DİKKAT: Miktar × Birim Fiyat (${formatMoneyTR(calcTot)}) ile Belge Toplamı (${formatMoneyTR(rec.totalAmount)}) uyuşmuyor! Elle düzeltebilirsiniz.` });
+        }
+    }
+
+    // 4. İşyeri / İstasyon Uyumu
+    if (hasBothDocs && rec.station && pos.merchantName) {
+        const stFirst = normalizeTR(rec.station).split(" ")[0];
+        const mNorm = normalizeTR(pos.merchantName);
+        if (stFirst && mNorm.includes(stFirst)) {
+            checks.push({ ok: true, text: `İşyeri bilgileri örtüşüyor (${rec.station} ↔ ${pos.merchantName}).` });
+        } else {
+            hasWarning = true;
+            checks.push({ ok: false, text: `İşyeri adı kontrolü: Belgede "${rec.station}", POS slipinde "${pos.merchantName}" görünüyor.` });
+        }
+    }
+
+    // 5. Kayıtlı Şirket Kredi Kartı Eşleşmesi (Son 4 Hane)
+    let matchedCardObj = null;
+    if (pos.cardLast4) {
+        const allCards = getAvailableCreditCards();
+        matchedCardObj = allCards.find(c => String(c.number) === pos.cardLast4) || null;
+        if (matchedCardObj) {
+            checks.push({ ok: true, text: `Kart son 4 hanesinden (${pos.cardLast4}) kayıtlı kartınız eşleşti: ${matchedCardObj.bank} •••• ${matchedCardObj.number} (${matchedCardObj.name}).` });
+        } else {
+            hasWarning = true;
+            checks.push({ ok: false, text: `Kart son 4 hanesi (${pos.cardLast4}) kayıtlı kartlarınız arasında bulunamadı. Son 4 haneyi elle düzeltebilir veya alttan kart seçebilirsiniz.` });
+        }
+    }
+
+    // 6. Mükerrer Belge Kontrolü
+    const editId = document.getElementById("entry-id")?.value || "";
+    const dupMsg = checkDuplicateReceiptInHistory(rec, pos, editId);
+    if (dupMsg) {
+        hasWarning = true;
+        checks.push({ ok: false, text: `MÜKERRER BELGE UYARISI: ${dupMsg}` });
+    } else {
+        checks.push({ ok: true, text: `Mükerrer kayıt kontrolü temiz: Bu belge daha önce kaydedilmemiş.` });
+    }
+
+    const headerEl = document.getElementById("ocr-validation-header");
+    if (headerEl) {
+        headerEl.innerHTML = `
+            <strong style="color:${hasWarning ? "#fbbf24" : "#34d399"};">
+                <i class="fa-solid ${hasWarning ? "fa-triangle-exclamation" : "fa-circle-check"}"></i>
+                ${!selectedSubCat ? "Belge Okundu — Lütfen Alt Kategoriyi ve Eksik Bilgileri Elle Giriniz" : (hasWarning ? "Lütfen Sarı Uyarıları Kontrol Edip Gerekirse Elle Düzeltin" : "Belge &amp; Kategori Hazır — İsterseniz Düzenleyip Kaydedebilirsiniz")}
+            </strong>
+        `;
+    }
+
+    const checksEl = document.getElementById("ocr-validation-checks-list");
+    if (checksEl) {
+        checksEl.innerHTML = checks.map(c => `
+            <div style="color:${c.ok ? "#a7f3d0" : "#fde68a"}; font-weight:${c.ok ? "500" : "700"};">
+                <i class="fa-solid ${c.ok ? "fa-check-circle" : "fa-triangle-exclamation"}"></i> ${escapeHtml(c.text)}
+            </div>
+        `).join("");
+    }
+
+    if (updateMainFormFields) {
+        const currentSection = document.getElementById("entry-section")?.value || "";
+        if (currentSection === "CARI_CC" && pos.cardLast4) {
+            populateCreditCardSelector(pos.cardLast4);
+            syncCol1FromSelectors();
+        }
+
+        const effectiveDateTR = rec.date || pos.posDate;
+        const dateEl = document.getElementById("entry-date");
+        if (dateEl && effectiveDateTR && effectiveDateTR.length >= 8) {
+            dateEl.value = effectiveDateTR;
+        }
+
+        const effectiveAmount = rec.totalAmount > 0 ? rec.totalAmount : pos.posAmount;
+        const amtEl = document.getElementById("entry-amount");
+        if (amtEl && effectiveAmount > 0) {
+            amtEl.value = effectiveAmount % 1 === 0 ? effectiveAmount.toLocaleString("tr-TR") : formatNumberTR(effectiveAmount);
+        }
+
+        const descParts = [];
+        if (selectedSubCat && !selectedSubCat.includes("SERBEST GİRİŞ")) {
+            descParts.push(selectedSubCat);
+        }
+        if (rec.userNote) descParts.push(rec.userNote);
+        if (rec.plate) descParts.push(`PLAKA: ${rec.plate}`);
+        if (rec.station) descParts.push(rec.station);
+        else if (pos.merchantName) descParts.push(pos.merchantName);
+        if (rec.fuelType && !descParts.includes(rec.fuelType)) descParts.push(rec.fuelType);
+        if (rec.liters > 0 && rec.unitPrice > 0) {
+            descParts.push(`${formatNumberTR(rec.liters)} LT x ${formatNumberTR(rec.unitPrice)} TL`);
+        }
+        if (rec.receiptNo) descParts.push(`BELGE NO:${rec.receiptNo}`);
+        if (pos.cardLast4) descParts.push(`KART:****${pos.cardLast4}`);
+        if (pos.authCode) descParts.push(`ONAY:${pos.authCode}`);
+
+        const descEl = document.getElementById("entry-desc");
+        if (descEl && descParts.length > 0) {
+            descEl.value = descParts.join(" · ");
+        }
+    }
+
+    const engineBadge = document.getElementById("ocr-engine-badge")?.textContent || "Apple Vision Neural OCR";
+    const ocrMetaObj = {
+        engine: engineBadge,
+        scannedAt: formatDateTimeTR(),
+        ...rec,
+        ...pos,
+        selectedSubCat,
+        matchedCardLabel: matchedCardObj ? formatCreditCardValue(matchedCardObj) : "",
+        hasReceiptImg: Boolean(scannedReceiptThumbUrl),
+        hasPosImg: Boolean(scannedPosThumbUrl),
+        receiptThumb: scannedReceiptThumbUrl || "",
+        posThumb: scannedPosThumbUrl || ""
+    };
+    const metaInp = document.getElementById("entry-ocr-meta");
+    if (metaInp) metaInp.value = JSON.stringify(ocrMetaObj);
+}
+
+function openDocPreviewModal(entryId) {
+    let foundEntry = null;
+    let foundDateISO = uiState.selectedDateISO;
+    for (const [dKey, dObj] of Object.entries(appState.days || {})) {
+        const hit = (dObj?.entries || []).find(x => x.id === entryId);
+        if (hit) {
+            foundEntry = hit;
+            foundDateISO = dKey;
+            break;
+        }
+    }
+    if (!foundEntry || !foundEntry.ocrMeta) return;
+    const m = foundEntry.ocrMeta;
+    const bodyEl = document.getElementById("modal-doc-preview-body");
+    if (!bodyEl) return;
+
+    bodyEl.innerHTML = `
+        <div style="padding:10px 12px; border-radius:9px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); margin-bottom:12px; font-size:0.76rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <div style="font-weight:800; color:var(--text-white);">${escapeHtml(foundEntry.col1 || "")} — ${escapeHtml(foundEntry.desc || "")}</div>
+                <button type="button" class="btn btn-xs btn-primary" onclick="closeModal('modal-doc-preview'); openEditEntryModal('${escapeHtml(foundEntry.id)}');">
+                    <i class="fa-solid fa-pen"></i> Bilgileri Elle Düzenle
+                </button>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; color:var(--text-secondary);">
+                <div>Tarih / Saat: <strong style="color:var(--text-white);">${escapeHtml(m.date || formatDateToTR(foundDateISO))} ${escapeHtml(m.time || "")}</strong></div>
+                <div>Toplam Tutar: <strong style="color:#34d399;">${formatMoneyTR(foundEntry.amount)}</strong></div>
+                <div>İşyeri / Firma: <strong style="color:var(--text-white);">${escapeHtml(m.station || m.merchantName || "-")}</strong></div>
+                <div>Alt Kategori / Not: <strong style="color:#fbbf24;">${escapeHtml(m.selectedSubCat || "-")} ${m.userNote ? `(${escapeHtml(m.userNote)})` : ""}</strong></div>
+                <div>İçerik / Plaka: <strong style="color:var(--text-white);">${escapeHtml(m.fuelType || "-")} ${m.plate ? `· Plaka: ${escapeHtml(m.plate)}` : ""} (${m.liters ? `${formatNumberTR(m.liters)} Lt × ${formatMoneyTR(m.unitPrice)}` : "-"})</strong></div>
+                <div>Belge No / KDV: <strong style="color:var(--text-white);">${escapeHtml(m.receiptNo || "-")} / ${m.vatAmount ? formatMoneyTR(m.vatAmount) : "-"}</strong></div>
+                <div>Kredi Kartı: <strong style="color:#38bdf8;">${escapeHtml(m.bankName || "-")} ${m.cardLast4 ? `•••• ${escapeHtml(m.cardLast4)}` : ""}</strong></div>
+                <div>POS Onay / Ref No: <strong style="color:var(--text-white);">${escapeHtml(m.authCode || "-")} / ${escapeHtml(m.refNo || "-")}</strong></div>
+            </div>
+        </div>
+        <div class="form-grid-2" style="gap:12px;">
+            ${m.receiptThumb ? `
+                <div style="text-align:center; background:rgba(0,0,0,0.25); padding:8px; border-radius:8px; border:1px solid var(--border-subtle);">
+                    <div style="font-size:0.72rem; font-weight:700; color:#34d399; margin-bottom:6px;"><i class="fa-solid fa-file-invoice"></i> 1. Taranan Belge Görseli</div>
+                    <img src="${m.receiptThumb}" alt="Belge Görseli" style="max-width:100%; max-height:340px; border-radius:6px; object-fit:contain;">
+                </div>
+            ` : ""}
+            ${m.posThumb ? `
+                <div style="text-align:center; background:rgba(0,0,0,0.25); padding:8px; border-radius:8px; border:1px solid var(--border-subtle);">
+                    <div style="font-size:0.72rem; font-weight:700; color:#38bdf8; margin-bottom:6px;"><i class="fa-solid fa-receipt"></i> 2. Kredi Kartı POS Slipi / Dekont Görseli</div>
+                    <img src="${m.posThumb}" alt="POS Slipi Görseli" style="max-width:100%; max-height:340px; border-radius:6px; object-fit:contain;">
+                </div>
+            ` : ""}
+        </div>
+    `;
+    openModal("modal-doc-preview");
+}
+
 function openEntryModal(defaultSection = "CASH_IN") {
     if (!assertPermission("add", "Yeni gelir/gider kaydı ekleme")) return;
     const dayObj = ensureDayObject(uiState.selectedDateISO);
@@ -1842,6 +3015,7 @@ function openEntryModal(defaultSection = "CASH_IN") {
     document.getElementById("entry-desc").value = "";
     document.getElementById("entry-amount").value = "";
     document.getElementById("entry-code").value = "";
+    resetAiScannerState();
 
     handleFlowTypeChange(defaultFlow, defaultSection);
     openModal("modal-entry");
@@ -1863,12 +3037,22 @@ function openEditEntryModal(entryId) {
     document.getElementById("modal-entry-title").innerHTML = `<i class="fa-solid fa-pen-to-square" style="color:var(--amber-warn);"></i> <span>Gelir / Gider Kaydını Düzenle</span>`;
     document.getElementById("entry-id").value = entry.id;
     document.getElementById("entry-date").value = formatDateToTR(entry.dateISO || uiState.selectedDateISO);
+    resetAiScannerState();
 
     handleFlowTypeChange(entryFlow, entry.section);
     if (entry.section === "CARI_CC") {
         populateCreditCardSelector(entry.col1 || "");
     }
     populateCategoryTreeSelectors(entryFlow, entry.section, entry.col1 || "");
+
+    if (entry.ocrMeta) {
+        const metaInp = document.getElementById("entry-ocr-meta");
+        if (metaInp) metaInp.value = JSON.stringify(entry.ocrMeta);
+        if (entry.ocrMeta.receiptThumb) setScannedSlotImage("receipt", entry.ocrMeta.receiptThumb, entry.ocrMeta.receiptThumb, "Kayıtlı Belge");
+        if (entry.ocrMeta.posThumb) setScannedSlotImage("pos", entry.ocrMeta.posThumb, entry.ocrMeta.posThumb, "Kayıtlı POS Slipi");
+        renderEditableOcrResultPanel(entry.ocrMeta, entry.ocrMeta, entry.ocrMeta.engine || "Apple Vision Neural OCR");
+        syncEditableOcrFieldsToForm(false);
+    }
 
     document.getElementById("entry-col1").value = entry.col1 || "";
     document.getElementById("entry-due-date").value = entry.dueDate ? formatDateToTR(entry.dueDate) : "";
@@ -1903,6 +3087,24 @@ function handleSaveEntry(e) {
     const amount = parseMoneyInputTR(document.getElementById("entry-amount").value);
     const code = document.getElementById("entry-code").value.trim().toUpperCase();
 
+    let ocrMeta = null;
+    const rawMeta = (document.getElementById("entry-ocr-meta")?.value || "").trim();
+    if (rawMeta) {
+        try {
+            ocrMeta = JSON.parse(rawMeta);
+        } catch (err) {
+            ocrMeta = null;
+        }
+    }
+
+    // Eğer belge tarandıysa ve kullanıcıdan Alt Kategori seçmesi istendiyse kontrol et
+    if (ocrMeta && !subCat) {
+        alert("Belge tarandı! Lütfen 'Alt Kategori Seçimi' kutusundan uygun alt kategoriyi (Örn: Günlük Yemek, Misafir Ağırlama, Yakıt vb.) elle seçiniz.");
+        const ocrSubEl = document.getElementById("ocr-manual-sub-cat") || document.getElementById("entry-sub-cat");
+        if (ocrSubEl) ocrSubEl.focus();
+        return;
+    }
+
     if (!desc || amount <= 0) {
         alert("Lütfen açıklama ve 0'dan büyük bir tutar giriniz.");
         return;
@@ -1926,6 +3128,7 @@ function handleSaveEntry(e) {
             dueDate: dueDate ? parseAnyDateToISO(dueDate) : "",
             amount,
             code,
+            ocrMeta,
             createdBy: currentUser ? currentUser.name : "Sistem",
             createdAt: formatDateTimeTR()
         });
@@ -1940,6 +3143,7 @@ function handleSaveEntry(e) {
             dueDate: dueDate ? parseAnyDateToISO(dueDate) : "",
             amount,
             code,
+            ocrMeta,
             createdBy: currentUser ? currentUser.name : "Sistem",
             createdAt: formatDateTimeTR()
         });
@@ -2838,6 +4042,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     initTcmb1630AutoRefreshScheduler();
 
     if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("sw.js?v=1.0.3").catch(() => {});
+        navigator.serviceWorker.register("sw.js?v=1.0.6").catch(() => {});
     }
 });
