@@ -14,7 +14,7 @@
  * ==========================================================================
  */
 
-const CURRENT_APP_VERSION = "1.1.0";
+const CURRENT_APP_VERSION = "1.1.1";
 window.CURRENT_APP_VERSION = CURRENT_APP_VERSION;
 
 const OLD_DEMO_STORAGE_KEY = "dizsan_gunluk_kasa_state_v1";
@@ -1356,7 +1356,7 @@ function renderDailyFormSection() {
                     ${otherActiveDays.map(d => `<button type="button" class="btn btn-xs btn-primary" onclick="jumpToDateISO('${escapeHtml(d)}')"><i class="fa-solid fa-arrow-right"></i> ${escapeHtml(formatDateToTR(d))} (${appState.days[d].entries.length} Kayıt)</button>`).join("")}
                    </div>`
                 : "";
-            tbodyClean.innerHTML = `<tr><td colspan="6" class="empty-row-placeholder">Bu tarihte (${escapeHtml(formatDateToTR(iso))}) henüz gelir veya gider kaydı eklenmedi. Üstteki "Ekle" düğmesine basarak kayıt ekleyebilirsiniz.${otherDaysHint}</td></tr>`;
+            tbodyClean.innerHTML = `<tr><td colspan="7" class="empty-row-placeholder">Bu tarihte (${escapeHtml(formatDateToTR(iso))}) henüz gelir veya gider kaydı eklenmedi. Üstteki "Ekle" düğmesine basarak kayıt ekleyebilirsiniz.${otherDaysHint}</td></tr>`;
         } else {
             tbodyClean.innerHTML = entries.map(e => {
                 const isGelir = isGelirSection(e.section);
@@ -1366,6 +1366,8 @@ function renderDailyFormSection() {
                 const amtColor = isGelir ? "#34d399" : "#fb7185";
                 const sign = isGelir ? "+" : "-";
                 const dueExtra = e.dueDate ? ` <span class="badge badge-info" style="font-size:0.62rem;">Vade: ${escapeHtml(formatDateToTR(e.dueDate))}</span>` : "";
+                const personName = (!e.createdBy || e.createdBy === "Sistem") ? (currentUser?.name || "ÖMER EREN") : e.createdBy;
+                const timeShort = e.createdAt ? String(e.createdAt).split(" ")[1]?.slice(0, 5) || "" : "";
 
                 return `
                     <tr>
@@ -1373,6 +1375,12 @@ function renderDailyFormSection() {
                         <td><strong>${escapeHtml(SECTION_LABELS[e.section] || e.section)}</strong></td>
                         <td>${escapeHtml(e.col1 || "-")}</td>
                         <td>${escapeHtml(e.desc)}${dueExtra}${renderTdrBadge(e)}${renderOcrBadge(e)}</td>
+                        <td>
+                            <span class="badge badge-info" style="font-size:0.68rem; font-weight:700; display:inline-flex; align-items:center; gap:5px;" title="Kayıt Zamanı: ${escapeHtml(e.createdAt || "-")}">
+                                <i class="fa-solid fa-user-check" style="color:#38bdf8;"></i> ${escapeHtml(personName)}
+                            </span>
+                            ${timeShort ? `<small style="display:block; font-size:0.6rem; color:var(--text-muted); margin-top:2px; padding-left:4px;"><i class="fa-regular fa-clock"></i> ${escapeHtml(timeShort)}</small>` : ""}
+                        </td>
                         <td class="amount-cell" style="color:${amtColor}; font-weight:800;">${sign}${formatNumberTR(e.amount)} ₺</td>
                         <td style="text-align:right;">${buildActionButtons(e)}</td>
                     </tr>
@@ -5386,6 +5394,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     });
 
     if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("sw.js?v=1.1.0").catch(() => {});
+        navigator.serviceWorker.register("sw.js?v=1.1.1").catch(() => {});
     }
 });
