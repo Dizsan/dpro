@@ -14,7 +14,7 @@
  * ==========================================================================
  */
 
-const CURRENT_APP_VERSION = "1.0.5";
+const CURRENT_APP_VERSION = "1.0.7";
 window.CURRENT_APP_VERSION = CURRENT_APP_VERSION;
 
 const OLD_DEMO_STORAGE_KEY = "dizsan_gunluk_kasa_state_v1";
@@ -1927,9 +1927,13 @@ async function handleScanFileSelect(slot, inputEl) {
     const file = inputEl?.files?.[0];
     if (!file) return;
     try {
-        const fullDataUrl = await compressImageFileToDataUrl(file, 1400, 0.86);
-        const thumbDataUrl = await compressImageFileToDataUrl(file, 520, 0.68);
+        const fullDataUrl = await compressImageFileToDataUrl(file, 1600, 0.90);
+        const thumbDataUrl = await compressImageFileToDataUrl(file, 520, 0.72);
         setScannedSlotImage(slot, fullDataUrl, thumbDataUrl, file.name);
+        // Mobil/Web kullanımda fotoğraf seçildiği anda otomatik taramayı başlat
+        setTimeout(() => {
+            runReceiptAndPosAnalysis();
+        }, 120);
     } catch (err) {
         alert("Görsel okunamadı: " + err.message);
     }
@@ -2135,21 +2139,88 @@ async function loadSampleFuelAndPosForTest() {
 
 function parseTurkishNumberFromOCR(rawStr) {
     if (!rawStr) return 0;
-    // "*13. 750, 00" -> "13.750,00" -> 13750
-    let s = String(rawStr).replace(/\*/g, "").replace(/\s+/g, "").replace(/[^0-9.,]/g, "");
+    // OCR harf-rakam karışıklıklarını düzelt (Örn: *1.45O,OO -> 1.450,00)
+    let s = String(rawStr)
+        .replace(/[oO]/g, "0")
+        .replace(/\*/g, "")
+        .replace(/\s+/g, "")
+        .replace(/[^0-9.,]/g, "");
     if (!s) return 0;
     if (s.includes(",") && s.includes(".")) {
-        s = s.replace(/\./g, "").replace(",", ".");
+        const lastComma = s.lastIndexOf(",");
+        const lastDot = s.lastIndexOf(".");
+        if (lastComma > lastDot) {
+            s = s.replace(/\./g, "").replace(",", ".");
+        } else {
+            s = s.replace(/,/g, "");
+        }
     } else if (s.includes(",")) {
-        s = s.replace(",", ".");
+        const parts = s.split(",");
+        if (parts.length === 2 && parts[1].length <= 2) {
+            s = parts[0] + "." + parts[1];
+        } else {
+            s = s.replace(/,/g, "");
+        }
+    } else if (s.includes(".")) {
+        const parts = s.split(".");
+        if (parts.length > 2) {
+            const dec = parts.pop();
+            s = dec.length === 2 ? parts.join("") + "." + dec : parts.join("") + dec;
+        } else if (parts.length === 2 && parts[1].length === 3 && parts[0].length <= 3) {
+            // 1.250 -> 1250
+            s = parts[0] + parts[1];
+        }
     }
     const val = parseFloat(s);
     return Number.isFinite(val) ? Number(val.toFixed(2)) : 0;
 }
 
+function extractAmountsFromLines(lines, keywordRegex) {
+    const numPattern = /\*?\s*([0-9]{1,3}(?:[\s.][0-9]{3})*(?:\s*[,.]\s*[0-9]{2})|[0-9]{1,6}(?:\s*[,.]\s*[0-9]{2}))/g;
+    for (let i = 0; i < lines.length; i++) {
+        const ln = lines[i];
+        if (keywordRegex.test(ln)) {
+            const matches = [...ln.matchAll(numPattern)];
+            if (matches.length > 0) {
+                const candidate = parseTurkishNumberFromOCR(matches[matches.length - 1][1]);
+                if (candidate > 0) return candidate;
+            }
+            // Tutar bir alt satıra kaymış olabilir (termal fişlerde çok sık görülür)
+            if (i + 1 < lines.length) {
+                const nextMatches = [...lines[i + 1].matchAll(numPattern)];
+                if (nextMatches.length > 0) {
+                    const nextCandidate = parseTurkishNumberFromOCR(nextMatches[nextMatches.length - 1][1]);
+                    if (nextCandidate > 0) return nextCandidate;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+function extractFallbackTotalFromReceiptText(lines) {
+    // Eğer TOPLAM kelimesi OCR'da bozuk okunduysa (*1.250,00 veya 450,00 TL formatındaki en büyük alt satır tutarını bul)
+    const starOrTlPattern = /(?:\*\s*([0-9]{1,3}(?:[\s.][0-9]{3})*(?:\s*[,.]\s*[0-9]{2})|[0-9]{1,6}\s*[,.]\s*[0-9]{2}))|(?:([0-9]{1,3}(?:[\s.][0-9]{3})*(?:\s*[,.]\s*[0-9]{2})|[0-9]{1,6}\s*[,.]\s*[0-9]{2})\s*(?:TL|TRY|₺))/gi;
+    let bestAmount = 0;
+    const startIdx = Math.floor(lines.length * 0.25);
+    for (let i = startIdx; i < lines.length; i++) {
+        const ln = lines[i];
+        if (/KDV|MATRAH|ARA\s*TOP/i.test(ln)) continue;
+        for (const m of ln.matchAll(starOrTlPattern)) {
+            const raw = m[1] || m[2];
+            const val = parseTurkishNumberFromOCR(raw);
+            if (val > bestAmount && val < 5000000) {
+                bestAmount = val;
+            }
+        }
+    }
+    return bestAmount;
+}
+
 function parseReceiptTextToStructured(text) {
     const rawLines = String(text || "").split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-    const upperText = String(text || "").toUpperCase();
+    const upperLines = rawLines.map(l => l.toUpperCase());
+    const upperText = upperLines.join("\n");
 
     const result = {
         plate: "",
@@ -2173,18 +2244,23 @@ function parseReceiptTextToStructured(text) {
         result.plate = `${plateExplicit[1]} ${plateExplicit[2]} ${plateExplicit[3]}`;
     } else {
         const plateGeneric = upperText.match(/\b(0[1-9]|[1-7][0-9]|8[01])\s*([A-Z]{1,3})\s*([0-9]{2,4})\b/);
-        if (plateGeneric && !["TL", "LT", "NO", "KDV", "SAAT"].includes(plateGeneric[2])) {
+        if (plateGeneric && !["TL", "LT", "NO", "KDV", "SAAT", "POS", "FIS", "FİŞ", "TOP"].includes(plateGeneric[2])) {
             result.plate = `${plateGeneric[1]} ${plateGeneric[2]} ${plateGeneric[3]}`;
         }
     }
 
-    // 2. Tarih ve Saat
-    const dateMatch = upperText.match(/\b([0-3][0-9])[.\/\-]([0-1][0-9])[.\/\-](20[2-3][0-9])\b/);
-    if (dateMatch) {
-        result.date = `${dateMatch[1]}.${dateMatch[2]}.${dateMatch[3]}`;
+    // 2. Tarih ve Saat (4 haneli veya 2 haneli yıl desteği: 22.10.2026, 22/10/26, 22-10-2026)
+    const dateMatch4 = upperText.match(/\b([0-3][0-9])[.\/\-]([0-1][0-9])[.\/\-](20[2-3][0-9])\b/);
+    if (dateMatch4) {
+        result.date = `${dateMatch4[1]}.${dateMatch4[2]}.${dateMatch4[3]}`;
+    } else {
+        const dateMatch2 = upperText.match(/(?:TAR[Iİ1]H|TAR|DATE)?\s*[:.]?\s*\b([0-3][0-9])[.\/\-]([0-1][0-9])[.\/\-]([2-3][0-9])\b/);
+        if (dateMatch2) {
+            result.date = `${dateMatch2[1]}.${dateMatch2[2]}.20${dateMatch2[3]}`;
+        }
     }
-    const timeMatch = upperText.match(/(?:SAAT\s*[:.]?\s*)?\b([0-2][0-9])\s*:\s*([0-5][0-9])\b/);
-    if (timeMatch) {
+    const timeMatch = upperText.match(/(?:SAAT\s*[:.]?\s*)?\b([0-2][0-9])\s*[:.]\s*([0-5][0-9])(?:\s*[:.]\s*[0-5][0-9])?\b/);
+    if (timeMatch && Number(timeMatch[1]) < 24) {
         result.time = `${timeMatch[1]}:${timeMatch[2]}`;
     }
 
@@ -2202,9 +2278,22 @@ function parseReceiptTextToStructured(text) {
         { key: "SUNPET", label: "SUNPET" },
         { key: "LUKOIL", label: "LUKOIL" },
         { key: "MIGROS", label: "MİGROS" },
+        { key: "MİGROS", label: "MİGROS" },
         { key: "BIM ", label: "BİM MARKET" },
+        { key: "BİM ", label: "BİM MARKET" },
+        { key: "BİM BİRLEŞİK", label: "BİM MARKET" },
         { key: "A101", label: "A101 MARKET" },
-        { key: "SOK MARKET", label: "ŞOK MARKET" }
+        { key: "YENİ MAĞAZACILIK", label: "A101 MARKET" },
+        { key: "SOK MARKET", label: "ŞOK MARKET" },
+        { key: "ŞOK MARKET", label: "ŞOK MARKET" },
+        { key: "CARREFOUR", label: "CARREFOURSA" },
+        { key: "FILE MARKET", label: "FİLE MARKET" },
+        { key: "YURTICI KARGO", label: "YURTİÇİ KARGO" },
+        { key: "YURTİÇİ KARGO", label: "YURTİÇİ KARGO" },
+        { key: "ARAS KARGO", label: "ARAS KARGO" },
+        { key: "MNG KARGO", label: "MNG KARGO" },
+        { key: "SURAT KARGO", label: "SÜRAT KARGO" },
+        { key: "SÜRAT KARGO", label: "SÜRAT KARGO" }
     ];
     for (const st of knownStations) {
         if (upperText.includes(st.key)) {
@@ -2212,11 +2301,23 @@ function parseReceiptTextToStructured(text) {
             break;
         }
     }
-    if (!result.station && rawLines.length > 0) {
-        result.station = rawLines[0].toUpperCase();
+    if (!result.station && upperLines.length > 0) {
+        // Şirket/işyeri unvanı içeren ilk anlamlı satırı bul
+        const companyLine = upperLines.slice(0, 6).find(l =>
+            /(?:A\.?\s*Ş|LTD|ŞTİ|STI|TİC|TIC|SAN\b|MARKET|GIDA|RESTORAN|LOKANTA|KEBAP|PİDE|PIDE|CAFE|KAFE|FIRIN|PASTA|PETROL|AKARYAKIT|OTOMOTİV|OTOMOTIV|SERVİS|SERVIS|ECZANE|KARGO)/.test(l)
+        );
+        if (companyLine) {
+            result.station = companyLine.replace(/^[^A-ZÇĞİÖŞÜ0-9]+/, "").slice(0, 48);
+        } else {
+            const cleanFirst = upperLines.find(l => l.replace(/[^A-ZÇĞİÖŞÜ]/g, "").length >= 4 && !/^(?:TAR[Iİ]H|SAAT|F[Iİ][SŞ]\s*NO|SL[Iİ]P|MÜŞTERİ|MUSTERI)/.test(l));
+            if (cleanFirst) result.station = cleanFirst.slice(0, 48);
+        }
     }
-    if (rawLines.length > 1 && !rawLines[1].toUpperCase().includes("TARIH") && !rawLines[1].toUpperCase().includes("TARİH")) {
-        result.location = rawLines[1].toUpperCase().replace(/^ORUM\b/, "ÇORUM");
+    if (upperLines.length > 1) {
+        const locLine = upperLines.slice(1, 6).find(l => /(?:ÇORUM|CORUM|ANKARA|İSTANBUL|ISTANBUL|SAMSUN|AMASYA|YOZGAT|TOKAT|ÇANKIRI|MERKEZ|ŞUBE|SUBE|MAH\.|CAD\.)/.test(l));
+        if (locLine) {
+            result.location = locLine.replace(/^ORUM\b/, "ÇORUM").slice(0, 40);
+        }
     }
 
     // 4. Yakıt Türü
@@ -2242,24 +2343,22 @@ function parseReceiptTextToStructured(text) {
         result.docType = "FUEL";
     }
 
-    // 6. Toplam Tutar ve KDV
-    const totMatch = upperText.match(/(?:TOPLAM|TUTAR|ODENECEK|ÖDENECEK|GENEL TOPLAM)\s*[:.]?\s*\*?\s*([0-9]{1,3}(?:\s*\.\s*[0-9]{3})*(?:\s*,\s*[0-9]{2})|[0-9]+(?:\s*,\s*[0-9]{2}))/);
-    if (totMatch) {
-        result.totalAmount = parseTurkishNumberFromOCR(totMatch[1]);
-    }
-    const kdvMatch = upperText.match(/KDV[^0-9\n]*[:.]?\s*\*?\s*([0-9]{1,3}(?:\s*\.\s*[0-9]{3})*(?:\s*,\s*[0-9]{2})|[0-9]+(?:\s*,\s*[0-9]{2}))/);
-    if (kdvMatch) {
-        result.vatAmount = parseTurkishNumberFromOCR(kdvMatch[1]);
+    // 6. Toplam Tutar ve KDV (Aynı satır + alt satır + yıldızlı tutar yedekli)
+    result.totalAmount = extractAmountsFromLines(upperLines, /(?:GENEL\s*TOPLAM|TOPLAM|T0PLAM|TOP\b|TUTAR|SATI[SŞ]\s*TUTAR|ODENECEK|ÖDENECEK|NAK[Iİ]T|KRED[Iİ])/);
+    if (!result.totalAmount) {
+        result.totalAmount = extractFallbackTotalFromReceiptText(upperLines);
     }
 
+    result.vatAmount = extractAmountsFromLines(upperLines, /(?:TOPKDV|TOP\s*KDV|KDV\s*TUTAR|KDV)/);
+
     // 7. Fiş / Fatura No
-    const fisMatch = upperText.match(/(?:F[Iİ][SŞ]\s*NO|FATURA\s*NO|BELGE\s*NO)\s*[:.]?\s*([A-Z0-9\-]{2,16})/);
+    const fisMatch = upperText.match(/(?:F[Iİ1][SŞ5]\s*NO|FATURA\s*NO|BELGE\s*NO|ARSIV\s*NO|ARŞİV\s*NO|SIRA\s*NO)\s*[:.#]?\s*([A-Z0-9\-]{1,16})/);
     if (fisMatch) {
         result.receiptNo = fisMatch[1].trim();
     }
 
     // 8. Ödeme Şekli
-    if (upperText.match(/KRED[Iİ]\s*KART|POS|BANKA\s*KART/)) {
+    if (upperText.match(/KRED[Iİ]\s*KART|POS|BANKA\s*KART|ORTAK\s*POS|TEK\s*[CÇ]EK[Iİ]M|ONAY\s*KOD/)) {
         result.paymentMethod = "KREDİ KARTI";
     } else if (upperText.match(/NAK[Iİ]T/)) {
         result.paymentMethod = "NAKİT";
@@ -2267,10 +2366,10 @@ function parseReceiptTextToStructured(text) {
 
     // 9. Diğer belge türlerini sınıflandırma (Yemek, Market, Otopark, HGS, Kargo, Parça vb.)
     if (result.docType === "OTHER") {
-        if (upperText.match(/YEMEK|RESTORAN|LOKANTA|KEBAP|P[Iİ]DE|CAFE|KÖFTE|DÖNER|ÇORBA|LAHMACUN|TATLI|PASTA/)) {
+        if (upperText.match(/YEMEK|RESTORAN|LOKANTA|KEBAP|P[Iİ]DE|CAFE|KAFE|KÖFTE|KOFTE|DÖNER|DONER|ÇORBA|CORBA|LAHMACUN|TATLI|PASTA|İSKENDER|ISKENDER|AYRAN|SALATA|PORSİYON|PORSIYON/)) {
             result.docType = "MEAL";
             if (!result.fuelType) result.fuelType = "YEMEK / RESTORAN HARCAMASI";
-        } else if (upperText.match(/MARKET|GIDA|M[Iİ]GROS|B[Iİ]M|A101|[SŞ]OK|ÇAY|KAHVE|ŞEKER|TEM[Iİ]ZL[Iİ]K/)) {
+        } else if (upperText.match(/MARKET|GIDA|M[Iİ]GROS|B[Iİ]M|A101|[SŞ]OK|ÇAY|KAHVE|ŞEKER|TEM[Iİ]ZL[Iİ]K|SU\b|EKMEK|PEYN[Iİ]R|SÜT/)) {
             result.docType = "MARKET";
             if (!result.fuelType) result.fuelType = "MARKET / MUTFAK ALIŞVERİŞİ";
         } else if (upperText.match(/OTOPARK|PARK\s*ÜCRET|YIKAMA|OTO\s*KUAFÖR/)) {
@@ -2295,7 +2394,8 @@ function parseReceiptTextToStructured(text) {
 
 function parsePosTextToStructured(text) {
     const rawLines = String(text || "").split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-    const upperText = String(text || "").toUpperCase();
+    const upperLines = rawLines.map(l => l.toUpperCase());
+    const upperText = upperLines.join("\n");
 
     const pos = {
         bankName: "",
@@ -2311,20 +2411,27 @@ function parsePosTextToStructured(text) {
 
     const banks = [
         { key: "GARANT", label: "GARANTİ BBVA" },
+        { key: "BONUS", label: "GARANTİ BBVA" },
         { key: "AKBANK", label: "AKBANK" },
         { key: "AXESS", label: "AKBANK" },
         { key: "ZIRAAT", label: "ZİRAAT BANKASI" },
         { key: "ZİRAAT", label: "ZİRAAT BANKASI" },
+        { key: "BANKKART", label: "ZİRAAT BANKASI" },
         { key: "IS BANK", label: "İŞ BANKASI" },
         { key: "İŞ BANK", label: "İŞ BANKASI" },
         { key: "MAXIMUM", label: "İŞ BANKASI" },
         { key: "VAKIF", label: "VAKIFBANK" },
+        { key: "WORLD", label: "YAPI KREDİ" },
         { key: "HALK", label: "HALKBANK" },
         { key: "PARAF", label: "HALKBANK" },
         { key: "TEB", label: "TEB" },
         { key: "YAPI KRED", label: "YAPI KREDİ" },
         { key: "QNB", label: "QNB" },
-        { key: "DENIZ", label: "DENİZBANK" }
+        { key: "FINANSBANK", label: "QNB" },
+        { key: "DENIZ", label: "DENİZBANK" },
+        { key: "DENİZ", label: "DENİZBANK" },
+        { key: "KUVEYT", label: "KUVEYT TÜRK" },
+        { key: "ALBARAKA", label: "ALBARAKA" }
     ];
     for (const b of banks) {
         if (upperText.includes(b.key)) {
@@ -2334,32 +2441,37 @@ function parsePosTextToStructured(text) {
     }
 
     // Kart Son 4 Hane (Hassas 16 hane asla kaydedilmez, yalnızca son 4 hane alınır)
-    const maskedCardMatch = upperText.match(/(?:\*{2,}|X{2,}|•{2,})[\s\*X•\-]*([0-9]{4})\b/) ||
+    const maskedCardMatch = upperText.match(/(?:\*{2,}|X{2,}|•{2,}|\.{4,})[\s\*X•.\-]*([0-9]{4})\b/) ||
                             upperText.match(/KART\s*(?:NO)?\s*[:.]?\s*[^\n]*?([0-9]{4})\b/);
     if (maskedCardMatch) {
         pos.cardLast4 = maskedCardMatch[1];
     }
 
-    const dateMatch = upperText.match(/\b([0-3][0-9])[.\/\-]([0-1][0-9])[.\/\-](20[2-3][0-9])\b/);
-    if (dateMatch) {
-        pos.posDate = `${dateMatch[1]}.${dateMatch[2]}.${dateMatch[3]}`;
+    const dateMatch4 = upperText.match(/\b([0-3][0-9])[.\/\-]([0-1][0-9])[.\/\-](20[2-3][0-9])\b/);
+    if (dateMatch4) {
+        pos.posDate = `${dateMatch4[1]}.${dateMatch4[2]}.${dateMatch4[3]}`;
+    } else {
+        const dateMatch2 = upperText.match(/(?:TAR[Iİ1]H|TAR|DATE)?\s*[:.]?\s*\b([0-3][0-9])[.\/\-]([0-1][0-9])[.\/\-]([2-3][0-9])\b/);
+        if (dateMatch2) {
+            pos.posDate = `${dateMatch2[1]}.${dateMatch2[2]}.20${dateMatch2[3]}`;
+        }
     }
-    const timeMatch = upperText.match(/(?:SAAT\s*[:.]?\s*)?\b([0-2][0-9])\s*:\s*([0-5][0-9])\b/);
-    if (timeMatch) {
+    const timeMatch = upperText.match(/(?:SAAT\s*[:.]?\s*)?\b([0-2][0-9])\s*[:.]\s*([0-5][0-9])\b/);
+    if (timeMatch && Number(timeMatch[1]) < 24) {
         pos.posTime = `${timeMatch[1]}:${timeMatch[2]}`;
     }
 
-    const amtMatch = upperText.match(/(?:TUTAR|SATIS|SATIŞ|TOPLAM)\s*[:.]?\s*\*?\s*([0-9]{1,3}(?:\s*\.\s*[0-9]{3})*(?:\s*,\s*[0-9]{2})|[0-9]+(?:\s*,\s*[0-9]{2}))/);
-    if (amtMatch) {
-        pos.posAmount = parseTurkishNumberFromOCR(amtMatch[1]);
+    pos.posAmount = extractAmountsFromLines(upperLines, /(?:TUTAR|SATIS|SATIŞ|TOPLAM|T0PLAM|TOP\b|ODENECEK|ÖDENECEK|KRED[Iİ])/);
+    if (!pos.posAmount) {
+        pos.posAmount = extractFallbackTotalFromReceiptText(upperLines);
     }
 
-    const authMatch = upperText.match(/(?:ONAY\s*KODU|ONAY|AUTH\s*CODE|AUTH)\s*[:.]?\s*([A-Z0-9]{4,10})/);
+    const authMatch = upperText.match(/(?:ONAY\s*KODU|ONAY|PROV[Iİ]ZYON|AUTH\s*CODE|AUTH)\s*[:.]?\s*([A-Z0-9]{4,10})/);
     if (authMatch) {
         pos.authCode = authMatch[1];
     }
 
-    const refMatch = upperText.match(/(?:REF\s*NO|REFERANS|SIRA\s*NO|STAN)\s*[:.]?\s*([A-Z0-9]{4,16})/);
+    const refMatch = upperText.match(/(?:REF\s*NO|REFERANS|SIRA\s*NO|STAN|BELGE\s*NO)\s*[:.]?\s*([A-Z0-9]{4,16})/);
     if (refMatch) {
         pos.refNo = refMatch[1];
     }
@@ -2369,10 +2481,15 @@ function parsePosTextToStructured(text) {
         pos.installment = `${taksitMatch[1]} TAKSİT`;
     }
 
-    if (rawLines.length > 1) {
-        pos.merchantName = rawLines[1].toUpperCase();
-    } else if (rawLines.length === 1) {
-        pos.merchantName = rawLines[0].toUpperCase();
+    if (upperLines.length > 1) {
+        const merchCandidate = upperLines.slice(0, 5).find(l =>
+            !banks.some(b => l.includes(b.key)) &&
+            l.replace(/[^A-ZÇĞİÖŞÜ]/g, "").length >= 4 &&
+            !/^(?:TAR[Iİ]H|SAAT|SL[Iİ]P|MÜŞTERİ|MUSTERI|İŞYERİ\s*NO|TERMINAL)/.test(l)
+        );
+        pos.merchantName = (merchCandidate || upperLines[1]).slice(0, 48);
+    } else if (upperLines.length === 1) {
+        pos.merchantName = upperLines[0].slice(0, 48);
     }
 
     return pos;
@@ -2403,6 +2520,159 @@ function checkDuplicateReceiptInHistory(rec, pos, currentEditingId = "") {
     return null;
 }
 
+// ==================== MOBİL & WEB TARAYICI İÇİ YEREL OCR MOTORU (TESSERACT.JS + NATIVE VISION) ====================
+let tesseractLoaderPromise = null;
+
+function ensureTesseractLoaded() {
+    if (window.Tesseract) return Promise.resolve(window.Tesseract);
+    if (tesseractLoaderPromise) return tesseractLoaderPromise;
+
+    tesseractLoaderPromise = new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+        script.async = true;
+        script.onload = () => {
+            if (window.Tesseract) resolve(window.Tesseract);
+            else reject(new Error("Tesseract yüklenemedi."));
+        };
+        script.onerror = () => {
+            tesseractLoaderPromise = null;
+            reject(new Error("OCR kütüphanesi indirilemedi."));
+        };
+        document.head.appendChild(script);
+    });
+    return tesseractLoaderPromise;
+}
+
+function preprocessReceiptImageForOCR(dataUrl) {
+    return new Promise((resolve) => {
+        if (!dataUrl) return resolve("");
+        const img = new Image();
+        img.onload = () => {
+            try {
+                let w = img.width;
+                let h = img.height;
+                const targetMax = 1500;
+                if (w < 900 && h < 900) {
+                    const scale = Math.min(2.0, 1200 / Math.max(w, h, 1));
+                    w = Math.round(w * scale);
+                    h = Math.round(h * scale);
+                } else if (w > targetMax || h > targetMax) {
+                    const scale = targetMax / Math.max(w, h);
+                    w = Math.round(w * scale);
+                    h = Math.round(h * scale);
+                }
+                const canvas = document.createElement("canvas");
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext("2d");
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(0, 0, w, h);
+                ctx.drawImage(img, 0, 0, w, h);
+
+                const imgData = ctx.getImageData(0, 0, w, h);
+                const d = imgData.data;
+                const hist = new Uint32Array(256);
+                const totalPixels = w * h;
+
+                for (let i = 0; i < d.length; i += 4) {
+                    const lum = Math.round(0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]);
+                    d[i] = lum;
+                    hist[lum]++;
+                }
+
+                // Termal fiş kontrast germe (%8 koyu metin ucu -> 0, %85 açık kağıt ucu -> 255)
+                let lowCut = 30;
+                let highCut = 220;
+                let acc = 0;
+                for (let v = 0; v < 256; v++) {
+                    acc += hist[v];
+                    if (acc >= totalPixels * 0.08) {
+                        lowCut = v;
+                        break;
+                    }
+                }
+                acc = 0;
+                for (let v = 255; v >= 0; v--) {
+                    acc += hist[v];
+                    if (acc >= totalPixels * 0.15) {
+                        highCut = v;
+                        break;
+                    }
+                }
+                const span = Math.max(40, highCut - lowCut);
+
+                for (let i = 0; i < d.length; i += 4) {
+                    let norm = ((d[i] - lowCut) / span) * 255;
+                    if (norm < 0) norm = 0;
+                    if (norm > 255) norm = 255;
+                    // Koyu harfleri keskinleştir, açık arka planı beyazlat
+                    const val = norm < 115 ? Math.max(0, Math.round(norm * 0.72)) : Math.min(255, Math.round(115 + (norm - 115) * 1.35));
+                    d[i] = val;
+                    d[i + 1] = val;
+                    d[i + 2] = val;
+                }
+                ctx.putImageData(imgData, 0, 0);
+                resolve(canvas.toDataURL("image/jpeg", 0.92));
+            } catch (e) {
+                resolve(dataUrl);
+            }
+        };
+        img.onerror = () => resolve(dataUrl);
+        img.src = dataUrl;
+    });
+}
+
+async function recognizeSingleImageClientSide(dataUrl, labelPrefix, updateBtnProgress) {
+    if (!dataUrl) return "";
+
+    // A) Cihazda yerleşik donanım TextDetector API varsa (Android Chrome / WebView) önce onu dene
+    if ("TextDetector" in window) {
+        try {
+            const img = new Image();
+            await new Promise((res, rej) => {
+                img.onload = res;
+                img.onerror = rej;
+                img.src = dataUrl;
+            });
+            const detector = new window.TextDetector();
+            const blocks = await detector.detect(img);
+            if (Array.isArray(blocks) && blocks.length > 0) {
+                blocks.sort((a, b) => (a.boundingBox?.top || 0) - (b.boundingBox?.top || 0));
+                const nativeText = blocks.map(b => b.rawValue || "").filter(Boolean).join("\n");
+                if (nativeText.trim().length >= 12) {
+                    return nativeText;
+                }
+            }
+        } catch (e) {}
+    }
+
+    // B) Evrensel Mobil/Web Tesseract.js (Türkçe + İngilizce Neural LSTM OCR)
+    const TesseractLib = await ensureTesseractLoaded();
+    const enhancedUrl = await preprocessReceiptImageForOCR(dataUrl);
+
+    const runPass = async (srcUrl) => {
+        const res = await TesseractLib.recognize(srcUrl, "tur+eng", {
+            logger: (m) => {
+                if (m && m.status === "recognizing text" && typeof m.progress === "number" && updateBtnProgress) {
+                    const pct = Math.min(99, Math.max(5, Math.round(m.progress * 100)));
+                    updateBtnProgress(`${labelPrefix} Okunuyor... %${pct}`);
+                }
+            }
+        });
+        return (res?.data?.text || "").trim();
+    };
+
+    const textEnhanced = await runPass(enhancedUrl);
+    // Eğer kontrastlı görüntüden yeterli rakam/metin çıkmadıysa orijinal görüntüyü de oku ve birleştir
+    const digitCount = (textEnhanced.match(/[0-9]/g) || []).length;
+    if (digitCount < 4) {
+        const textOrig = await runPass(dataUrl);
+        return [textEnhanced, textOrig].filter(Boolean).join("\n");
+    }
+    return textEnhanced;
+}
+
 async function runReceiptAndPosAnalysis() {
     if (!scannedReceiptDataUrl && !scannedPosDataUrl) {
         alert("Lütfen önce taranacak belgeyi (Fiş / Fatura / POS Slipi) seçiniz veya üstteki 'Örnek Yemek Fişi' / 'Örnek Yakıt Fişi' düğmelerinden birine basınız.");
@@ -2411,10 +2681,16 @@ async function runReceiptAndPosAnalysis() {
 
     const btn = document.getElementById("btn-run-ai-scan");
     const resBox = document.getElementById("ai-scan-result-box");
-    const origBtnHtml = btn ? btn.innerHTML : "";
+    const origBtnHtml = `<i class="fa-solid fa-wand-magic-sparkles"></i> <span>Belgeyi Tara, Analiz Et ve Bilgileri Çıkar</span>`;
+    const updateBtnStatus = (msg) => {
+        if (btn) {
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>${escapeHtml(msg)}</span>`;
+        }
+    };
+
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Belge Taranıyor ve Analiz Ediliyor...</span>`;
+        updateBtnStatus("Belge Taranıyor ve Analiz Ediliyor...");
     }
 
     try {
@@ -2422,24 +2698,32 @@ async function runReceiptAndPosAnalysis() {
         let ocrData = null;
 
         // 1. Yerel Portal Sunucusu (/api/kasa-ocr -> Apple Vision Neural OCR + Gemini Flash)
-        try {
-            const resp = await fetch("/api/kasa-ocr", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    receiptImage: scannedReceiptDataUrl,
-                    posImage: scannedPosDataUrl,
-                    geminiApiKey: localGeminiKey
-                })
-            });
-            if (resp.ok) {
-                ocrData = await resp.json();
-            }
-        } catch (e) {}
+        // Sadece yerel ağda / localhost üzerinde çalışırken çağrılır; mobilde (GitHub Pages) zaman kaybettirmez
+        const isStaticCloudHost = window.location.hostname.endsWith("github.io");
+        if (!isStaticCloudHost) {
+            try {
+                const resp = await fetch("/api/kasa-ocr", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        receiptImage: scannedReceiptDataUrl,
+                        posImage: scannedPosDataUrl,
+                        geminiApiKey: localGeminiKey
+                    })
+                });
+                if (resp.ok) {
+                    const srvJson = await resp.json();
+                    if (srvJson && srvJson.status === "ok" && (srvJson.receiptText || srvJson.posText || srvJson.geminiStructured)) {
+                        ocrData = srvJson;
+                    }
+                }
+            } catch (e) {}
+        }
 
-        // 2. Eğer sunucu kapalıysa (GitHub Pages mobil kullanım) ve kullanıcı Gemini anahtarı girdiyse doğrudan çağır
+        // 2. Eğer kullanıcı Gemini API anahtarı girdiyse doğrudan Google Gemini 2.5 Flash Vision çağır
         if (!ocrData && localGeminiKey) {
             try {
+                updateBtnStatus("Google Gemini AI Vision ile Okunuyor...");
                 const parts = [{
                     text: "Aşağıdaki Türkiye fiş, fatura ve POS slipi görsellerini analiz et. Tahmin yürütme. Tam kart numarası, CVV, PIN asla döndürme. JSON döndür: {\"plate\":\"\",\"date\":\"GG.AA.YYYY\",\"time\":\"SS:DD\",\"station\":\"\",\"location\":\"\",\"fuelType\":\"\",\"liters\":0,\"unitPrice\":0,\"totalAmount\":0,\"vatAmount\":0,\"receiptNo\":\"\",\"paymentMethod\":\"\",\"bankName\":\"\",\"cardLast4\":\"\",\"posDate\":\"GG.AA.YYYY\",\"posTime\":\"SS:DD\",\"posAmount\":0,\"merchantName\":\"\",\"authCode\":\"\",\"refNo\":\"\",\"installment\":\"\",\"docType\":\"FUEL|MARKET|MEAL|PARKING|HGS|PARTS|CARGO|OTHER\"}"
                 }];
@@ -2464,27 +2748,58 @@ async function runReceiptAndPosAnalysis() {
             } catch (e) {}
         }
 
-        if (!ocrData || ocrData.status !== "ok") {
-            throw new Error("Belge okuma servisine ulaşılamadı. Lütfen bağlantınızı kontrol edin.");
+        // 3. Mobil / Web Tarayıcı İçi Yerleşik OCR Motoru (iOS / Android / 4.5G / Wi-Fi — Sunucusuz & Anahtarsız)
+        if (!ocrData) {
+            try {
+                updateBtnStatus("Mobil OCR Motoru Hazırlanıyor...");
+                let clientReceiptText = "";
+                let clientPosText = "";
+                if (scannedReceiptDataUrl) {
+                    clientReceiptText = await recognizeSingleImageClientSide(scannedReceiptDataUrl, "1. Belge", updateBtnStatus);
+                }
+                if (scannedPosDataUrl) {
+                    clientPosText = await recognizeSingleImageClientSide(scannedPosDataUrl, "POS / Belge", updateBtnStatus);
+                }
+                ocrData = {
+                    status: "ok",
+                    engine: "Mobil / Web Yerleşik Türkçe OCR Motoru",
+                    receiptText: clientReceiptText,
+                    posText: clientPosText,
+                    geminiStructured: null
+                };
+            } catch (clientOcrErr) {
+                // OCR kütüphanesi çevrimdışıysa bile hata verip kilitleme, düzenlenebilir paneli aç
+                ocrData = {
+                    status: "ok",
+                    engine: "Manuel Düzenleme Modu",
+                    receiptText: "",
+                    posText: "",
+                    geminiStructured: null
+                };
+            }
         }
 
-        const recParsed = parseReceiptTextToStructured(ocrData.receiptText || "");
-        const posParsed = parsePosTextToStructured(ocrData.posText || "");
+        // Çapraz Slot Desteği: Kullanıcı fişi/slipi sadece 1. kutuya VEYA sadece 2. kutuya yüklemiş olabilir
+        const effectiveReceiptRawText = ocrData.receiptText || ocrData.posText || "";
+        const effectivePosRawText = ocrData.posText || ocrData.receiptText || "";
+
+        const recParsed = parseReceiptTextToStructured(effectiveReceiptRawText);
+        const posParsed = parsePosTextToStructured(effectivePosRawText);
         const g = ocrData.geminiStructured || {};
 
         const rec = {
             plate: g.plate || recParsed.plate || "",
-            date: g.date || recParsed.date || "",
-            time: g.time || recParsed.time || "",
-            station: g.station || recParsed.station || "",
+            date: g.date || recParsed.date || posParsed.posDate || formatDateToTR(uiState.selectedDateISO || todayISO()),
+            time: g.time || recParsed.time || posParsed.posTime || "",
+            station: g.station || recParsed.station || posParsed.merchantName || "",
             location: g.location || recParsed.location || "",
             fuelType: g.fuelType || recParsed.fuelType || "",
             liters: Number(g.liters || recParsed.liters || 0),
             unitPrice: Number(g.unitPrice || recParsed.unitPrice || 0),
-            totalAmount: Number(g.totalAmount || recParsed.totalAmount || 0),
+            totalAmount: Number(g.totalAmount || recParsed.totalAmount || posParsed.posAmount || 0),
             vatAmount: Number(g.vatAmount || recParsed.vatAmount || 0),
-            receiptNo: g.receiptNo || recParsed.receiptNo || "",
-            paymentMethod: g.paymentMethod || recParsed.paymentMethod || "",
+            receiptNo: g.receiptNo || recParsed.receiptNo || posParsed.refNo || "",
+            paymentMethod: g.paymentMethod || recParsed.paymentMethod || (scannedPosDataUrl ? "KREDİ KARTI" : ""),
             docType: g.docType || recParsed.docType || "OTHER",
             userNote: ""
         };
@@ -2492,10 +2807,10 @@ async function runReceiptAndPosAnalysis() {
         const pos = {
             bankName: g.bankName || posParsed.bankName || "",
             cardLast4: String(g.cardLast4 || posParsed.cardLast4 || "").replace(/[^0-9]/g, "").slice(-4),
-            posDate: g.posDate || posParsed.posDate || "",
-            posTime: g.posTime || posParsed.posTime || "",
-            posAmount: Number(g.posAmount || posParsed.posAmount || 0),
-            merchantName: g.merchantName || posParsed.merchantName || "",
+            posDate: g.posDate || posParsed.posDate || rec.date || "",
+            posTime: g.posTime || posParsed.posTime || rec.time || "",
+            posAmount: Number(g.posAmount || posParsed.posAmount || (scannedPosDataUrl ? rec.totalAmount : 0) || 0),
+            merchantName: g.merchantName || posParsed.merchantName || rec.station || "",
             authCode: g.authCode || posParsed.authCode || "",
             refNo: g.refNo || posParsed.refNo || "",
             installment: g.installment || posParsed.installment || "TEK ÇEKİM"
@@ -2518,7 +2833,7 @@ async function runReceiptAndPosAnalysis() {
         }
 
         // Düzenlenebilir OCR paneli + Kullanıcıdan istenen manuel alanlar kutusunu oluştur
-        renderEditableOcrResultPanel(rec, pos, ocrData.engine || "Apple Vision Neural OCR");
+        renderEditableOcrResultPanel(rec, pos, ocrData.engine || "Mobil / Web Yerleşik Türkçe OCR");
         syncEditableOcrFieldsToForm(true);
 
         const effectiveAmount = rec.totalAmount > 0 ? rec.totalAmount : pos.posAmount;
@@ -4042,6 +4357,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     initTcmb1630AutoRefreshScheduler();
 
     if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("sw.js?v=1.0.6").catch(() => {});
+        navigator.serviceWorker.register("sw.js?v=1.0.7").catch(() => {});
     }
 });

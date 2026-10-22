@@ -1589,14 +1589,14 @@
         }
 
         let dproState = {
-            version: "v1.6.1",
+            version: "v1.6.2",
             users: [],
             permissions: {}, // username -> { apps: {}, submodules: {} }
             customApps: [],
             logs: [],
             changelog: [
                 {
-                    version: "v1.6.1",
+                    version: "v1.6.2",
                     date: new Date().toLocaleDateString("tr-TR"),
                     author: "ÖMER EREN",
                     notes: "Dizsan Günlük Kasa (%100 Manuel Günlük Kasa Formu, 4 Kademeli Yetki Matrisi & A4 Çıktı) D-Pro sol menüsüne entegre edildi."
@@ -1669,7 +1669,7 @@
                     console.error("D-Pro state parse error:", e);
                 }
             }
-            dproState.version = "v1.6.1";
+            dproState.version = "v1.6.2";
             if (!Array.isArray(dproState.users) || dproState.users.length === 0) {
                 dproState.users = INITIAL_USERS.map(u => ({ ...u }));
             }
@@ -3186,7 +3186,7 @@
                     swRefreshing = true;
                     window.location.reload();
                 });
-                navigator.serviceWorker.register("sw.js?v=1.6.1", { updateViaCache: "none" }).then((reg) => {
+                navigator.serviceWorker.register("sw.js?v=1.6.2", { updateViaCache: "none" }).then((reg) => {
                     try { reg.update(); } catch (e) {}
                 }).catch(() => {});
             }
