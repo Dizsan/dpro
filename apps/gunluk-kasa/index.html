@@ -24,7 +24,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <link rel="stylesheet" href="style.css?v=1.0.9">
+    <link rel="stylesheet" href="style.css?v=1.1.0">
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" defer></script>
 </head>
 <body>
@@ -130,6 +130,9 @@
                     <span class="nav-left"><i class="fa-solid fa-user-lock"></i> <span>Kullanıcı &amp; Yetkiler</span></span>
                     <span class="nav-badge" id="nav-badge-users">0</span>
                 </button>
+
+                <!-- SOL BAR TAKVİM & KASA DEVİR ÖZETİ WIDGET -->
+                <div id="sidebar-calendar-widget" class="sidebar-cal-widget"></div>
             </nav>
 
             <div class="sidebar-footer">
@@ -212,20 +215,24 @@
                     <div id="clean-entries-container" class="clean-entries-container">
                         <div class="clean-summary-strip">
                             <div class="clean-sum-item">
-                                <span>Kasa Devri</span>
+                                <span><i class="fa-solid fa-clock-rotate-left" style="color:#38bdf8;"></i> Bir Önceki Kasa Devri</span>
                                 <strong id="clean-sum-carry" onclick="openCarryoverOverrideModal()" style="cursor:pointer;" title="Devri düzenlemek için tıklayın">0,00 ₺</strong>
+                                <small id="clean-sum-carry-sub" style="display:block; font-size:0.65rem; color:var(--text-muted); margin-top:2px;">Önceki günden otomatik devir</small>
                             </div>
                             <div class="clean-sum-item sum-in">
-                                <span>Toplam Gelir</span>
+                                <span><i class="fa-solid fa-arrow-down-long"></i> Nakit Giren (+)</span>
                                 <strong id="clean-sum-in">0,00 ₺</strong>
+                                <small id="clean-sum-in-sub" style="display:block; font-size:0.65rem; color:var(--text-muted); margin-top:2px;">Gün içi nakit kasa girişi</small>
                             </div>
                             <div class="clean-sum-item sum-out">
-                                <span>Toplam Gider</span>
+                                <span><i class="fa-solid fa-arrow-up-long"></i> Nakit Çıkan (-)</span>
                                 <strong id="clean-sum-out">0,00 ₺</strong>
+                                <small id="clean-sum-out-sub" style="display:block; font-size:0.65rem; color:var(--text-muted); margin-top:2px;">Gün içi nakit kasa ödemesi</small>
                             </div>
                             <div class="clean-sum-item sum-net">
-                                <span>Net Kasa Bakiyesi</span>
+                                <span><i class="fa-solid fa-share-from-square"></i> Yarına Devir</span>
                                 <strong id="clean-sum-net">0,00 ₺</strong>
+                                <small id="clean-sum-net-sub" style="display:block; font-size:0.65rem; color:var(--text-muted); margin-top:2px;">Bir sonraki güne otomatik devreder</small>
                             </div>
                         </div>
 
@@ -850,8 +857,8 @@
 
     <!-- SCRIPTS -->
     <script src="auto-date-helper.js"></script>
-    <script src="app.js?v=1.0.9"></script>
-    <script src="dizsan-back-navigation.js?v=1.0.9"></script>
+    <script src="app.js?v=1.1.0"></script>
+    <script src="dizsan-back-navigation.js?v=1.1.0"></script>
     <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.0.5"></script>
 </body>
 </html>

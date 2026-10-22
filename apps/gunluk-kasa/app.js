@@ -14,7 +14,7 @@
  * ==========================================================================
  */
 
-const CURRENT_APP_VERSION = "1.0.9";
+const CURRENT_APP_VERSION = "1.1.0";
 window.CURRENT_APP_VERSION = CURRENT_APP_VERSION;
 
 const OLD_DEMO_STORAGE_KEY = "dizsan_gunluk_kasa_state_v1";
@@ -463,7 +463,22 @@ function calculateDayMetrics(targetDateISO) {
     const targetISO = parseAnyDateToISO(targetDateISO);
     ensureDayObject(targetISO);
 
-    const allDates = Object.keys(appState.days || {}).sort();
+    const recordedDates = Object.keys(appState.days || {}).sort();
+    const seedDates = [...recordedDates, targetISO, todayISO()].filter(Boolean).sort();
+    const minISO = seedDates[0];
+    // Include up to the end of target month (or latest recorded date) so the full monthly calendar has exact daily carryovers
+    const [tY, tM] = targetISO.split("-").map(Number);
+    const endOfTargetMonthISO = `${tY}-${String(tM).padStart(2, "0")}-${String(new Date(tY, tM, 0).getDate()).padStart(2, "0")}`;
+    const maxISO = [...seedDates, endOfTargetMonthISO].sort().pop();
+
+    const allDates = [];
+    let cursorISO = minISO;
+    let safety = 0;
+    while (cursorISO <= maxISO && safety < 4000) {
+        allDates.push(cursorISO);
+        cursorISO = addDaysISO(cursorISO, 1);
+        safety++;
+    }
     if (!allDates.includes(targetISO)) {
         allDates.push(targetISO);
         allDates.sort();
@@ -474,12 +489,18 @@ function calculateDayMetrics(targetDateISO) {
     const metricsByDate = {};
 
     for (const iso of allDates) {
-        const dayObj = appState.days[iso] || ensureDayObject(iso);
+        const dayObj = appState.days[iso] || {
+            dateISO: iso,
+            carryoverOverride: null,
+            prevInOverride: null,
+            prevOutOverride: null,
+            entries: []
+        };
         const entries = dayObj.entries || [];
 
         const hasOverride = dayObj.carryoverOverride !== null && dayObj.carryoverOverride !== undefined && dayObj.carryoverOverride !== "";
         const carryover = hasOverride ? (Number(dayObj.carryoverOverride) || 0) : runningBalance;
-        const carrySourceDateISO = lastProcessedISO || addDaysISO(iso, -1);
+        const carrySourceDateISO = addDaysISO(iso, -1);
 
         const sumSection = (sec) => entries
             .filter(e => e.section === sec)
@@ -496,8 +517,9 @@ function calculateDayMetrics(targetDateISO) {
 
         const totalGelirAll = Number((cashInEntriesSum + posCcSum + wireInSum).toFixed(2));
         const totalGiderAll = Number((cashOutSum + wireOutSum + cariCcSum + checkOutSum + checkCariSum).toFixed(2));
-        const totalInWithCarry = Number((carryover + totalGelirAll).toFixed(2));
-        const netClosing = Number((carryover + totalGelirAll - totalGiderAll).toFixed(2));
+        // Nakit Kasa Devir Zinciri: Bir Önceki Kasa Devri + Nakit Giren - Nakit Çıkan = Yarına Devir
+        const totalInWithCarry = Number((carryover + cashInEntriesSum).toFixed(2));
+        const netClosing = Number((carryover + cashInEntriesSum - cashOutSum).toFixed(2));
 
         metricsByDate[iso] = {
             dateISO: iso,
@@ -505,17 +527,19 @@ function calculateDayMetrics(targetDateISO) {
             carryover,
             hasOverride,
             cashInEntriesSum,
+            cashOutSum,
+            totalInWithCarry,
+            netClosing,
+            tomorrowCarryover: netClosing,
             totalGelirAll,
             totalGiderAll,
-            totalInWithCarry,
-            cashOutSum,
-            netClosing,
             posCcSum,
             cariCcSum,
             checkOutSum,
             checkCariSum,
             wireInSum,
-            wireOutSum
+            wireOutSum,
+            entryCount: entries.length
         };
 
         runningBalance = netClosing;
@@ -523,7 +547,7 @@ function calculateDayMetrics(targetDateISO) {
     }
 
     const currentMetrics = metricsByDate[targetISO];
-    const currentDayObj = appState.days[targetISO];
+    const currentDayObj = appState.days[targetISO] || ensureDayObject(targetISO);
     const prevDateISO = addDaysISO(targetISO, -1);
     const computedPrev = metricsByDate[prevDateISO] || {
         dateISO: prevDateISO,
@@ -1237,7 +1261,7 @@ function isGelirSection(sectionKey) {
 
 function renderDailyFormSection() {
     const iso = uiState.selectedDateISO;
-    const { dayObj, current } = calculateDayMetrics(iso);
+    const { dayObj, current, allMetrics } = calculateDayMetrics(iso);
     const perms = getUserPerms(currentUser);
     const isDayLocked = Boolean(dayObj.isLocked);
     const canModifyToday = !isDayLocked || perms.manageUsers;
@@ -1253,19 +1277,44 @@ function renderDailyFormSection() {
 
     const entries = dayObj.entries || [];
 
-    const totalGelirAll = Number((current.cashInEntriesSum + current.posCcSum + current.wireInSum).toFixed(2));
-    const totalGiderAll = Number((current.cashOutSum + current.wireOutSum + current.cariCcSum + current.checkOutSum + current.checkCariSum).toFixed(2));
-    const netKasaAll = Number((current.carryover + totalGelirAll - totalGiderAll).toFixed(2));
+    const prevISO = addDaysISO(iso, -1);
+    const nextISO = addDaysISO(iso, 1);
+    const nonCashIn = Number((current.posCcSum + current.wireInSum).toFixed(2));
+    const nonCashOut = Number((current.wireOutSum + current.cariCcSum + current.checkOutSum + current.checkCariSum).toFixed(2));
 
     const sumCarryEl = document.getElementById("clean-sum-carry");
     const sumInEl = document.getElementById("clean-sum-in");
     const sumOutEl = document.getElementById("clean-sum-out");
     const sumNetEl = document.getElementById("clean-sum-net");
 
+    const sumCarrySubEl = document.getElementById("clean-sum-carry-sub");
+    const sumInSubEl = document.getElementById("clean-sum-in-sub");
+    const sumOutSubEl = document.getElementById("clean-sum-out-sub");
+    const sumNetSubEl = document.getElementById("clean-sum-net-sub");
+
     if (sumCarryEl) sumCarryEl.textContent = formatMoneyTR(current.carryover);
-    if (sumInEl) sumInEl.textContent = formatMoneyTR(totalGelirAll);
-    if (sumOutEl) sumOutEl.textContent = formatMoneyTR(totalGiderAll);
-    if (sumNetEl) sumNetEl.textContent = formatMoneyTR(netKasaAll);
+    if (sumInEl) sumInEl.textContent = formatMoneyTR(current.cashInEntriesSum);
+    if (sumOutEl) sumOutEl.textContent = formatMoneyTR(current.cashOutSum);
+    if (sumNetEl) sumNetEl.textContent = formatMoneyTR(current.netClosing);
+
+    if (sumCarrySubEl) {
+        sumCarrySubEl.textContent = current.hasOverride
+            ? `Manuel devir (${formatDateToTR(prevISO)})`
+            : `← ${formatDateToTR(prevISO)} kasa devrinden otomatik`;
+    }
+    if (sumInSubEl) {
+        sumInSubEl.textContent = nonCashIn > 0
+            ? `Nakit Giriş (POS/Havale: +${formatMoneyTR(nonCashIn)})`
+            : `Gün içi nakit kasa girişi`;
+    }
+    if (sumOutSubEl) {
+        sumOutSubEl.textContent = nonCashOut > 0
+            ? `Nakit Çıkış (Kart/Banka: -${formatMoneyTR(nonCashOut)})`
+            : `Gün içi nakit kasa ödemesi`;
+    }
+    if (sumNetSubEl) {
+        sumNetSubEl.textContent = `→ ${formatDateToTR(nextISO)} gününe otomatik devreder`;
+    }
 
     const buildActionButtons = (entry) => {
         const entryId = entry.id;
@@ -1335,9 +1384,387 @@ function renderDailyFormSection() {
     const badgeToday = document.getElementById("nav-badge-today-items");
     if (badgeToday) badgeToday.textContent = entries.length;
     const badgeDays = document.getElementById("nav-badge-days");
-    if (badgeDays) badgeDays.textContent = Object.keys(appState.days || {}).length;
+    if (badgeDays) {
+        const activeDaysCount = Object.values(appState.days || {}).filter(d => Array.isArray(d?.entries) && d.entries.length > 0).length;
+        badgeDays.textContent = activeDaysCount || Object.keys(appState.days || {}).length;
+    }
     const badgeUsers = document.getElementById("nav-badge-users");
     if (badgeUsers) badgeUsers.textContent = (appState.users || []).length;
+
+    renderSidebarCalendarWidget(allMetrics);
+}
+
+// ==================== 10B. SOL BAR TAKVİM (GÜNLÜK / AYLIK / YILLIK) & OTOMATİK KASA DEVRİ WIDGET ====================
+const STORAGE_KEY_KASA_CAL_COLLAPSED = "dizsan_kasa_cal_collapsed";
+const STORAGE_KEY_KASA_CAL_MODE = "dizsan_kasa_cal_mode";
+
+const TR_MONTH_NAMES = [
+    "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
+    "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"
+];
+const TR_MONTH_SHORT = [
+    "Oca", "Şub", "Mar", "Nis", "May", "Haz",
+    "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"
+];
+const TR_DAY_NAMES = [
+    "Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"
+];
+
+function getCalState() {
+    if (!uiState.calMode) {
+        uiState.calMode = localStorage.getItem(STORAGE_KEY_KASA_CAL_MODE) || "month";
+    }
+    if (uiState.calCollapsed === undefined) {
+        uiState.calCollapsed = localStorage.getItem(STORAGE_KEY_KASA_CAL_COLLAPSED) === "1";
+    }
+    const [selY, selM] = (uiState.selectedDateISO || todayISO()).split("-").map(Number);
+    if (!uiState.calYear) uiState.calYear = selY;
+    if (!uiState.calMonth) uiState.calMonth = selM;
+    return uiState;
+}
+
+function toggleSidebarCalendarCollapse() {
+    const st = getCalState();
+    st.calCollapsed = !st.calCollapsed;
+    try {
+        localStorage.setItem(STORAGE_KEY_KASA_CAL_COLLAPSED, st.calCollapsed ? "1" : "0");
+    } catch (e) {}
+    renderSidebarCalendarWidget();
+}
+window.toggleSidebarCalendarCollapse = toggleSidebarCalendarCollapse;
+
+function setSidebarCalendarMode(mode) {
+    const st = getCalState();
+    st.calMode = mode;
+    const [selY, selM] = (uiState.selectedDateISO || todayISO()).split("-").map(Number);
+    st.calYear = selY;
+    st.calMonth = selM;
+    try {
+        localStorage.setItem(STORAGE_KEY_KASA_CAL_MODE, mode);
+    } catch (e) {}
+    renderSidebarCalendarWidget();
+}
+window.setSidebarCalendarMode = setSidebarCalendarMode;
+
+function stepSidebarCalendarPeriod(delta) {
+    const st = getCalState();
+    if (st.calMode === "day") {
+        stepSelectedDate(delta);
+        const [y, m] = uiState.selectedDateISO.split("-").map(Number);
+        st.calYear = y;
+        st.calMonth = m;
+        return;
+    } else if (st.calMode === "month") {
+        let m = st.calMonth + delta;
+        let y = st.calYear;
+        if (m < 1) { m = 12; y--; }
+        if (m > 12) { m = 1; y++; }
+        st.calMonth = m;
+        st.calYear = y;
+    } else if (st.calMode === "year") {
+        st.calYear += delta;
+    }
+    renderSidebarCalendarWidget();
+}
+window.stepSidebarCalendarPeriod = stepSidebarCalendarPeriod;
+
+function selectCalendarMonthFromYearView(year, month) {
+    const st = getCalState();
+    st.calYear = year;
+    st.calMonth = month;
+    st.calMode = "month";
+    const firstISO = `${year}-${String(month).padStart(2, "0")}-01`;
+    // O ayda kayıtlı bir gün varsa ona, yoksa ayın 1'ine (veya bugünün ayındaysa bugüne) odaklan
+    const today = todayISO();
+    if (today.startsWith(`${year}-${String(month).padStart(2, "0")}`)) {
+        jumpToDateISO(today);
+    } else {
+        const monthRecorded = Object.keys(appState.days || {})
+            .filter(d => d.startsWith(`${year}-${String(month).padStart(2, "0")}`) && (appState.days[d]?.entries?.length > 0))
+            .sort();
+        jumpToDateISO(monthRecorded.length > 0 ? monthRecorded[monthRecorded.length - 1] : firstISO);
+    }
+}
+window.selectCalendarMonthFromYearView = selectCalendarMonthFromYearView;
+
+function selectDayFromSidebarCalendar(iso) {
+    const st = getCalState();
+    const [y, m] = iso.split("-").map(Number);
+    st.calYear = y;
+    st.calMonth = m;
+    if (uiState.activeTab !== "form" && uiState.activeTab !== "a4") {
+        uiState.activeTab = "form";
+        switchTab("form");
+    }
+    jumpToDateISO(iso);
+}
+window.selectDayFromSidebarCalendar = selectDayFromSidebarCalendar;
+
+function renderSidebarCalendarWidget(precomputedAllMetrics = null) {
+    const wrap = document.getElementById("sidebar-calendar-widget");
+    if (!wrap) return;
+
+    const st = getCalState();
+    const selectedISO = uiState.selectedDateISO || todayISO();
+    const today = todayISO();
+
+    // Ensure metrics cover the viewed calendar year/month as well as selectedISO
+    const endOfCalMonthDay = new Date(st.calYear, st.calMonth, 0).getDate();
+    const endOfCalYearISO = `${st.calYear}-12-31`;
+    const endOfCalMonthISO = `${st.calYear}-${String(st.calMonth).padStart(2, "0")}-${String(endOfCalMonthDay).padStart(2, "0")}`;
+    const probeISO = st.calMode === "year"
+        ? (endOfCalYearISO > selectedISO ? endOfCalYearISO : selectedISO)
+        : (endOfCalMonthISO > selectedISO ? endOfCalMonthISO : selectedISO);
+
+    const calcResult = calculateDayMetrics(probeISO);
+    const allMetrics = calcResult.allMetrics || precomputedAllMetrics || {};
+    const selMetrics = allMetrics[selectedISO] || calculateDayMetrics(selectedISO).current;
+    const prevISO = addDaysISO(selectedISO, -1);
+    const nextISO = addDaysISO(selectedISO, 1);
+
+    // KÜÇÜLTÜLMÜŞ (COLLAPSED) GÖRÜNÜM
+    if (st.calCollapsed) {
+        wrap.innerHTML = `
+            <div class="scw-header" style="margin-bottom:0;">
+                <div class="scw-title" onclick="toggleSidebarCalendarCollapse()" style="cursor:pointer;">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <span>Takvim (${escapeHtml(formatDateToTR(selectedISO))})</span>
+                </div>
+                <button type="button" class="scw-collapse-btn" onclick="toggleSidebarCalendarCollapse()" title="Takvimi Genişlet">
+                    <i class="fa-solid fa-chevron-down"></i> <span>Aç</span>
+                </button>
+            </div>
+            <div style="margin-top:5px; padding-top:5px; border-top:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; font-size:0.65rem; color:#cbd5e1;">
+                <span>Önceki Devir: <strong style="color:#38bdf8;">${formatMoneyTR(selMetrics.carryover)}</strong></span>
+                <span>Yarına: <strong style="color:#34d399;">${formatMoneyTR(selMetrics.netClosing)}</strong></span>
+            </div>
+        `;
+        return;
+    }
+
+    // SEÇİLİ GÜN 4 SATIRLI DEVİR KARTI (Önceki Kasa Devri | Nakit Giren | Nakit Çıkan | Yarına Devir)
+    const nonCashCount = (appState.days?.[selectedISO]?.entries || []).filter(e => e.section !== "CASH_IN" && e.section !== "CASH_OUT").length;
+    const nonCashTotal = Number(((selMetrics.posCcSum || 0) + (selMetrics.wireInSum || 0) + (selMetrics.cariCcSum || 0) + (selMetrics.wireOutSum || 0) + (selMetrics.checkOutSum || 0) + (selMetrics.checkCariSum || 0)).toFixed(2));
+
+    const dailyFlowCardHtml = `
+        <div class="scw-flow-card">
+            <div class="scw-flow-head">
+                <span><i class="fa-solid fa-coins"></i> ${escapeHtml(formatDateToTR(selectedISO))} Kasa Özeti</span>
+                <span style="color:#94a3b8; font-weight:600; font-size:0.6rem;">Otomatik Zincir</span>
+            </div>
+            <div class="scw-flow-row" title="${escapeHtml(formatDateToTR(prevISO))} gün sonu kasasından otomatik devreden bakiye">
+                <span><i class="fa-solid fa-clock-rotate-left" style="color:#38bdf8; width:12px;"></i> Önceki Kasa Devri <small style="color:#64748b;">(${escapeHtml(formatDateToTR(prevISO).slice(0, 5))})</small></span>
+                <strong style="color:#38bdf8;">${formatMoneyTR(selMetrics.carryover)}</strong>
+            </div>
+            <div class="scw-flow-row">
+                <span><i class="fa-solid fa-plus" style="color:#34d399; width:12px;"></i> Nakit Giren (+)</span>
+                <strong style="color:#34d399;">+${formatMoneyTR(selMetrics.cashInEntriesSum)}</strong>
+            </div>
+            <div class="scw-flow-row">
+                <span><i class="fa-solid fa-minus" style="color:#fb7185; width:12px;"></i> Nakit Çıkan (-)</span>
+                <strong style="color:#fb7185;">-${formatMoneyTR(selMetrics.cashOutSum)}</strong>
+            </div>
+            <div class="scw-flow-row tomorrow-row" title="Bu tutar ${escapeHtml(formatDateToTR(nextISO))} gününe 'Önceki Kasa Devri' olarak otomatik aktarılır">
+                <span><i class="fa-solid fa-share-from-square" style="color:#fbbf24; width:12px;"></i> Yarına Devir <small style="color:#94a3b8;">(→ ${escapeHtml(formatDateToTR(nextISO).slice(0, 5))})</small></span>
+                <strong style="color:#fbbf24; font-size:0.72rem;">${formatMoneyTR(selMetrics.netClosing)}</strong>
+            </div>
+            ${nonCashCount > 0 ? `
+                <div style="margin-top:4px; padding-top:3px; border-top:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; font-size:0.61rem; color:#94a3b8;">
+                    <span><i class="fa-solid fa-credit-card" style="color:#a78bfa;"></i> Kart / POS / Banka (${nonCashCount} işlem)</span>
+                    <strong style="color:#c4b5fd;">${formatMoneyTR(nonCashTotal)}</strong>
+                </div>
+            ` : ""}
+        </div>
+    `;
+
+    let bodyContentHtml = "";
+
+    if (st.calMode === "month") {
+        const y = st.calYear;
+        const m = st.calMonth;
+        const firstDayJS = new Date(y, m - 1, 1).getDay(); // 0=Paz..6=Cmt
+        const startOffset = (firstDayJS + 6) % 7; // Pazartesi=0 .. Pazar=6
+        const daysInMonth = new Date(y, m, 0).getDate();
+
+        let monthCashIn = 0;
+        let monthCashOut = 0;
+        const firstMonthISO = `${y}-${String(m).padStart(2, "0")}-01`;
+        const lastMonthISO = `${y}-${String(m).padStart(2, "0")}-${String(daysInMonth).padStart(2, "0")}`;
+        const monthStartCarry = allMetrics[firstMonthISO]?.carryover || 0;
+        const monthEndCarry = allMetrics[lastMonthISO]?.netClosing ?? monthStartCarry;
+
+        let cellsHtml = "";
+        for (let i = 0; i < startOffset; i++) {
+            cellsHtml += `<div class="scw-day-cell other-month"></div>`;
+        }
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dISO = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+            const dm = allMetrics[dISO] || { carryover: 0, cashInEntriesSum: 0, cashOutSum: 0, netClosing: 0, entryCount: 0 };
+            monthCashIn += dm.cashInEntriesSum || 0;
+            monthCashOut += dm.cashOutSum || 0;
+
+            const isSel = dISO === selectedISO;
+            const isTod = dISO === today;
+            const hasCashIn = (dm.cashInEntriesSum || 0) > 0;
+            const hasCashOut = (dm.cashOutSum || 0) > 0;
+            const hasOther = ((dm.posCcSum || 0) + (dm.cariCcSum || 0) + (dm.wireInSum || 0) + (dm.wireOutSum || 0) + (dm.checkOutSum || 0) + (dm.checkCariSum || 0)) > 0;
+
+            const tooltip = `${formatDateToTR(dISO)}\nÖnceki Kasa Devri: ${formatMoneyTR(dm.carryover)}\nNakit Giren: +${formatMoneyTR(dm.cashInEntriesSum)}\nNakit Çıkan: -${formatMoneyTR(dm.cashOutSum)}\nYarına Devir: ${formatMoneyTR(dm.netClosing)}`;
+
+            cellsHtml += `
+                <button type="button" class="scw-day-cell ${isSel ? "is-selected" : ""} ${isTod ? "is-today" : ""}" onclick="selectDayFromSidebarCalendar('${dISO}')" title="${escapeHtml(tooltip)}">
+                    <span>${d}</span>
+                    <div class="scw-day-dots">
+                        ${hasCashIn ? `<span class="scw-dot" style="background:#34d399;"></span>` : ""}
+                        ${hasCashOut ? `<span class="scw-dot" style="background:#fb7185;"></span>` : ""}
+                        ${hasOther ? `<span class="scw-dot" style="background:#38bdf8;"></span>` : ""}
+                    </div>
+                </button>
+            `;
+        }
+
+        bodyContentHtml = `
+            <div class="scw-nav-bar">
+                <button type="button" class="scw-nav-btn" onclick="stepSidebarCalendarPeriod(-1)" title="Önceki Ay"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="scw-nav-label">${TR_MONTH_NAMES[m - 1]} ${y}</div>
+                <button type="button" class="scw-nav-btn" onclick="stepSidebarCalendarPeriod(1)" title="Sonraki Ay"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            <div class="scw-weekdays">
+                <span>Pt</span><span>Sa</span><span>Ça</span><span>Pe</span><span>Cu</span><span>Ct</span><span>Pz</span>
+            </div>
+            <div class="scw-days-grid">
+                ${cellsHtml}
+            </div>
+            ${dailyFlowCardHtml}
+            <div class="scw-flow-card" style="margin-top:6px; background:rgba(2,132,199,0.1); border-color:rgba(56,189,248,0.22);">
+                <div class="scw-flow-head" style="color:#e0f2fe;">
+                    <span><i class="fa-solid fa-calendar-check"></i> ${TR_MONTH_NAMES[m - 1]} ${y} Aylık Devir</span>
+                </div>
+                <div class="scw-flow-row"><span>Ay Başı Devir:</span><strong>${formatMoneyTR(monthStartCarry)}</strong></div>
+                <div class="scw-flow-row"><span>Aylık Nakit Giren:</span><strong style="color:#34d399;">+${formatMoneyTR(monthCashIn)}</strong></div>
+                <div class="scw-flow-row"><span>Aylık Nakit Çıkan:</span><strong style="color:#fb7185;">-${formatMoneyTR(monthCashOut)}</strong></div>
+                <div class="scw-flow-row tomorrow-row"><span>Ay Sonu Devir:</span><strong style="color:#fbbf24;">${formatMoneyTR(monthEndCarry)}</strong></div>
+            </div>
+        `;
+    } else if (st.calMode === "year") {
+        const y = st.calYear;
+        let yearCashIn = 0;
+        let yearCashOut = 0;
+        const yearStartCarry = allMetrics[`${y}-01-01`]?.carryover || 0;
+
+        let monthsHtml = "";
+        for (let m = 1; m <= 12; m++) {
+            const prefix = `${y}-${String(m).padStart(2, "0")}-`;
+            const daysInM = new Date(y, m, 0).getDate();
+            let mIn = 0;
+            let mOut = 0;
+            let mEntries = 0;
+            for (let d = 1; d <= daysInM; d++) {
+                const dISO = `${prefix}${String(d).padStart(2, "0")}`;
+                const dm = allMetrics[dISO];
+                if (dm) {
+                    mIn += dm.cashInEntriesSum || 0;
+                    mOut += dm.cashOutSum || 0;
+                    mEntries += dm.entryCount || 0;
+                }
+            }
+            yearCashIn += mIn;
+            yearCashOut += mOut;
+            const mEndISO = `${prefix}${String(daysInM).padStart(2, "0")}`;
+            const mEndCarry = allMetrics[mEndISO]?.netClosing || 0;
+            const isCurrentM = st.calMonth === m && selectedISO.startsWith(prefix);
+
+            monthsHtml += `
+                <div class="scw-month-card ${isCurrentM ? "active" : ""}" onclick="selectCalendarMonthFromYearView(${y}, ${m})" title="${TR_MONTH_NAMES[m - 1]} ${y}\nNakit Giren: +${formatMoneyTR(mIn)}\nNakit Çıkan: -${formatMoneyTR(mOut)}\nAy Sonu Devir: ${formatMoneyTR(mEndCarry)}">
+                    <div style="font-size:0.68rem; font-weight:800; color:#fff;">${TR_MONTH_SHORT[m - 1]}</div>
+                    <div style="font-size:0.58rem; color:${mEntries > 0 ? "#34d399" : "#64748b"}; font-weight:700;">${mEntries > 0 ? `${mEntries} kayıt` : "0 kayıt"}</div>
+                    <div style="font-size:0.58rem; color:#38bdf8; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${formatNumberTR(mEndCarry)} ₺</div>
+                </div>
+            `;
+        }
+        const yearEndCarry = Number((yearStartCarry + yearCashIn - yearCashOut).toFixed(2));
+
+        bodyContentHtml = `
+            <div class="scw-nav-bar">
+                <button type="button" class="scw-nav-btn" onclick="stepSidebarCalendarPeriod(-1)" title="Önceki Yıl"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="scw-nav-label">${y} Yılı Kasa Takvimi</div>
+                <button type="button" class="scw-nav-btn" onclick="stepSidebarCalendarPeriod(1)" title="Sonraki Yıl"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            <div class="scw-months-grid">
+                ${monthsHtml}
+            </div>
+            <div class="scw-flow-card" style="margin-bottom:6px; background:rgba(2,132,199,0.1); border-color:rgba(56,189,248,0.22);">
+                <div class="scw-flow-head" style="color:#e0f2fe;">
+                    <span><i class="fa-solid fa-chart-line"></i> ${y} Yıllık Kasa Özeti</span>
+                </div>
+                <div class="scw-flow-row"><span>Yıl Başı Devir:</span><strong>${formatMoneyTR(yearStartCarry)}</strong></div>
+                <div class="scw-flow-row"><span>Yıllık Nakit Giren:</span><strong style="color:#34d399;">+${formatMoneyTR(yearCashIn)}</strong></div>
+                <div class="scw-flow-row"><span>Yıllık Nakit Çıkan:</span><strong style="color:#fb7185;">-${formatMoneyTR(yearCashOut)}</strong></div>
+                <div class="scw-flow-row tomorrow-row"><span>Yıl Sonu Devir:</span><strong style="color:#fbbf24;">${formatMoneyTR(yearEndCarry)}</strong></div>
+            </div>
+            ${dailyFlowCardHtml}
+        `;
+    } else {
+        // GÜNLÜK (DAY) GÖRÜNÜMÜ: Gün Gezgini + Seçili Gün Devir Kartı + Ardışık 5 Günlük Devir Zinciri
+        const dtObj = new Date(selectedISO + "T12:00:00");
+        const dayName = TR_DAY_NAMES[dtObj.getDay()] || "";
+
+        let chainRowsHtml = "";
+        for (let offset = -2; offset <= 2; offset++) {
+            const cISO = addDaysISO(selectedISO, offset);
+            const cm = allMetrics[cISO] || calculateDayMetrics(cISO).current;
+            const isSel = cISO === selectedISO;
+            chainRowsHtml += `
+                <div onclick="selectDayFromSidebarCalendar('${cISO}')" style="cursor:pointer; padding:4px 6px; border-radius:6px; margin-bottom:3px; background:${isSel ? "rgba(2,132,199,0.28)" : "rgba(255,255,255,0.03)"}; border:1px solid ${isSel ? "#38bdf8" : "transparent"}; font-size:0.62rem;">
+                    <div style="display:flex; justify-content:space-between; font-weight:700; color:${isSel ? "#fff" : "#cbd5e1"};">
+                        <span>${escapeHtml(formatDateToTR(cISO))} ${cISO === today ? "(Bugün)" : ""}</span>
+                        <span style="color:#fbbf24;">Yarına: ${formatMoneyTR(cm.netClosing)}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; color:#94a3b8; font-size:0.59rem; margin-top:1px;">
+                        <span>Devir: ${formatNumberTR(cm.carryover)}</span>
+                        <span style="color:#34d399;">+${formatNumberTR(cm.cashInEntriesSum)}</span>
+                        <span style="color:#fb7185;">-${formatNumberTR(cm.cashOutSum)}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        bodyContentHtml = `
+            <div class="scw-nav-bar">
+                <button type="button" class="scw-nav-btn" onclick="stepSidebarCalendarPeriod(-1)" title="Önceki Gün"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="scw-nav-label">${escapeHtml(formatDateToTR(selectedISO))} <small style="color:#38bdf8; display:block; font-size:0.6rem;">${escapeHtml(dayName)}</small></div>
+                <button type="button" class="scw-nav-btn" onclick="stepSidebarCalendarPeriod(1)" title="Sonraki Gün"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            ${dailyFlowCardHtml}
+            <div style="margin-top:6px;">
+                <div style="font-size:0.62rem; font-weight:700; color:#94a3b8; margin-bottom:4px; display:flex; justify-content:space-between;">
+                    <span><i class="fa-solid fa-link" style="color:#38bdf8;"></i> Günten Güne Otomatik Devir Zinciri</span>
+                </div>
+                ${chainRowsHtml}
+            </div>
+        `;
+    }
+
+    wrap.innerHTML = `
+        <div class="scw-header">
+            <div class="scw-title">
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>Kasa Takvimi &amp; Devir</span>
+            </div>
+            <div style="display:flex; gap:3px;">
+                <button type="button" class="scw-collapse-btn" onclick="selectDayFromSidebarCalendar('${today}')" title="Bugüne Git">Bugün</button>
+                <button type="button" class="scw-collapse-btn" onclick="toggleSidebarCalendarCollapse()" title="Takvimi Küçült">
+                    <i class="fa-solid fa-chevron-up"></i> <span>Küçült</span>
+                </button>
+            </div>
+        </div>
+        <div class="scw-mode-tabs">
+            <button type="button" class="scw-mode-btn ${st.calMode === "day" ? "active" : ""}" onclick="setSidebarCalendarMode('day')">Günlük</button>
+            <button type="button" class="scw-mode-btn ${st.calMode === "month" ? "active" : ""}" onclick="setSidebarCalendarMode('month')">Aylık</button>
+            <button type="button" class="scw-mode-btn ${st.calMode === "year" ? "active" : ""}" onclick="setSidebarCalendarMode('year')">Yıllık</button>
+        </div>
+        ${bodyContentHtml}
+    `;
 }
 
 // ==================== 11. BİREBİR KLASİK EXCEL FORMU & A4 BASKI RENDER MOTORU ====================
@@ -4959,6 +5386,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     });
 
     if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("sw.js?v=1.0.9").catch(() => {});
+        navigator.serviceWorker.register("sw.js?v=1.1.0").catch(() => {});
     }
 });
