@@ -1,11 +1,11 @@
 {
   "appId": "dizsan-kasa",
   "appName": "Dizsan Günlük Kasa Formu & Kasa Takip",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "build": 106,
   "releasedAt": "2026-10-22 03:26:00",
   "releaseNotes": "Yapay Zekâ & Apple Vision Destekli Genel Belge Tarama (Yemek, Market, Yakıt, Fatura, POS Slipi), 6'lı Çapraz Kontrol, Elle Düzeltilebilir Kutular ve Kullanıcı Alt Kategori Seçimi Sistemi.",
   "author": "Ömer Eren & DİZSAN",
-  "notes": "Ahşap zemin / arka plan maskeleme ve nokta vuruşlu POS slibi OCR iyileştirmesi",
-  "updatedAt": "2026-10-22T17:25:41.494138+00:00"
+  "notes": "Telefon ve Safari (Mac) arası canlı GitHub Bulut çift yönlü senkronizasyon motoru",
+  "updatedAt": "2026-10-22T17:46:55.241215+00:00"
 }

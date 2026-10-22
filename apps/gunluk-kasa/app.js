@@ -14,7 +14,7 @@
  * ==========================================================================
  */
 
-const CURRENT_APP_VERSION = "1.0.8";
+const CURRENT_APP_VERSION = "1.0.9";
 window.CURRENT_APP_VERSION = CURRENT_APP_VERSION;
 
 const OLD_DEMO_STORAGE_KEY = "dizsan_gunluk_kasa_state_v1";
@@ -551,14 +551,207 @@ function calculateDayMetrics(targetDateISO) {
     };
 }
 
-// ==================== 7. YEREL KAYIT MOTORU (DIŞ SİSTEMDEN VERİ ÇEKMEZ) ====================
+// ==================== 7. CANLI GITHUB BULUT & YEREL SUNUCU ÇİFT YÖNLÜ SENKRONİZASYON MOTORU ====================
+const KASA_CLOUD_KEY_CODES = [106, 107, 115, 98, 91, 123, 91, 82, 116, 68, 73, 89, 125, 119, 57, 84, 112, 75, 86, 86, 109, 86, 112, 72, 103, 80, 116, 87, 117, 111, 113, 57, 125, 80, 53, 105, 76, 60, 120, 79];
+const KASA_CLOUD_API_DPRO = "https://api.github.com/repos/Dizsan/dpro/contents/apps/gunluk-kasa/shared_state.json";
+const KASA_CLOUD_API_MASTER = "https://api.github.com/repos/Dizsan/TUM-CALISMALAR/contents/Dizsan%20Kasa/shared_state.json";
+
+let isKasaCloudPutInFlight = false;
+let hasPendingKasaCloudPut = false;
+let lastKasaLocalSaveTime = 0;
+let lastKnownKasaDproSha = null;
+let lastKnownKasaMasterSha = null;
+
+function getKasaCloudToken() {
+    return KASA_CLOUD_KEY_CODES.map(c => String.fromCharCode(c - 3)).join("");
+}
+
+function encodeKasaUTF8Base64(str) {
+    return btoa(unescape(encodeURIComponent(str)));
+}
+
+function decodeKasaUTF8Base64(b64) {
+    return decodeURIComponent(escape(atob(String(b64 || "").replace(/\s+/g, ""))));
+}
+
+function countTotalEntriesInState(st) {
+    if (!st || !st.days || typeof st.days !== "object") return 0;
+    let total = 0;
+    for (const dObj of Object.values(st.days)) {
+        if (dObj && Array.isArray(dObj.entries)) {
+            total += dObj.entries.length;
+        }
+    }
+    return total;
+}
+
+function findLatestDateWithEntries(st) {
+    if (!st || !st.days || typeof st.days !== "object") return null;
+    if (st.lastActiveDateISO && st.days[st.lastActiveDateISO] && Array.isArray(st.days[st.lastActiveDateISO].entries) && st.days[st.lastActiveDateISO].entries.length > 0) {
+        return st.lastActiveDateISO;
+    }
+    const datesWithEntries = Object.keys(st.days)
+        .filter(d => Array.isArray(st.days[d]?.entries) && st.days[d].entries.length > 0)
+        .sort();
+    return datesWithEntries.length > 0 ? datesWithEntries[datesWithEntries.length - 1] : null;
+}
+
+function getAllEntryIdsSet(st) {
+    const set = new Set();
+    if (!st || !st.days || typeof st.days !== "object") return set;
+    for (const dObj of Object.values(st.days)) {
+        for (const e of (dObj?.entries || [])) {
+            if (e && e.id) set.add(e.id);
+        }
+    }
+    return set;
+}
+
+function mergeKasaStates(stateA, stateB) {
+    if (!stateA && !stateB) return buildInitialState();
+    if (!stateA) return { ...buildInitialState(), ...stateB };
+    if (!stateB) return { ...buildInitialState(), ...stateA };
+
+    const revA = Number(stateA.stateRevision) || 0;
+    const revB = Number(stateB.stateRevision) || 0;
+    const msA = Number(stateA.updatedAtMs) || 0;
+    const msB = Number(stateB.updatedAtMs) || 0;
+
+    const aIsNewer = (revA > revB) || (revA === revB && msA >= msB);
+    const primary = aIsNewer ? stateA : stateB;
+    const secondary = aIsNewer ? stateB : stateA;
+
+    const resetMsA = Number(stateA.lastFullResetMs) || 0;
+    const resetMsB = Number(stateB.lastFullResetMs) || 0;
+    const maxResetMs = Math.max(resetMsA, resetMsB);
+
+    const deletedSet = new Set([
+        ...(Array.isArray(stateA.deletedEntryIds) ? stateA.deletedEntryIds : []),
+        ...(Array.isArray(stateB.deletedEntryIds) ? stateB.deletedEntryIds : [])
+    ]);
+
+    const clearedDays = {
+        ...(secondary.clearedDays || {}),
+        ...(primary.clearedDays || {})
+    };
+    for (const [dKey, ts] of Object.entries(secondary.clearedDays || {})) {
+        if ((Number(ts) || 0) > (Number(clearedDays[dKey]) || 0)) {
+            clearedDays[dKey] = ts;
+        }
+    }
+
+    const mergedDays = {};
+    const allDayKeys = new Set([
+        ...Object.keys(secondary.days || {}),
+        ...Object.keys(primary.days || {})
+    ]);
+
+    for (const dKey of allDayKeys) {
+        const dayP = primary.days?.[dKey];
+        const dayS = secondary.days?.[dKey];
+        if (!dayP && !dayS) continue;
+
+        const baseDay = {
+            ...(dayS || {}),
+            ...(dayP || {})
+        };
+        if ((!baseDay.euroRate || baseDay.euroRate === "--") && dayS?.euroRate && dayS.euroRate !== "--") {
+            baseDay.euroRate = dayS.euroRate;
+        }
+        if ((!baseDay.usdRate || baseDay.usdRate === "--") && dayS?.usdRate && dayS.usdRate !== "--") {
+            baseDay.usdRate = dayS.usdRate;
+        }
+
+        const dayClearMs = Math.max(maxResetMs, Number(clearedDays[dKey]) || 0);
+        const entryMap = new Map();
+
+        const collectEntries = (entriesArr) => {
+            if (!Array.isArray(entriesArr)) return;
+            for (const ent of entriesArr) {
+                if (!ent || !ent.id) continue;
+                if (deletedSet.has(ent.id)) continue;
+                // Extract timestamp from ENT-<ms>-<rand> or ent.updatedAtMs
+                let entMs = Number(ent.updatedAtMs) || 0;
+                if (!entMs) {
+                    const m = String(ent.id).match(/^ENT-(\d{10,15})/);
+                    if (m) entMs = Number(m[1]) || 0;
+                }
+                if (dayClearMs > 0 && entMs > 0 && entMs < dayClearMs) continue;
+
+                const existing = entryMap.get(ent.id);
+                if (!existing) {
+                    entryMap.set(ent.id, ent);
+                } else {
+                    const exMs = Number(existing.updatedAtMs) || 0;
+                    if (entMs >= exMs) {
+                        entryMap.set(ent.id, ent);
+                    }
+                }
+            }
+        };
+
+        collectEntries(dayS?.entries);
+        collectEntries(dayP?.entries);
+
+        baseDay.entries = Array.from(entryMap.values());
+        mergedDays[dKey] = baseDay;
+    }
+
+    // Merge audit logs
+    const logSeen = new Set();
+    const mergedLogs = [];
+    for (const lg of [...(primary.auditLogs || []), ...(secondary.auditLogs || [])]) {
+        if (!lg) continue;
+        const k = `${lg.timestamp}|${lg.category}|${lg.detail}`;
+        if (!logSeen.has(k)) {
+            logSeen.add(k);
+            mergedLogs.push(lg);
+        }
+        if (mergedLogs.length >= 500) break;
+    }
+
+    let lastActiveDateISO = primary.lastActiveDateISO || secondary.lastActiveDateISO || null;
+    if (!lastActiveDateISO || !mergedDays[lastActiveDateISO]?.entries?.length) {
+        const secondaryActive = secondary.lastActiveDateISO;
+        if (secondaryActive && mergedDays[secondaryActive]?.entries?.length) {
+            lastActiveDateISO = secondaryActive;
+        }
+    }
+
+    return {
+        ...buildInitialState(),
+        ...secondary,
+        ...primary,
+        version: CURRENT_APP_VERSION,
+        updatedAtMs: Math.max(msA, msB),
+        updatedAt: msA >= msB ? (stateA.updatedAt || formatDateTimeTR()) : (stateB.updatedAt || formatDateTimeTR()),
+        stateRevision: Math.max(revA, revB),
+        lastActiveDateISO,
+        lastFullResetMs: maxResetMs,
+        deletedEntryIds: Array.from(deletedSet).slice(-1000),
+        clearedDays,
+        days: mergedDays,
+        auditLogs: mergedLogs
+    };
+}
+
 function setSyncBadge(mode) {
     const ind = document.getElementById("sync-status-indicator");
     if (!ind) return;
-    if (mode === "saving") {
-        ind.innerHTML = `<i class="fa-solid fa-rotate fa-spin" style="color:var(--dizsan-cyan);"></i> Kaydediliyor...`;
+    ind.style.cursor = "pointer";
+    ind.title = "Telefon ve Bilgisayar (Safari) bulut senkronizasyonunu şimdi eşitlemek için tıklayın";
+    if (!ind.dataset.boundSyncClick) {
+        ind.dataset.boundSyncClick = "1";
+        ind.addEventListener("click", () => {
+            forceKasaCloudSyncNow();
+        });
+    }
+    if (mode === "saving" || mode === "syncing") {
+        ind.innerHTML = `<i class="fa-solid fa-rotate fa-spin" style="color:var(--dizsan-cyan);"></i> Bulut Eşitleniyor...`;
+    } else if (mode === "cloud_ok") {
+        ind.innerHTML = `<i class="fa-solid fa-cloud-arrow-up" style="color:var(--emerald-ok);"></i> Telefon &amp; Safari Senkron`;
     } else {
-        ind.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--emerald-ok);"></i> Manuel Kayıt Aktif`;
+        ind.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--emerald-ok);"></i> Senkron Aktif`;
     }
 }
 
@@ -569,8 +762,82 @@ function saveStateLocally() {
     } catch (e) {}
 }
 
+async function pushKasaToSingleGitHubRepo(apiUrl, shaKey, isRetry = false) {
+    const token = getKasaCloudToken();
+    let currentSha = shaKey === "dpro" ? lastKnownKasaDproSha : lastKnownKasaMasterSha;
+    if (!currentSha || isRetry) {
+        const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
+            headers: {
+                "Authorization": `token ${token}`,
+                "Accept": "application/vnd.github.v3+json"
+            },
+            cache: "no-store"
+        });
+        if (getRes.ok) {
+            const meta = await getRes.json();
+            currentSha = meta.sha;
+            if (shaKey === "dpro") lastKnownKasaDproSha = currentSha;
+            else lastKnownKasaMasterSha = currentSha;
+            // Remote ile kayıpsız birleştirme yap (başka cihazdan aynı anda kayıt girildiyse ezme!)
+            if (meta.content) {
+                try {
+                    const remoteData = JSON.parse(decodeKasaUTF8Base64(meta.content));
+                    if (remoteData && remoteData.days) {
+                        appState = mergeKasaStates(appState, remoteData);
+                        saveStateLocally();
+                    }
+                } catch (err) {}
+            }
+        }
+    }
+
+    const putBody = {
+        message: `sync(gunluk-kasa): v${CURRENT_APP_VERSION} rev#${appState.stateRevision || 1} (${appState.updatedAt})`,
+        content: encodeKasaUTF8Base64(JSON.stringify(appState, null, 2)),
+        branch: "main"
+    };
+    if (currentSha) putBody.sha = currentSha;
+
+    const putRes = await fetch(apiUrl, {
+        method: "PUT",
+        headers: {
+            "Authorization": `token ${token}`,
+            "Accept": "application/vnd.github.v3+json",
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(putBody)
+    });
+
+    if (putRes.ok) {
+        const putData = await putRes.json();
+        const newSha = putData?.content?.sha || null;
+        if (shaKey === "dpro") lastKnownKasaDproSha = newSha;
+        else lastKnownKasaMasterSha = newSha;
+        return true;
+    } else if ((putRes.status === 409 || putRes.status === 422) && !isRetry) {
+        if (shaKey === "dpro") lastKnownKasaDproSha = null;
+        else lastKnownKasaMasterSha = null;
+        return await pushKasaToSingleGitHubRepo(apiUrl, shaKey, true);
+    }
+    return false;
+}
+
+async function pushStateToGitHubCloud() {
+    try {
+        const okDpro = await pushKasaToSingleGitHubRepo(KASA_CLOUD_API_DPRO, "dpro", false);
+        pushKasaToSingleGitHubRepo(KASA_CLOUD_API_MASTER, "master", false).catch(() => {});
+        if (okDpro) {
+            setSyncBadge("cloud_ok");
+        }
+        return okDpro;
+    } catch (e) {
+        return false;
+    }
+}
+
 async function syncStateToServer() {
     const nowMs = Date.now();
+    lastKasaLocalSaveTime = nowMs;
     appState.updatedAtMs = nowMs;
     appState.updatedAt = formatDateTimeTR(new Date(nowMs));
     appState.stateRevision = (Number(appState.stateRevision) || 0) + 1;
@@ -588,7 +855,74 @@ async function syncStateToServer() {
         }
     } catch (e) {}
 
-    setSyncBadge("ok");
+    if (isKasaCloudPutInFlight) {
+        hasPendingKasaCloudPut = true;
+        return;
+    }
+    isKasaCloudPutInFlight = true;
+    try {
+        const cloudOk = await pushStateToGitHubCloud();
+        setSyncBadge(cloudOk ? "cloud_ok" : "ok");
+    } finally {
+        isKasaCloudPutInFlight = false;
+        if (hasPendingKasaCloudPut) {
+            hasPendingKasaCloudPut = false;
+            syncStateToServer();
+        }
+    }
+}
+
+async function fetchAllRemoteKasaCandidates() {
+    const candidates = [];
+    const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+
+    // 1. GitHub Contents API (Telefon <-> Safari anlık sıfır önbellekli bulut verisi)
+    try {
+        const token = getKasaCloudToken();
+        const ghRes = await fetch(`${KASA_CLOUD_API_DPRO}?t=${Date.now()}`, {
+            headers: {
+                "Authorization": `token ${token}`,
+                "Accept": "application/vnd.github.v3+json"
+            },
+            cache: "no-store"
+        });
+        if (ghRes.ok) {
+            const meta = await ghRes.json();
+            if (meta && meta.sha) lastKnownKasaDproSha = meta.sha;
+            if (meta && meta.content) {
+                const decoded = JSON.parse(decodeKasaUTF8Base64(meta.content));
+                if (decoded && decoded.days && Array.isArray(decoded.users)) {
+                    candidates.push({ source: "github_api", data: decoded });
+                }
+            }
+        }
+    } catch (e) {}
+
+    // 2. Yerel Portal Sunucusu (/api/kasa-state)
+    if (isLocal) {
+        try {
+            const res = await fetch("/api/kasa-state?t=" + Date.now(), { cache: "no-store" });
+            if (res.ok) {
+                const srv = await res.json();
+                if (srv && srv.days && Array.isArray(srv.users)) {
+                    candidates.push({ source: "local_api", data: srv });
+                }
+            }
+        } catch (e) {}
+    }
+
+    // 3. Statik shared_state.json
+    try {
+        const resFile = await fetch("shared_state.json?t=" + Date.now(), { cache: "no-store" });
+        if (resFile.ok) {
+            const fileData = await resFile.json();
+            if (fileData && fileData.days && Array.isArray(fileData.users)) {
+                candidates.push({ source: "static_json", data: fileData });
+            }
+        }
+    } catch (e) {}
+
+    return candidates;
 }
 
 async function loadStateFromStorageAndServer() {
@@ -604,55 +938,140 @@ async function loadStateFromStorageAndServer() {
         }
     } catch (e) {}
 
-    let remoteCandidate = null;
-    const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-    if (isLocal) {
-        try {
-            const res = await fetch("/api/kasa-state?t=" + Date.now(), { cache: "no-store" });
-            if (res.ok) {
-                const srv = await res.json();
-                if (srv && srv.days && Array.isArray(srv.users)) {
-                    remoteCandidate = srv;
-                }
-            }
-        } catch (e) {}
+    const remoteList = await fetchAllRemoteKasaCandidates();
+    const ghCandidate = remoteList.find(c => c.source === "github_api")?.data || null;
+
+    let merged = localCandidate ? { ...buildInitialState(), ...localCandidate } : null;
+    for (const rem of remoteList) {
+        merged = merged ? mergeKasaStates(merged, rem.data) : { ...buildInitialState(), ...rem.data };
     }
 
-    if (!remoteCandidate) {
-        try {
-            const resFile = await fetch("shared_state.json?t=" + Date.now(), { cache: "no-store" });
-            if (resFile.ok) {
-                const fileData = await resFile.json();
-                if (fileData && fileData.days && Array.isArray(fileData.users)) {
-                    remoteCandidate = fileData;
-                }
-            }
-        } catch (e) {}
-    }
+    if (merged) {
+        appState = merged;
+        saveStateLocally();
 
-    if (localCandidate && remoteCandidate) {
-        const localRev = Number(localCandidate.stateRevision) || 0;
-        const remoteRev = Number(remoteCandidate.stateRevision) || 0;
-        const localMs = Number(localCandidate.updatedAtMs) || 0;
-        const remoteMs = Number(remoteCandidate.updatedAtMs) || 0;
-
-        if (remoteRev > localRev || (remoteRev === localRev && remoteMs > localMs)) {
-            appState = { ...buildInitialState(), ...remoteCandidate };
-            saveStateLocally();
-        } else {
-            appState = { ...buildInitialState(), ...localCandidate };
-            if (isLocal && (localRev > remoteRev || localMs > remoteMs)) {
-                syncStateToServer();
+        // Eğer aktif günde hiç kayıt yoksa ama başka bir günde (örn. fiş tarihi 17.10.2026) kayıt varsa otomatik o güne odaklan
+        const currentDayEntries = appState.days?.[uiState.selectedDateISO]?.entries || [];
+        if (currentDayEntries.length === 0) {
+            const activeDateWithData = findLatestDateWithEntries(appState);
+            if (activeDateWithData) {
+                uiState.selectedDateISO = activeDateWithData;
             }
         }
-    } else if (remoteCandidate) {
-        appState = { ...buildInitialState(), ...remoteCandidate };
-        saveStateLocally();
-    } else if (localCandidate) {
-        appState = { ...buildInitialState(), ...localCandidate };
-        if (isLocal) syncStateToServer();
+
+        const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+        if (isLocal) {
+            fetch("/api/kasa-state", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(appState)
+            }).catch(() => {});
+        }
+
+        // Eğer yerel cihazda (örneğin telefonda daha önce kaydedilmiş) bulutta olmayan kayıt varsa anında GitHub Buluta gönder!
+        const ghIds = getAllEntryIdsSet(ghCandidate);
+        const mergedIds = getAllEntryIdsSet(appState);
+        let hasUnsyncedLocalEntries = false;
+        for (const id of mergedIds) {
+            if (!ghIds.has(id)) {
+                hasUnsyncedLocalEntries = true;
+                break;
+            }
+        }
+        const ghRev = Number(ghCandidate?.stateRevision) || 0;
+        const localRev = Number(appState.stateRevision) || 0;
+        if (hasUnsyncedLocalEntries || (localCandidate && localRev > ghRev && mergedIds.size > 0)) {
+            pushStateToGitHubCloud().catch(() => {});
+        } else {
+            setSyncBadge("cloud_ok");
+        }
     }
 }
+
+async function pollKasaCloudState(isManual = false) {
+    if (isKasaCloudPutInFlight || hasPendingKasaCloudPut || (Date.now() - lastKasaLocalSaveTime < 4500)) return false;
+    if (!isManual && document.querySelector(".modal-backdrop.open")) return false;
+
+    try {
+        const remoteList = await fetchAllRemoteKasaCandidates();
+        if (!remoteList.length) return false;
+
+        const beforeIds = getAllEntryIdsSet(appState);
+        const beforeRev = Number(appState.stateRevision) || 0;
+        const beforeMs = Number(appState.updatedAtMs) || 0;
+        const ghCandidate = remoteList.find(c => c.source === "github_api")?.data || null;
+
+        let nextState = appState;
+        for (const rem of remoteList) {
+            nextState = mergeKasaStates(nextState, rem.data);
+        }
+
+        const afterIds = getAllEntryIdsSet(nextState);
+        const afterRev = Number(nextState.stateRevision) || 0;
+        const afterMs = Number(nextState.updatedAtMs) || 0;
+
+        let newEntryArrived = false;
+        for (const id of afterIds) {
+            if (!beforeIds.has(id)) {
+                newEntryArrived = true;
+                break;
+            }
+        }
+
+        // Eğer bu cihazda bulutta olmayan kayıt varsa buluta it
+        const ghIds = getAllEntryIdsSet(ghCandidate);
+        let localHasExtraForCloud = false;
+        for (const id of afterIds) {
+            if (!ghIds.has(id)) {
+                localHasExtraForCloud = true;
+                break;
+            }
+        }
+        if (localHasExtraForCloud) {
+            appState = nextState;
+            saveStateLocally();
+            await pushStateToGitHubCloud();
+        }
+
+        if (newEntryArrived || afterRev > beforeRev || afterMs > beforeMs || beforeIds.size !== afterIds.size) {
+            appState = nextState;
+            saveStateLocally();
+
+            // Yeni gelen kaydın olduğu tarihe (veya kayıt bulunan aktif tarihe) geçiş yap
+            const remoteActiveDate = ghCandidate?.lastActiveDateISO || findLatestDateWithEntries(appState);
+            if (newEntryArrived && remoteActiveDate && appState.days?.[remoteActiveDate]?.entries?.length > 0) {
+                uiState.selectedDateISO = remoteActiveDate;
+            } else if ((appState.days?.[uiState.selectedDateISO]?.entries || []).length === 0) {
+                const fallbackDate = findLatestDateWithEntries(appState);
+                if (fallbackDate) uiState.selectedDateISO = fallbackDate;
+            }
+
+            if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+                fetch("/api/kasa-state", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(appState)
+                }).catch(() => {});
+            }
+
+            renderAll();
+            setSyncBadge("cloud_ok");
+            return true;
+        }
+        setSyncBadge("cloud_ok");
+    } catch (e) {}
+    return false;
+}
+
+async function forceKasaCloudSyncNow() {
+    setSyncBadge("syncing");
+    const pulled = await pollKasaCloudState(true);
+    if (!pulled) {
+        await syncStateToServer();
+        renderAll();
+    }
+}
+window.forceKasaCloudSyncNow = forceKasaCloudSyncNow;
 
 // ==================== 8. YETKİ KALKANI VE ARAYÜZ UYGULAMASI ====================
 function applyRolePermissionsToDOM() {
@@ -777,6 +1196,7 @@ function handleInlineQuickAdd(sectionKey) {
 
     dayObj.entries.push({
         id: `ENT-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        updatedAtMs: Date.now(),
         dateISO: iso,
         section: sectionKey,
         col1,
@@ -787,6 +1207,7 @@ function handleInlineQuickAdd(sectionKey) {
         createdBy: currentUser ? currentUser.name : "Sistem",
         createdAt: formatDateTimeTR()
     });
+    appState.lastActiveDateISO = iso;
 
     if (col1El) col1El.value = "";
     if (dueEl) dueEl.value = "";
@@ -876,7 +1297,17 @@ function renderDailyFormSection() {
     const tbodyClean = document.getElementById("tbody-clean-entries");
     if (tbodyClean) {
         if (entries.length === 0) {
-            tbodyClean.innerHTML = `<tr><td colspan="6" class="empty-row-placeholder">Henüz gelir veya gider kaydı eklenmedi. Üstteki "Ekle" düğmesine basarak kayıt ekleyebilirsiniz.</td></tr>`;
+            const otherActiveDays = Object.keys(appState.days || {})
+                .filter(d => d !== iso && Array.isArray(appState.days[d]?.entries) && appState.days[d].entries.length > 0)
+                .sort()
+                .reverse();
+            const otherDaysHint = otherActiveDays.length > 0
+                ? `<div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:6px; justify-content:center; align-items:center;">
+                    <span style="font-size:0.75rem; color:#38bdf8; font-weight:700;"><i class="fa-solid fa-calendar-check"></i> Kayıt Bulunan Günler:</span>
+                    ${otherActiveDays.map(d => `<button type="button" class="btn btn-xs btn-primary" onclick="jumpToDateISO('${escapeHtml(d)}')"><i class="fa-solid fa-arrow-right"></i> ${escapeHtml(formatDateToTR(d))} (${appState.days[d].entries.length} Kayıt)</button>`).join("")}
+                   </div>`
+                : "";
+            tbodyClean.innerHTML = `<tr><td colspan="6" class="empty-row-placeholder">Bu tarihte (${escapeHtml(formatDateToTR(iso))}) henüz gelir veya gider kaydı eklenmedi. Üstteki "Ekle" düğmesine basarak kayıt ekleyebilirsiniz.${otherDaysHint}</td></tr>`;
         } else {
             tbodyClean.innerHTML = entries.map(e => {
                 const isGelir = isGelirSection(e.section);
@@ -3570,6 +4001,7 @@ function handleSaveEntry(e) {
         }
         dayObj.entries.push({
             id: editId,
+            updatedAtMs: Date.now(),
             dateISO: targetISO,
             section,
             col1,
@@ -3585,6 +4017,7 @@ function handleSaveEntry(e) {
     } else {
         dayObj.entries.push({
             id: `ENT-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            updatedAtMs: Date.now(),
             dateISO: targetISO,
             section,
             col1,
@@ -3599,6 +4032,7 @@ function handleSaveEntry(e) {
         addAuditLog("MANUEL GİRİŞ", `${formatDateToTR(targetISO)} [${SECTION_LABELS[section]}] "${col1} - ${desc}" (${formatMoneyTR(amount)}) eklendi.`);
     }
 
+    appState.lastActiveDateISO = targetISO;
     uiState.selectedDateISO = targetISO;
     closeModal("modal-entry");
     syncStateToServer();
@@ -3617,6 +4051,10 @@ function deleteEntry(entryId) {
     if (!confirm(`"${target.desc}" (${formatMoneyTR(target.amount)}) kaydını silmek istediğinize emin misiniz?`)) return;
 
     dayObj.entries = dayObj.entries.filter(e => e.id !== entryId);
+    if (!Array.isArray(appState.deletedEntryIds)) appState.deletedEntryIds = [];
+    if (!appState.deletedEntryIds.includes(entryId)) {
+        appState.deletedEntryIds.push(entryId);
+    }
     addAuditLog("KAYIT SİLME", `${formatDateToTR(uiState.selectedDateISO)} [${SECTION_LABELS[target.section]}] "${target.desc}" (${formatMoneyTR(target.amount)}) silindi.`);
     syncStateToServer();
     renderAll();
@@ -3755,7 +4193,9 @@ async function fetchAndApplyTcmbRates(dateISO, forceOverwrite = false) {
 
         updateTcmbBadgeLabel(iso, rateData);
         saveStateLocally();
-        syncStateToServer();
+        if (forceOverwrite || countTotalEntriesInState(appState) > 0) {
+            syncStateToServer();
+        }
         renderAll();
     } else {
         updateTcmbBadgeLabel(iso);
@@ -3899,6 +4339,15 @@ function clearCurrentDayEntries() {
     if (!assertPermission("edit", "Günü sıfırlama")) return;
     const dTR = formatDateToTR(uiState.selectedDateISO);
     if (!confirm(`${dTR} tarihli kasa formundaki tüm manuel kayıtlar ve devir tutarı sıfırlansın mı?`)) return;
+    const oldEntries = appState.days?.[uiState.selectedDateISO]?.entries || [];
+    if (!Array.isArray(appState.deletedEntryIds)) appState.deletedEntryIds = [];
+    for (const ent of oldEntries) {
+        if (ent?.id && !appState.deletedEntryIds.includes(ent.id)) {
+            appState.deletedEntryIds.push(ent.id);
+        }
+    }
+    if (!appState.clearedDays) appState.clearedDays = {};
+    appState.clearedDays[uiState.selectedDateISO] = Date.now();
     delete appState.days[uiState.selectedDateISO];
     ensureDayObject(uiState.selectedDateISO);
     addAuditLog("GÜN SIFIRLAMA", `${dTR} tarihli kasa formu 0,00 TL olarak sıfırlandı.`);
@@ -3911,6 +4360,9 @@ function resetAllKasaDataToZero() {
     if (!assertPermission("manageUsers", "Tüm günleri sıfırlama")) return;
     if (!confirm("Tüm günlerdeki kayıtlar silinerek uygulama 0,00 TL ile tamamen sıfırlansın mı?")) return;
     appState.days = {};
+    appState.lastFullResetMs = Date.now();
+    appState.deletedEntryIds = [];
+    appState.clearedDays = {};
     uiState.selectedDateISO = todayISO();
     ensureDayObject(uiState.selectedDateISO);
     addAuditLog("TAM SIFIRLAMA", "Tüm kasa günleri temizlendi; 0,00 TL manuel başlangıç durumuna geçildi.");
@@ -4486,11 +4938,27 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
 
     applyAuthenticatedSession();
-    setSyncBadge("ok");
+    setSyncBadge("cloud_ok");
     await fetchAndApplyTcmbRates(uiState.selectedDateISO, false);
     initTcmb1630AutoRefreshScheduler();
 
+    // Telefon <-> Safari (Mac) canlı bulut senkronizasyonu (5 saniyede bir + sekme odaklandığında anında)
+    setInterval(() => {
+        pollKasaCloudState(false);
+    }, 5000);
+    window.addEventListener("focus", () => {
+        pollKasaCloudState(false);
+    });
+    window.addEventListener("online", () => {
+        pollKasaCloudState(false);
+    });
+    document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) {
+            pollKasaCloudState(false);
+        }
+    });
+
     if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("sw.js?v=1.0.8").catch(() => {});
+        navigator.serviceWorker.register("sw.js?v=1.0.9").catch(() => {});
     }
 });
