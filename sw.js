@@ -1,5 +1,5 @@
-// D-Pro Kurumsal Yönetim & DizGün Entegre Platformu - Service Worker (v1.7.3)
-const CACHE_NAME = "dizsan-dpro-v1.7.3";
+// D-Pro Kurumsal Yönetim & DizGün Entegre Platformu - Service Worker (v1.7.4)
+const CACHE_NAME = "dizsan-dpro-v1.7.4";
 const ASSETS = [
   "./",
   "./index.html",

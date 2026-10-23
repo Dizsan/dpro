@@ -1,11 +1,11 @@
 {
   "appId": "dizsan-kasa",
   "appName": "Dizsan Günlük Kasa Formu & Kasa Takip",
-  "version": "1.1.8",
-  "build": 113,
-  "releasedAt": "2026-10-23 16:48:00",
-  "releaseNotes": "v1.1.8 Güncellemesi: 1) Yakıt / Araç Gideri seçildiğinde otomatik açılan Araç Plakası Seçim Listesi (19 DS 750, 19 AAJ 501, 34 TE 6263, 19 DS 134 + geçmiş kayıt plakaları + Yeni Plaka Ekleme), 2) Raporlama ekranında 'Sadece Yakıt / Akaryakıt' seçildiğinde otomatik açılan Araç Plakası Filtresi, 3) Belge tarama ekranında kayıtlı plakadan tek tıkla seçim listesi.",
+  "version": "1.1.9",
+  "build": 114,
+  "releasedAt": "2026-10-23 16:53:00",
+  "releaseNotes": "v1.1.9 Güncellemesi: 1) Plaka seçim listesinin en altına '✍️ + ELLE PLAKA GİRİŞİ YAP' seçeneği ve canlı manuel plaka giriş kutusu eklendi, 2) Günlük Kasa tablosunun en altına (tfoot) tek satırda Hızlı Elle Giriş satırı (Gelir/Gider, Yakıt+Plaka Listesi, Şahsi/Ofis/Atölye, Açıklama ve Tutar) eklendi.",
   "author": "Ömer Eren & DİZSAN",
-  "notes": "Yakıt seçilince otomatik açılan Araç Plakası Listesi (Kayıt + Tarama + Raporlama)",
-  "updatedAt": "2026-10-23T13:48:00.000000+00:00"
+  "notes": "Plaka listesi en altta elle giriş + Günlük Kasa tablosu en altta hızlı elle giriş satırı",
+  "updatedAt": "2026-10-23T13:53:00.000000+00:00"
 }

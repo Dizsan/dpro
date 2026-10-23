@@ -14,7 +14,7 @@
  * ==========================================================================
  */
 
-const CURRENT_APP_VERSION = "1.1.8";
+const CURRENT_APP_VERSION = "1.1.9";
 window.CURRENT_APP_VERSION = CURRENT_APP_VERSION;
 
 const OLD_DEMO_STORAGE_KEY = "dizsan_gunluk_kasa_state_v1";
@@ -1445,6 +1445,7 @@ function renderDailyFormSection() {
 
     renderSidebarIntercompanyWidget();
     renderSidebarCalendarWidget(allMetrics);
+    populateBottomManualPlateSelector();
 }
 
 // ==================== 10A. ŞİRKETLER ARASI BORÇ / ALACAK MOTORU (SOL BAR ÖZETİ & DETAYLI TABLO) ====================
@@ -1892,14 +1893,16 @@ function updateVehiclePlateVisibilityAndPopulate(preferredPlate = "") {
 
     const plates = getAvailableVehiclePlates();
     const currentOcrPlate = normalizeVehiclePlateString(document.getElementById("ocr-edit-plate")?.value || "");
-    const currentSelVal = normalizeVehiclePlateString(preferredPlate || selEl.value || currentOcrPlate);
+    const rawCandidate = preferredPlate || (selEl.value === "__MANUAL__" ? "" : selEl.value) || currentOcrPlate;
+    const currentSelVal = normalizeVehiclePlateString(rawCandidate);
 
     if (currentSelVal && !plates.includes(currentSelVal)) {
         plates.unshift(currentSelVal);
     }
 
     selEl.innerHTML = `<option value="">-- LİSTEDEN ARAÇ PLAKASI SEÇİNİZ --</option>` +
-        plates.map(p => `<option value="${escapeHtml(p)}" ${p === currentSelVal ? "selected" : ""}>🚗 ${escapeHtml(p)}</option>`).join("");
+        plates.map(p => `<option value="${escapeHtml(p)}" ${p === currentSelVal ? "selected" : ""}>🚗 ${escapeHtml(p)}</option>`).join("") +
+        `<option value="__MANUAL__">✍️ + ELLE PLAKA GİRİŞİ YAP (Manuel Yaz...)</option>`;
 
     if (chipsEl) {
         chipsEl.innerHTML = plates.map(p => {
@@ -1909,18 +1912,48 @@ function updateVehiclePlateVisibilityAndPopulate(preferredPlate = "") {
                     <i class="fa-solid fa-car" style="color:#34d399;"></i> ${escapeHtml(p)}
                 </button>
             `;
-        }).join("");
+        }).join("") + `
+            <button type="button" class="btn btn-xs" style="padding:3px 9px; font-size:0.66rem; font-weight:800; background:rgba(245,158,11,0.18); border-color:rgba(251,191,36,0.5); color:#fde68a;" onclick="handleVehiclePlateSelectChange('__MANUAL__')">
+                <i class="fa-solid fa-keyboard"></i> + Elle Giriş
+            </button>
+        `;
     }
 
     const ocrQuickSel = document.getElementById("ocr-plate-quick-select");
     if (ocrQuickSel) {
         ocrQuickSel.innerHTML = `<option value="">-- Kayıtlı Plakadan Seç --</option>` +
-            plates.map(p => `<option value="${escapeHtml(p)}" ${p === currentSelVal ? "selected" : ""}>🚗 ${escapeHtml(p)}</option>`).join("");
+            plates.map(p => `<option value="${escapeHtml(p)}" ${p === currentSelVal ? "selected" : ""}>🚗 ${escapeHtml(p)}</option>`).join("") +
+            `<option value="__MANUAL__">✍️ + ELLE GİRİŞ YAP...</option>`;
     }
 }
 window.updateVehiclePlateVisibilityAndPopulate = updateVehiclePlateVisibilityAndPopulate;
 
+function applyPlateToEntryDescription(normPlate) {
+    const descEl = document.getElementById("entry-desc");
+    if (!descEl || !normPlate) return;
+    const curDesc = descEl.value.trim();
+    if (!curDesc) {
+        const subVal = document.getElementById("entry-sub-cat")?.value || "YAKIT ALIMI";
+        descEl.value = `PLAKA: ${normPlate} · ${subVal}`;
+    } else if (/PLAKA\s*:\s*[0-9]{2}\s*[A-Z]{1,3}\s*[0-9]{2,4}/i.test(curDesc)) {
+        descEl.value = curDesc.replace(/PLAKA\s*:\s*[0-9]{2}\s*[A-Z]{1,3}\s*[0-9]{2,4}/i, `PLAKA: ${normPlate}`);
+    } else if (!curDesc.toUpperCase().includes(normPlate) && !curDesc.toUpperCase().includes(normPlate.replace(/\s+/g, ""))) {
+        descEl.value = `PLAKA: ${normPlate} · ${curDesc}`;
+    }
+}
+
 function handleVehiclePlateSelectChange(plateVal) {
+    if (plateVal === "__MANUAL__") {
+        const selEl = document.getElementById("entry-plate-select");
+        if (selEl) selEl.value = "__MANUAL__";
+        const manualInp = document.getElementById("entry-new-plate-input");
+        if (manualInp) {
+            manualInp.focus();
+            manualInp.select();
+        }
+        return;
+    }
+
     const norm = normalizeVehiclePlateString(plateVal);
     const selEl = document.getElementById("entry-plate-select");
     if (selEl && selEl.value !== norm) {
@@ -1935,18 +1968,8 @@ function handleVehiclePlateSelectChange(plateVal) {
         ocrQuickSel.value = norm;
     }
 
-    // Açıklama kutusuna otomatik plaka bilgisini ekle veya güncelle
-    const descEl = document.getElementById("entry-desc");
-    if (descEl && norm) {
-        const curDesc = descEl.value.trim();
-        if (!curDesc) {
-            const subVal = document.getElementById("entry-sub-cat")?.value || "YAKIT ALIMI";
-            descEl.value = `PLAKA: ${norm} · ${subVal}`;
-        } else if (/PLAKA\s*:\s*[0-9]{2}\s*[A-Z]{1,3}\s*[0-9]{2,4}/i.test(curDesc)) {
-            descEl.value = curDesc.replace(/PLAKA\s*:\s*[0-9]{2}\s*[A-Z]{1,3}\s*[0-9]{2,4}/i, `PLAKA: ${norm}`);
-        } else if (!curDesc.toUpperCase().includes(norm) && !curDesc.toUpperCase().includes(norm.replace(/\s+/g, ""))) {
-            descEl.value = `PLAKA: ${norm} · ${curDesc}`;
-        }
+    if (norm) {
+        applyPlateToEntryDescription(norm);
     }
 
     updateVehiclePlateVisibilityAndPopulate(norm);
@@ -1955,6 +1978,21 @@ function handleVehiclePlateSelectChange(plateVal) {
     }
 }
 window.handleVehiclePlateSelectChange = handleVehiclePlateSelectChange;
+
+function handleManualPlateInputLive(rawVal) {
+    const norm = normalizeVehiclePlateString(rawVal);
+    const ocrPlateInp = document.getElementById("ocr-edit-plate");
+    if (ocrPlateInp) {
+        ocrPlateInp.value = norm;
+    }
+    if (norm.length >= 5) {
+        applyPlateToEntryDescription(norm);
+    }
+    if (document.getElementById("ai-scan-result-box")?.style.display === "block") {
+        syncEditableOcrFieldsToForm(false);
+    }
+}
+window.handleManualPlateInputLive = handleManualPlateInputLive;
 
 function addNewCompanyVehiclePlate() {
     const inp = document.getElementById("entry-new-plate-input");
@@ -1970,6 +2008,153 @@ function addNewCompanyVehiclePlate() {
     }
 }
 window.addNewCompanyVehiclePlate = addNewCompanyVehiclePlate;
+
+// ==================== TABLO EN ALTI HIZLI ELLE GİRİŞ SATIRI ====================
+function populateBottomManualPlateSelector() {
+    const plateSel = document.getElementById("bottom-manual-plate");
+    if (!plateSel) return;
+    const plates = getAvailableVehiclePlates();
+    const prev = plateSel.value || "";
+    plateSel.innerHTML = `<option value="">🚗 Plaka Seçiniz (Yakıt İçin)...</option>` +
+        plates.map(p => `<option value="${escapeHtml(p)}" ${p === prev ? "selected" : ""}>🚗 ${escapeHtml(p)}</option>`).join("") +
+        `<option value="__MANUAL__" ${prev === "__MANUAL__" ? "selected" : ""}>✍️ + ELLE PLAKA GİRİŞİ YAP...</option>`;
+}
+window.populateBottomManualPlateSelector = populateBottomManualPlateSelector;
+
+function handleBottomManualFlowChange(flowVal) {
+    const catSel = document.getElementById("bottom-manual-cat");
+    if (!catSel) return;
+    if (flowVal === "GELIR") {
+        catSel.innerHTML = `
+            <option value="CASH_IN|CARİ HESAP TAHSİLATI / NAKİT TAHSİLAT">💵 Nakit · Cari Tahsilat</option>
+            <option value="CASH_IN|SERVİS &amp; İŞÇİLİK GELİRİ / SERVİS BAKIM">🔧 Nakit · Servis / İşçilik Geliri</option>
+            <option value="POS_CC|KREDİ KARTI POS TAHSİLATI">💳 POS · Müşteri Kredi Kartı</option>
+            <option value="WIRE_IN|BANKA GELEN HAVALE / EFT">🏦 Banka · Gelen Havale / EFT</option>
+            <option value="CASH_IN|SERBEST">✍️ Elle Serbest Gelir Girişi...</option>
+        `;
+    } else {
+        catSel.innerHTML = `
+            <option value="CASH_OUT|ARAÇ GİDERLERİ / YAKIT (MAZOT / BENZİN)">⛽ Nakit · Yakıt (Mazot/Benzin)</option>
+            <option value="CASH_OUT|ARAÇ GİDERLERİ / LPG / OTOGAZ">⛽ Nakit · LPG / Otogaz</option>
+            <option value="CARI_CC|ARAÇ GİDERLERİ / YAKIT (MAZOT / BENZİN)">💳 Kredi Kartı · Yakıt</option>
+            <option value="CASH_OUT|YEMEK &amp; MUTFAK / GÜNLÜK YEMEK">🍽️ Nakit · Günlük Yemek</option>
+            <option value="CASH_OUT|GENEL GİDERLER / ŞAHSİ">👤 Nakit · ŞAHSİ</option>
+            <option value="CASH_OUT|GENEL GİDERLER / OFİS">🏢 Nakit · OFİS</option>
+            <option value="CASH_OUT|GENEL GİDERLER / ATÖLYE">🔧 Nakit · ATÖLYE</option>
+            <option value="CASH_OUT|SERBEST">✍️ Elle Serbest Gider Girişi...</option>
+        `;
+    }
+    handleBottomManualCatChange(catSel.value);
+}
+window.handleBottomManualFlowChange = handleBottomManualFlowChange;
+
+function handleBottomManualCatChange(catRaw) {
+    const plateWrap = document.getElementById("bottom-manual-plate-wrap");
+    if (!plateWrap) return;
+    const isFuel = /YAKIT|LPG|ARAÇ/i.test(catRaw || "");
+    plateWrap.style.display = isFuel ? "block" : "none";
+    if (isFuel) {
+        populateBottomManualPlateSelector();
+    }
+}
+window.handleBottomManualCatChange = handleBottomManualCatChange;
+
+function handleBottomManualPlateChange(val) {
+    const customInp = document.getElementById("bottom-manual-plate-custom");
+    if (!customInp) return;
+    if (val === "__MANUAL__") {
+        customInp.style.display = "block";
+        customInp.focus();
+    } else {
+        customInp.style.display = "none";
+        customInp.value = "";
+        const descInp = document.getElementById("bottom-manual-desc");
+        if (descInp && val) {
+            if (!descInp.value.trim()) {
+                descInp.value = `PLAKA: ${val} · YAKIT ALIMI`;
+            } else if (/PLAKA\s*:\s*[0-9]{2}\s*[A-Z]{1,3}\s*[0-9]{2,4}/i.test(descInp.value)) {
+                descInp.value = descInp.value.replace(/PLAKA\s*:\s*[0-9]{2}\s*[A-Z]{1,3}\s*[0-9]{2,4}/i, `PLAKA: ${val}`);
+            } else if (!descInp.value.toUpperCase().includes(val)) {
+                descInp.value = `PLAKA: ${val} · ${descInp.value}`;
+            }
+        }
+    }
+}
+window.handleBottomManualPlateChange = handleBottomManualPlateChange;
+
+function submitBottomManualEntry() {
+    if (!assertPermission("add", "Yeni manuel kayıt ekleme")) return;
+    const targetISO = uiState.selectedDateISO || todayISO();
+    const dayObj = ensureDayObject(targetISO);
+    if (dayObj.isLocked && !hasPermission("manageUsers")) {
+        alert("Bu gün kilitlenmiştir.");
+        return;
+    }
+
+    const catRaw = document.getElementById("bottom-manual-cat")?.value || "CASH_OUT|GENEL GİDERLER";
+    const [sec, defaultCol1] = catRaw.split("|");
+    const customCol1 = (document.getElementById("bottom-manual-col1")?.value || "").trim().toUpperCase();
+    let desc = (document.getElementById("bottom-manual-desc")?.value || "").trim().toUpperCase();
+    const amount = parseMoneyInputTR(document.getElementById("bottom-manual-amount")?.value || 0);
+
+    const isFuel = /YAKIT|LPG|ARAÇ/i.test(catRaw);
+    let chosenPlate = "";
+    if (isFuel) {
+        const pSel = document.getElementById("bottom-manual-plate")?.value || "";
+        const pCustom = (document.getElementById("bottom-manual-plate-custom")?.value || "").trim();
+        chosenPlate = normalizeVehiclePlateString(pSel === "__MANUAL__" ? pCustom : pSel);
+        if (chosenPlate) {
+            saveVehiclePlateToRegistry(chosenPlate);
+            if (!desc) {
+                desc = `PLAKA: ${chosenPlate} · ${defaultCol1.split("/").pop().trim()}`;
+            } else if (!desc.includes(chosenPlate) && !desc.includes(chosenPlate.replace(/\s+/g, ""))) {
+                desc = `PLAKA: ${chosenPlate} · ${desc}`;
+            }
+        }
+    }
+
+    const col1 = customCol1 ? (defaultCol1 === "SERBEST" ? customCol1 : `${defaultCol1} · ${customCol1}`) : (defaultCol1 === "SERBEST" ? "GENEL KAYIT" : defaultCol1);
+
+    if (!desc || amount <= 0) {
+        alert("Lütfen açıklama ve 0'dan büyük bir tutar yazınız.");
+        if (!desc) document.getElementById("bottom-manual-desc")?.focus();
+        else document.getElementById("bottom-manual-amount")?.focus();
+        return;
+    }
+
+    dayObj.entries.push({
+        id: `ENT-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        updatedAtMs: Date.now(),
+        dateISO: targetISO,
+        section: sec || "CASH_OUT",
+        col1,
+        desc,
+        dueDate: "",
+        amount,
+        code: "",
+        ocrMeta: chosenPlate ? { plate: chosenPlate, docType: "FUEL", hasReceiptImg: false, hasPosImg: false } : null,
+        intercompanyMeta: null,
+        createdBy: currentUser ? currentUser.name : "Sistem",
+        createdAt: formatDateTimeTR()
+    });
+
+    addAuditLog("MANUEL GİRİŞ", `${formatDateToTR(targetISO)} [${SECTION_LABELS[sec] || sec}] "${col1} - ${desc}" (${formatMoneyTR(amount)}) eklendi.`);
+
+    // Kutuları temizle
+    const col1El = document.getElementById("bottom-manual-col1");
+    const descEl = document.getElementById("bottom-manual-desc");
+    const amtEl = document.getElementById("bottom-manual-amount");
+    const custPlateEl = document.getElementById("bottom-manual-plate-custom");
+    if (col1El) col1El.value = "";
+    if (descEl) descEl.value = "";
+    if (amtEl) amtEl.value = "";
+    if (custPlateEl) { custPlateEl.value = ""; custPlateEl.style.display = "none"; }
+
+    appState.lastActiveDateISO = targetISO;
+    syncStateToServer();
+    renderAll();
+}
+window.submitBottomManualEntry = submitBottomManualEntry;
 
 function handleReportAreaFilterChange(areaVal) {
     const wrap = document.getElementById("rep-filter-plate-wrap");
@@ -6669,14 +6854,19 @@ function handleSaveEntry(e) {
         }
     }
 
-    // Eğer plaka listesinden bir araç plakası seçildiyse açıklamaya ve kayıtlı plaka listesine işle
-    const selectedPlateVal = normalizeVehiclePlateString(document.getElementById("entry-plate-select")?.value || ocrMeta?.plate || "");
+    // Eğer plaka listesinden bir araç plakası seçildiyse veya en alttan elle plaka yazıldıysa açıklamaya ve kayıtlı plaka listesine işle
+    const rawPlateSel = document.getElementById("entry-plate-select")?.value || "";
+    const manualPlateInpVal = (document.getElementById("entry-new-plate-input")?.value || "").trim();
+    const effectivePlateRaw = (rawPlateSel && rawPlateSel !== "__MANUAL__") ? rawPlateSel : (manualPlateInpVal || ocrMeta?.plate || "");
+    const selectedPlateVal = normalizeVehiclePlateString(effectivePlateRaw);
     if (selectedPlateVal) {
         saveVehiclePlateToRegistry(selectedPlateVal);
         if (ocrMeta) ocrMeta.plate = selectedPlateVal;
         if (desc && !desc.toUpperCase().includes(selectedPlateVal) && !desc.toUpperCase().includes(selectedPlateVal.replace(/\s+/g, ""))) {
             desc = `PLAKA: ${selectedPlateVal} · ${desc}`;
         }
+        const manualInp = document.getElementById("entry-new-plate-input");
+        if (manualInp) manualInp.value = "";
     }
 
     // Eğer belge tarandıysa ve kullanıcıdan Alt Kategori seçmesi istendiyse kontrol et

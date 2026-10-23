@@ -268,6 +268,50 @@
                                         </tr>
                                     </thead>
                                     <tbody id="tbody-clean-entries"></tbody>
+                                    <tfoot class="no-print">
+                                        <tr style="background:rgba(14,165,233,0.07); border-top:2px solid rgba(56,189,248,0.35);">
+                                            <td style="padding:8px 6px;">
+                                                <select id="bottom-manual-flow" class="form-control" style="font-size:0.74rem; font-weight:800; padding:5px 6px;" onchange="handleBottomManualFlowChange(this.value)">
+                                                    <option value="GIDER">GİDER (-)</option>
+                                                    <option value="GELIR">GELİR (+)</option>
+                                                </select>
+                                            </td>
+                                            <td style="padding:8px 6px;">
+                                                <select id="bottom-manual-cat" class="form-control" style="font-size:0.74rem; font-weight:700; padding:5px 6px;" onchange="handleBottomManualCatChange(this.value)">
+                                                    <option value="CASH_OUT|ARAÇ GİDERLERİ / YAKIT (MAZOT / BENZİN)">⛽ Nakit · Yakıt (Mazot/Benzin)</option>
+                                                    <option value="CASH_OUT|ARAÇ GİDERLERİ / LPG / OTOGAZ">⛽ Nakit · LPG / Otogaz</option>
+                                                    <option value="CARI_CC|ARAÇ GİDERLERİ / YAKIT (MAZOT / BENZİN)">💳 Kredi Kartı · Yakıt</option>
+                                                    <option value="CASH_OUT|YEMEK &amp; MUTFAK / GÜNLÜK YEMEK">🍽️ Nakit · Günlük Yemek</option>
+                                                    <option value="CASH_OUT|GENEL GİDERLER / ŞAHSİ">👤 Nakit · ŞAHSİ</option>
+                                                    <option value="CASH_OUT|GENEL GİDERLER / OFİS">🏢 Nakit · OFİS</option>
+                                                    <option value="CASH_OUT|GENEL GİDERLER / ATÖLYE">🔧 Nakit · ATÖLYE</option>
+                                                    <option value="CASH_OUT|SERBEST">✍️ Elle Serbest Giriş...</option>
+                                                </select>
+                                            </td>
+                                            <td style="padding:8px 6px;">
+                                                <div id="bottom-manual-plate-wrap" style="margin-bottom:4px;">
+                                                    <select id="bottom-manual-plate" class="form-control" style="font-size:0.73rem; font-weight:800; padding:4px 6px; border-color:rgba(52,211,153,0.55); color:#34d399;" onchange="handleBottomManualPlateChange(this.value)">
+                                                    </select>
+                                                    <input type="text" id="bottom-manual-plate-custom" class="form-control" style="display:none; margin-top:4px; font-size:0.73rem; font-weight:800; padding:4px 6px; text-transform:uppercase;" placeholder="Plakayı elle yazın (Örn: 19 ABC 123)">
+                                                </div>
+                                                <input type="text" id="bottom-manual-col1" class="form-control" style="font-size:0.73rem; padding:4px 6px;" placeholder="Cari / Firma / Kart (İsteğe bağlı)">
+                                            </td>
+                                            <td style="padding:8px 6px;">
+                                                <input type="text" id="bottom-manual-desc" class="form-control" style="font-size:0.75rem; padding:5px 8px;" placeholder="Açıklama elle yazın (Enter ile kaydet)..." onkeydown="if(event.key==='Enter'){event.preventDefault(); submitBottomManualEntry();}">
+                                            </td>
+                                            <td style="padding:8px 6px; font-size:0.68rem; color:var(--text-muted);">
+                                                <i class="fa-solid fa-keyboard" style="color:var(--dizsan-cyan);"></i> Hızlı Elle Giriş
+                                            </td>
+                                            <td style="padding:8px 6px;">
+                                                <input type="text" inputmode="decimal" id="bottom-manual-amount" class="form-control tr-money-input" style="font-size:0.82rem; font-weight:800; text-align:right; padding:5px 8px;" placeholder="0,00" oninput="formatMoneyInputLive(this)" onkeydown="if(event.key==='Enter'){event.preventDefault(); submitBottomManualEntry();}">
+                                            </td>
+                                            <td style="padding:8px 6px; text-align:right;">
+                                                <button type="button" class="btn btn-xs btn-success perm-require-add" style="padding:6px 10px; font-weight:800;" onclick="submitBottomManualEntry()">
+                                                    <i class="fa-solid fa-plus"></i> Ekle
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
                                 </table>
                             </div>
                         </div>
@@ -998,28 +1042,28 @@
                         </div>
                     </div>
 
-                    <!-- 3B. YAKIT / ARAÇ SEÇİLDİĞİNDE OTOMATİK AÇILAN KAYITLI PLAKA LİSTESİ -->
+                    <!-- 3B. YAKIT / ARAÇ SEÇİLDİĞİNDE OTOMATİK AÇILAN KAYITLI PLAKA LİSTESİ (EN ALTTA ELLE GİRİŞ SEÇENEKLİ) -->
                     <div id="group-entry-vehicle-plate" style="display:none; padding:10px 12px; border-radius:10px; background:linear-gradient(145deg, rgba(16,185,129,0.12), rgba(14,165,233,0.08)); border:1px solid rgba(52,211,153,0.45); margin-bottom:10px;">
                         <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:6px; flex-wrap:wrap;">
                             <label for="entry-plate-select" style="color:#34d399; font-weight:800; font-size:0.76rem; margin:0;">
-                                <i class="fa-solid fa-car-side"></i> Araç Plakası Seçimi (Yakıt / Araç Gideri İçin Otomatik Liste)
+                                <i class="fa-solid fa-car-side"></i> Araç Plakası Seçimi (Yakıt Seçildiğinde Otomatik Liste)
                             </label>
-                            <span style="font-size:0.63rem; color:#a7f3d0;">Listeden seçin veya yeni plaka ekleyin</span>
+                            <span style="font-size:0.63rem; color:#a7f3d0;">Listeden seçin veya en alttan <strong>Elle Giriş</strong> yapın</span>
                         </div>
-                        <div class="form-grid-2" style="gap:8px; align-items:center;">
-                            <div>
-                                <select id="entry-plate-select" class="form-control" onchange="handleVehiclePlateSelectChange(this.value)">
-                                    <option value="">-- LİSTEDEN ARAÇ PLAKASI SEÇİNİZ --</option>
-                                </select>
-                            </div>
-                            <div style="display:flex; gap:5px;">
-                                <input type="text" id="entry-new-plate-input" class="form-control" placeholder="Yeni Plaka (Örn: 19 ABC 123)" style="text-transform:uppercase; font-weight:700;" onkeydown="if(event.key==='Enter'){event.preventDefault(); addNewCompanyVehiclePlate();}">
-                                <button type="button" class="btn btn-xs btn-success" style="white-space:nowrap; padding:6px 10px;" onclick="addNewCompanyVehiclePlate()" title="Yeni plakayı kalıcı olarak listeye ekle">
-                                    <i class="fa-solid fa-plus"></i> Plaka Ekle
-                                </button>
-                            </div>
+                        <div>
+                            <select id="entry-plate-select" class="form-control" onchange="handleVehiclePlateSelectChange(this.value)">
+                                <option value="">-- LİSTEDEN ARAÇ PLAKASI SEÇİNİZ --</option>
+                            </select>
                         </div>
                         <div id="entry-plate-quick-chips" style="display:flex; gap:5px; flex-wrap:wrap; margin-top:7px;"></div>
+                        <!-- EN ALTTA ELLE PLAKA GİRİŞ KUTUSU (Listeden "En Altta Elle Giriş" seçilince veya doğrudan yazmak için) -->
+                        <div id="entry-manual-plate-box" style="margin-top:8px; padding-top:7px; border-top:1px dashed rgba(52,211,153,0.35); display:flex; align-items:center; gap:6px;">
+                            <span style="font-size:0.68rem; font-weight:800; color:#fde68a; white-space:nowrap;"><i class="fa-solid fa-keyboard"></i> Elle Plaka Girişi:</span>
+                            <input type="text" id="entry-new-plate-input" class="form-control" placeholder="Plakayı elle yazın (Örn: 19 ABC 123)" style="text-transform:uppercase; font-weight:800; font-size:0.76rem; padding:5px 8px;" oninput="handleManualPlateInputLive(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault(); addNewCompanyVehiclePlate();}">
+                            <button type="button" class="btn btn-xs btn-success" style="white-space:nowrap; padding:6px 10px;" onclick="addNewCompanyVehiclePlate()" title="Yazılan plakayı listeye de kaydet">
+                                <i class="fa-solid fa-check"></i> Listeye Kaydet
+                            </button>
+                        </div>
                     </div>
 
                     <!-- 4. CARİ / BANKA (OTOMATİK DOLAR VEYA SERBEST YAZILABİLİR) VE VADE TARİHİ -->
@@ -1266,8 +1310,8 @@
 
     <!-- SCRIPTS -->
     <script src="auto-date-helper.js"></script>
-    <script src="app.js?v=1.1.8"></script>
-    <script src="dizsan-back-navigation.js?v=1.1.8"></script>
-    <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.1.8"></script>
+    <script src="app.js?v=1.1.9"></script>
+    <script src="dizsan-back-navigation.js?v=1.1.9"></script>
+    <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.1.9"></script>
 </body>
 </html>

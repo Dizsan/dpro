@@ -1,6 +1,6 @@
 {
-  "version": "1.7.3",
-  "updatedAt": "2026-10-23T13:48:00Z",
-  "notes": "v1.7.3 — Dizsan Günlük Kasa v1.1.8 (Yakıt Seçildiğinde Otomatik Açılan Araç Plakası Listesi & Raporlama Plaka Filtresi)",
+  "version": "1.7.4",
+  "updatedAt": "2026-10-23T13:53:00Z",
+  "notes": "v1.7.4 — Dizsan Günlük Kasa v1.1.9 (Plaka Listesi En Altta Elle Giriş & Tablo En Altında Hızlı Elle Giriş Satırı)",
   "mandatory": true
 }
