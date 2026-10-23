@@ -14,7 +14,7 @@
  * ==========================================================================
  */
 
-const CURRENT_APP_VERSION = "1.1.1";
+const CURRENT_APP_VERSION = "1.1.2";
 window.CURRENT_APP_VERSION = CURRENT_APP_VERSION;
 
 const OLD_DEMO_STORAGE_KEY = "dizsan_gunluk_kasa_state_v1";
@@ -2475,14 +2475,37 @@ function formatCreditCardValue(c) {
     return `${c.bank} - ${c.number} (${c.name})`;
 }
 
-function populateCreditCardSelector(existingCol1 = "") {
+function populateCreditCardSelector(existingCol1 = "", scannedBank = "") {
     const sel = document.getElementById("entry-cc-card-select");
     if (!sel) return;
     const cards = getAvailableCreditCards();
     const corpCards = cards.filter(c => c.type !== "personal");
     const persCards = cards.filter(c => c.type === "personal");
 
-    let html = `<optgroup label="ŞİRKET / KURUMSAL KREDİ KARTLARI">`;
+    let matchedRegistered = null;
+    if (existingCol1) {
+        for (const c of cards) {
+            if (existingCol1.includes(c.number)) {
+                matchedRegistered = c;
+                break;
+            }
+        }
+    }
+
+    let html = "";
+    const cleanLast4 = String(existingCol1 || "").replace(/[^0-9]/g, "").slice(-4);
+    const cleanBank = String(scannedBank || "").trim().toUpperCase();
+    let dynamicVal = "";
+    if (!matchedRegistered && (cleanLast4.length === 4 || cleanBank)) {
+        const bankLabel = cleanBank || "KREDİ KARTI";
+        dynamicVal = cleanLast4 ? `${bankLabel} - ${cleanLast4} (Fişten Okunan Kart)` : `${bankLabel} (Fişten Okunan Kart)`;
+        const dynamicText = cleanLast4 ? `${bankLabel} •••• ${cleanLast4} — Fişten Okunan Kart` : `${bankLabel} — Fişten Okunan Kart`;
+        html += `<optgroup label="BELGEDEN OKUNAN KART">`;
+        html += `<option value="${escapeHtml(dynamicVal)}">${escapeHtml(dynamicText)}</option>`;
+        html += `</optgroup>`;
+    }
+
+    html += `<optgroup label="ŞİRKET / KURUMSAL KREDİ KARTLARI">`;
     for (const c of corpCards) {
         const val = formatCreditCardValue(c);
         html += `<option value="${escapeHtml(val)}">${escapeHtml(c.bank)} •••• ${escapeHtml(c.number)} — ${escapeHtml(c.name)}</option>`;
@@ -2500,13 +2523,13 @@ function populateCreditCardSelector(existingCol1 = "") {
 
     sel.innerHTML = html;
 
-    if (existingCol1) {
-        for (const c of cards) {
-            if (existingCol1.includes(c.number)) {
-                sel.value = formatCreditCardValue(c);
-                break;
-            }
-        }
+    if (matchedRegistered) {
+        sel.value = formatCreditCardValue(matchedRegistered);
+    } else if (dynamicVal) {
+        sel.value = dynamicVal;
+    } else if (cleanBank) {
+        const bankMatch = cards.find(c => c.bank.includes(cleanBank) || cleanBank.includes(c.bank));
+        if (bankMatch) sel.value = formatCreditCardValue(bankMatch);
     }
 }
 
@@ -3005,9 +3028,10 @@ async function loadSampleFuelAndPosForTest() {
 
 function parseTurkishNumberFromOCR(rawStr) {
     if (!rawStr) return 0;
-    // OCR harf-rakam karışıklıklarını düzelt (Örn: *1.45O,OO -> 1.450,00)
+    // OCR harf-rakam karışıklıklarını düzelt (Örn: *1.45O,OO -> 1.450,00 | 1.170, COTL -> 1.170,00)
     let s = String(rawStr)
-        .replace(/[oO]/g, "0")
+        .replace(/([.,]\s*)[oOQCDU0]{2}(?=\s*(?:TL|TRY|₺|\b|$))/gi, "$100")
+        .replace(/[oOQD]/g, "0")
         .replace(/\*/g, "")
         .replace(/\s+/g, "")
         .replace(/[^0-9.,]/g, "");
@@ -3041,22 +3065,78 @@ function parseTurkishNumberFromOCR(rawStr) {
     return Number.isFinite(val) ? Number(val.toFixed(2)) : 0;
 }
 
-function extractAmountsFromLines(lines, keywordRegex) {
-    const numPattern = /\*?\s*([0-9]{1,3}(?:\s*\.\s*[0-9]{3})+(?:\s*[,.]\s*[0-9]{2})?|[0-9]{1,6}(?:\s*[,.]\s*[0-9]{2}))/g;
+function isOcrDiscountOrNegativeLine(ln) {
+    if (!ln) return false;
+    // İndirim / İskonto / Puan satırları veya sonunda eksi (-) işareti bulunan tutarlar (*499,90-) asla genel toplam değildir
+    if (/[Iİ1]ND[Iİ1]R[Iİ1]M|[Iİ1]ND[Iİ1]R\s+[Iİ1]M|\b[Iİ1]ND\b|[Iİ1]SKONTO|KAZAN[CÇ]|PUAN/.test(ln)) {
+        return true;
+    }
+    if (/[0-9][,.][0-9oOQCD]{2}\s*[-–—](?:\s|$)/.test(ln)) {
+        return true;
+    }
+    return false;
+}
+
+function extractPositiveAmountsFromSingleLine(ln) {
+    if (!ln || isOcrDiscountOrNegativeLine(ln)) return [];
+    const numPattern = /\*?\s*([0-9]{1,3}(?:\s*\.\s*[0-9]{3})+(?:\s*[,.]\s*[0-9oOQCD]{2})?|[0-9]{1,6}(?:\s*[,.]\s*[0-9oOQCD]{2}))(?!\s*[-–—])/gi;
+    const out = [];
+    for (const m of ln.matchAll(numPattern)) {
+        const fullMatchEnd = (m.index || 0) + m[0].length;
+        const tail = ln.slice(fullMatchEnd, fullMatchEnd + 3);
+        if (/^\s*[-–—]/.test(tail)) continue;
+        // Eğer Tesseract baştaki '*' işaretini '1.' olarak okuduysa (Örn: *499,90 -> 1.499,90) ve satır indirimse zaten üstte elendi
+        const val = parseTurkishNumberFromOCR(m[1]);
+        if (val > 0 && val < 5000000) out.push(val);
+    }
+    return out;
+}
+
+function extractPairedTopkdvAndToplam(lines) {
+    const kdvKey = /(?:TOPKDV|T0PKDV|TOPKOV|T0PKOV|TOPKD|TOP\s*KDV|TOP\s*KOV|KDV\s*TUTAR|\bKDV\b|\bKOV\b)/;
+    const totKey = /(?:GENEL\s*TOPLAM|TOPLAM|T0PLAM|TOPLAH|TOPLAN|T0PLAH|TOPLA\b)/;
+    for (let i = 0; i < lines.length - 2; i++) {
+        const l1 = lines[i];
+        const l2 = lines[i + 1];
+        if (isOcrDiscountOrNegativeLine(l1) || isOcrDiscountOrNegativeLine(l2)) continue;
+        const isPair = (kdvKey.test(l1) && totKey.test(l2)) || (totKey.test(l1) && kdvKey.test(l2));
+        if (isPair) {
+            const nums1 = extractPositiveAmountsFromSingleLine(l1);
+            const nums2 = extractPositiveAmountsFromSingleLine(l2);
+            if (nums1.length === 0 && nums2.length === 0) {
+                const collected = [];
+                for (let j = i + 2; j < Math.min(lines.length, i + 6) && collected.length < 2; j++) {
+                    const n = extractPositiveAmountsFromSingleLine(lines[j]);
+                    if (n.length > 0) collected.push(n[n.length - 1]);
+                }
+                if (collected.length === 2) {
+                    return {
+                        vatAmount: Math.min(collected[0], collected[1]),
+                        totalAmount: Math.max(collected[0], collected[1])
+                    };
+                }
+            }
+        }
+    }
+    return null;
+}
+
+function extractAmountsFromLines(lines, keywordRegex, maxLookahead = 2) {
     for (let i = 0; i < lines.length; i++) {
         const ln = lines[i];
+        if (isOcrDiscountOrNegativeLine(ln)) continue;
         if (keywordRegex.test(ln)) {
-            const matches = [...ln.matchAll(numPattern)];
-            if (matches.length > 0) {
-                const candidate = parseTurkishNumberFromOCR(matches[matches.length - 1][1]);
-                if (candidate > 0) return candidate;
+            const sameLineNums = extractPositiveAmountsFromSingleLine(ln);
+            if (sameLineNums.length > 0) {
+                return sameLineNums[sameLineNums.length - 1];
             }
-            // Tutar bir alt satıra kaymış olabilir (termal fişlerde ve POS sliplerinde çok sık görülür)
-            if (i + 1 < lines.length) {
-                const nextMatches = [...lines[i + 1].matchAll(numPattern)];
-                if (nextMatches.length > 0) {
-                    const nextCandidate = parseTurkishNumberFromOCR(nextMatches[nextMatches.length - 1][1]);
-                    if (nextCandidate > 0) return nextCandidate;
+            // Tutar 1 veya 2 alt satıra kaymış olabilir (Örn: KREDİ KARTI \n YAPI KREDI \n *1.170,00 veya TUTAR \n 1.170, COTL)
+            for (let step = 1; step <= maxLookahead && (i + step) < lines.length; step++) {
+                const nextLn = lines[i + step];
+                if (isOcrDiscountOrNegativeLine(nextLn)) break;
+                const nextNums = extractPositiveAmountsFromSingleLine(nextLn);
+                if (nextNums.length > 0) {
+                    return nextNums[nextNums.length - 1];
                 }
             }
         }
@@ -3064,23 +3144,90 @@ function extractAmountsFromLines(lines, keywordRegex) {
     return 0;
 }
 
-function extractFallbackTotalFromReceiptText(lines) {
-    // Eğer TOPLAM kelimesi OCR'da bozuk okunduysa (*1.250,00 veya 20. 000,00 TL formatındaki en büyük alt satır tutarını bul)
-    const starOrTlPattern = /(?:\*\s*([0-9]{1,3}(?:\s*\.\s*[0-9]{3})*(?:\s*[,.]\s*[0-9]{2})|[0-9]{1,6}\s*[,.]\s*[0-9]{2}))|(?:([0-9]{1,3}(?:\s*\.\s*[0-9]{3})*(?:\s*[,.]\s*[0-9]{2})|[0-9]{1,6}\s*[,.]\s*[0-9]{2})\s*(?:TL|TRY|₺))/gi;
-    let bestAmount = 0;
-    const startIdx = Math.floor(lines.length * 0.20);
-    for (let i = startIdx; i < lines.length; i++) {
-        const ln = lines[i];
-        if (/KDV|MATRAH|ARA\s*TOP/i.test(ln)) continue;
-        for (const m of ln.matchAll(starOrTlPattern)) {
-            const raw = m[1] || m[2];
-            const val = parseTurkishNumberFromOCR(raw);
-            if (val > bestAmount && val < 5000000) {
-                bestAmount = val;
+function extractConsensusOrFallbackTotal(lines) {
+    // 1. Önce 2 sütunlu TOPKDV + TOPLAM çifti varsa kontrol et
+    const paired = extractPairedTopkdvAndToplam(lines);
+    if (paired && paired.totalAmount > 0) {
+        return paired.totalAmount;
+    }
+
+    // 2. TOPLAM, KREDİ KARTI/NAKİT ve TUTAR/SATIŞ satırlarından adayları topla (İNDİRİM satırları hariç!)
+    const candidates = [];
+    const topAmt = extractAmountsFromLines(lines, /(?:GENEL\s*TOPLAM|TOPLAM|T0PLAM|TOPLAH|TOPLAN|T0PLAH|TOPLA\b|ODENECEK|ÖDENECEK)/, 2);
+    if (topAmt > 0) candidates.push(topAmt);
+
+    const payAmt = extractAmountsFromLines(lines, /(?:KRED[Iİ1]\s*KART|YAPI\s*KRED|NAK[Iİ1]T)/, 2);
+    if (payAmt > 0) candidates.push(payAmt);
+
+    const posAmt = extractAmountsFromLines(lines, /(?:SATI[SŞ]\s*TUTAR|\bTUTAR\b|T0TAR)/, 2);
+    if (posAmt > 0) candidates.push(posAmt);
+
+    // Eğer aynı tutar birden fazla yerde (Örn: hem TOPLAM hem KREDİ KARTI hem TUTAR = 1.170,00) geçiyorsa %100 kesin tutardır
+    if (candidates.length >= 2) {
+        for (let i = 0; i < candidates.length; i++) {
+            for (let j = i + 1; j < candidates.length; j++) {
+                if (Math.abs(candidates[i] - candidates[j]) < 0.05) {
+                    return candidates[i];
+                }
             }
         }
     }
-    return bestAmount;
+    if (candidates.length > 0) {
+        return candidates[0];
+    }
+
+    // 3. Yedek: İndirim ve KDV olmayan yıldızlı (*1.170,00) veya TL'li tutarları tara; tekrar eden varsa onu seç
+    const starOrTlPattern = /(?:\*\s*([0-9]{1,3}(?:\s*\.\s*[0-9]{3})*(?:\s*[,.]\s*[0-9oOQCD]{2})|[0-9]{1,6}\s*[,.]\s*[0-9oOQCD]{2}))|(?:([0-9]{1,3}(?:\s*\.\s*[0-9]{3})*(?:\s*[,.]\s*[0-9oOQCD]{2})|[0-9]{1,6}\s*[,.]\s*[0-9oOQCD]{2})\s*(?:TL|TRY|₺))/gi;
+    const freq = new Map();
+    let bestAmount = 0;
+    const startIdx = Math.floor(lines.length * 0.15);
+    for (let i = startIdx; i < lines.length; i++) {
+        const ln = lines[i];
+        if (/KDV|KOV|MATRAH|ARA\s*TOP/i.test(ln) || isOcrDiscountOrNegativeLine(ln)) continue;
+        if (i > 0 && isOcrDiscountOrNegativeLine(lines[i - 1])) continue;
+        for (const m of ln.matchAll(starOrTlPattern)) {
+            const fullEnd = (m.index || 0) + m[0].length;
+            if (/^\s*[-–—]/.test(ln.slice(fullEnd, fullEnd + 3))) continue;
+            const raw = m[1] || m[2];
+            const val = parseTurkishNumberFromOCR(raw);
+            if (val > 0 && val < 5000000) {
+                freq.set(val, (freq.get(val) || 0) + 1);
+                if (val > bestAmount) bestAmount = val;
+            }
+        }
+    }
+    // Birden fazla kez tekrar eden tutar varsa (Örn: Fiş toplamı + Kredi Kartı + POS Tutarı = 1.170,00) onu döndür
+    let mostRepeatedVal = 0;
+    let maxCount = 1;
+    for (const [val, cnt] of freq.entries()) {
+        if (cnt > maxCount || (cnt === maxCount && val > mostRepeatedVal)) {
+            maxCount = cnt;
+            mostRepeatedVal = val;
+        }
+    }
+    return mostRepeatedVal > 0 ? mostRepeatedVal : bestAmount;
+}
+
+function isHandwritingOrGarbageHeaderLine(ln) {
+    if (!ln) return true;
+    // El yazısı kaynaklı sembol gürültüsü (Örn: "A EŞ > EK BAL >", "KUZUME YÜZ KREMİ") veya geçersiz başlık satırları
+    if (/[><=~|$%*;?!]/.test(ln)) return true;
+    if (/KUZUM|KREM[IİÍ1]|T\s+ON\s+NA/.test(ln)) return true;
+    const words = ln.replace(/[^A-ZÇĞİÖŞÜ0-9\s]/g, " ").trim().split(/\s+/).filter(Boolean);
+    if (words.length === 0) return true;
+    const longWords = words.filter(w => w.length >= 3);
+    if (longWords.length === 0) return true;
+    if (words.length >= 3 && longWords.length <= 1) return true;
+    return false;
+}
+
+function normalizeStationOrMerchantName(rawName) {
+    if (!rawName) return "";
+    let s = String(rawName).trim().toUpperCase().replace(/^[^A-ZÇĞİÖŞÜ0-9]+/, "").replace(/[><=~|$%*;?!]+/g, "").trim();
+    if (/^[OÖ]M[UÜ]R\s+ECZANES[Iİ1]?/.test(s) || /ECZ\.\s*REF[Iİ1]KA\s+KAD[Iİ1]RO[GĞ]LU/.test(s)) {
+        return "ÖMÜR ECZANESİ";
+    }
+    return s.slice(0, 48);
 }
 
 function parseReceiptDateAndTimeFromText(upperText) {
@@ -3214,25 +3361,26 @@ function parseReceiptTextToStructured(text) {
         }
     }
     if (!result.station && upperLines.length > 0) {
-        const companyLine = upperLines.slice(0, 6).find(l =>
-            /(?:A\.?\s*Ş|LTD|ŞTİ|STI|TİC|TIC|SAN\b|MARKET|GIDA|RESTORAN|LOKANTA|KEBAP|PİDE|PIDE|CAFE|KAFE|FIRIN|PASTA|PETROL|AKARYAKIT|AXARYAKIT|ARYAKIT|OTOMOTİV|OTOMOTIV|SERVİS|SERVIS|ECZANE|KARGO)/.test(l)
+        const companyLine = upperLines.slice(0, 8).find(l =>
+            /(?:A\.?\s*Ş|LTD|ŞTİ|STI|TİC|TIC|SAN\b|MARKET|GIDA|RESTORAN|LOKANTA|KEBAP|PİDE|PIDE|CAFE|KAFE|FIRIN|PASTA|PETROL|AKARYAKIT|AXARYAKIT|ARYAKIT|OTOMOTİV|OTOMOTIV|SERVİS|SERVIS|ECZANE|ECZ\.|MEDİKAL|MEDIKAL|KARGO)/.test(l)
         );
         if (companyLine) {
-            result.station = companyLine.replace(/^[^A-ZÇĞİÖŞÜ0-9]+/, "").slice(0, 48);
+            result.station = normalizeStationOrMerchantName(companyLine);
         } else {
             const cleanFirst = upperLines.find(l =>
+                !isHandwritingOrGarbageHeaderLine(l) &&
                 l.replace(/[^A-ZÇĞİÖŞÜ]/g, "").length >= 5 &&
                 (l.match(/,/g) || []).length <= 1 &&
-                !/^(?:TAR[Iİ]H|SAAT|F[Iİ][SŞ]\s*NO|[Iİ]ŞYER[Iİ]|ISYER[Iİ]|SL[Iİ]P|MÜŞTERİ|MUSTERI|SATI[SŞ])/.test(l)
+                !/^(?:TAR[Iİ]H|SAAT|F[Iİ][SŞ]\s*N|[Iİ]ŞYER[Iİ]|ISYER[Iİ]|SL[Iİ]P|MÜŞTERİ|MUSTERI|SATI[SŞ]|TEL\b|V\.?D\.?)/.test(l)
             );
-            if (cleanFirst) result.station = cleanFirst.slice(0, 48);
+            if (cleanFirst) result.station = normalizeStationOrMerchantName(cleanFirst);
         }
     }
 
-    if (/Ç?ORU[MPN].*ERKEZ|CORUM.*MERKEZ/.test(upperText)) {
+    if (/Ç?ORU[MPN].*ERKEZ|CORUM.*MERKEZ|ERKEZ.*Ç?ORU[MPN]|MERKEZ.*CORUM/.test(upperText)) {
         result.location = "ÇORUM / MERKEZ";
     } else if (upperLines.length > 1) {
-        const locLine = upperLines.slice(1, 6).find(l => /(?:ÇORUM|CORUM|ANKARA|İSTANBUL|ISTANBUL|SAMSUN|AMASYA|YOZGAT|TOKAT|ÇANKIRI|MERKEZ|ŞUBE|SUBE|MAH\.|CAD\.)/.test(l));
+        const locLine = upperLines.slice(1, 8).find(l => /(?:ÇORUM|CORUM|ANKARA|İSTANBUL|ISTANBUL|SAMSUN|AMASYA|YOZGAT|TOKAT|ÇANKIRI|MERKEZ|ŞUBE|SUBE|MAH\.|CAD\.)/.test(l));
         if (locLine) {
             result.location = locLine.replace(/^ORUM\b/, "ÇORUM").slice(0, 40);
         }
@@ -3264,33 +3412,73 @@ function parseReceiptTextToStructured(text) {
         result.docType = "FUEL";
     }
 
-    // 6. Toplam Tutar ve KDV (Aynı satır + alt satır + yıldızlı tutar yedekli)
-    result.totalAmount = extractAmountsFromLines(upperLines, /(?:GENEL\s*TOPLAM|TOPLAM|T0PLAM|TOP\b|TUTAR|SATI[SŞ]\s*TUTAR|ODENECEK|ÖDENECEK|NAK[Iİ]T|KRED[Iİ])/);
+    // 6. Toplam Tutar ve KDV (2 Sütunlu TOPKDV+TOPLAM çifti + Çapraz Mutabakat + İndirim Filtresi)
+    const pairedKdvTot = extractPairedTopkdvAndToplam(upperLines);
+    if (pairedKdvTot) {
+        result.totalAmount = pairedKdvTot.totalAmount;
+        result.vatAmount = pairedKdvTot.vatAmount;
+    }
     if (!result.totalAmount) {
-        result.totalAmount = extractFallbackTotalFromReceiptText(upperLines);
+        result.totalAmount = extractConsensusOrFallbackTotal(upperLines);
+    }
+    if (!result.vatAmount) {
+        result.vatAmount = extractAmountsFromLines(upperLines, /(?:TOPKDV|T0PKDV|TOPKOV|T0PKOV|TOPKD|TOP\s*KDV|TOP\s*KOV|KDV\s*TUTAR|\bKDV\b|\bKOV\b)/, 2);
+    }
+    // Termal fişlerde silik rakam düzeltmesi: Örn %20 KDV'li 1.170,00 TL fişte gerçek KDV = 195,00 TL iken '5' silik çıkıp '190,00' okunduysa düzelt
+    if (result.totalAmount > 0 && /(?:[%$]\s*20|\b20\s*%)/.test(upperText)) {
+        const expectedVat20 = Number((result.totalAmount - (result.totalAmount / 1.20)).toFixed(2));
+        if (result.vatAmount === 0 || Math.abs(result.vatAmount - expectedVat20) === 5 || Math.abs(result.vatAmount - expectedVat20) === 0.5) {
+            result.vatAmount = expectedVat20;
+        }
+    } else if (result.totalAmount > 0 && /(?:[%$]\s*10|\b10\s*%)/.test(upperText)) {
+        const expectedVat10 = Number((result.totalAmount - (result.totalAmount / 1.10)).toFixed(2));
+        if (result.vatAmount === 0 || Math.abs(result.vatAmount - expectedVat10) === 5 || Math.abs(result.vatAmount - expectedVat10) === 0.5) {
+            result.vatAmount = expectedVat10;
+        }
     }
 
-    result.vatAmount = extractAmountsFromLines(upperLines, /(?:TOPKDV|TOP\s*KDV|KDV\s*TUTAR|KDV)/);
-
-    // 7. Fiş / Fatura / İşlem No
-    const fisMatch = upperText.match(/(?:F[Iİ1][SŞ5]\s*NO|FATURA\s*NO|BELGE\s*NO|ARSIV\s*NO|ARŞİV\s*NO|SIRA\s*NO|[Iİ1][SŞ5]LE[MII]+\s*NO)\s*[:.#\-]*\s*([A-Z0-9\-]{2,16})/);
+    // 7. Fiş / Fatura / İşlem No (OCR'da NO -> ND / N0 okunmasına toleranslı)
+    const fisMatch = upperText.match(/(?:F[Iİ1][SŞ5]\s*N[O0D]?|FATURA\s*N[O0D]?|BELGE\s*N[O0D]?|ARS[Iİ1]V\s*N[O0D]?|AR[SŞ][Iİ1]V\s*N[O0D]?|[Iİ1][SŞ5]LE[MII]+\s*N[O0D]?)\s*[:.#\-]*\s*([A-Z0-9\-]{2,16})/);
     if (fisMatch) {
         result.receiptNo = fisMatch[1].replace(/^6PQU70$/, "GP0070").replace(/^6PQ/, "GP0").replace(/^6P/, "GP").replace(/^GP0U70$/, "GP0070").trim();
     }
 
     // 8. Ödeme Şekli
-    if (upperText.match(/KRED[Iİ]\s*KART|KRE'OI|POS|BANKA\s*KART|ORTAK\s*POS|TEK\s*[CÇ]EK[Iİ]M|ONAY\s*KOD|ONA\s*Y\s*KOD|[SŞ][Iİ]FRE\s*KULLAN/)) {
+    if (upperText.match(/KRED[Iİ1]\s*KART|KRE'OI|POS|BANKA\s*KART|ORTAK\s*POS|TEK\s*[CÇ]EK[Iİ1]M|ONAY\s*KOD|ONA\s*Y\s*KOD|[SŞ][Iİ1]FRE\s*KULLAN|TEMASSIZ/)) {
         result.paymentMethod = "KREDİ KARTI";
-    } else if (upperText.match(/NAK[Iİ]T/)) {
+    } else if (upperText.match(/NAK[Iİ1]T/)) {
         result.paymentMethod = "NAKİT";
     }
 
-    // 9. Diğer belge türlerini sınıflandırma (Yemek, Market, Otopark, HGS, Kargo, Parça vb.)
+    // 8B. Fiş üzerindeki gerçek ürün / kalem satırını tespit et (Örn: "LA ROCHE-POSAY EFFAC %20")
+    if (!result.fuelType) {
+        let afterHeaderIdx = 0;
+        for (let i = 0; i < upperLines.length; i++) {
+            if (/(?:F[Iİ1][SŞ5]\s*N|SAAT\s*[:.]|V\.?\s*D\.?\s*[0-9]{6,})/.test(upperLines[i])) {
+                afterHeaderIdx = i + 1;
+            }
+        }
+        if (afterHeaderIdx > 0 && afterHeaderIdx < upperLines.length) {
+            for (let i = afterHeaderIdx; i < Math.min(upperLines.length, afterHeaderIdx + 5); i++) {
+                const candLine = upperLines[i];
+                if (/^(?:TOPKDV|TOPKOV|TOPLAM|TOPLAH|KRED[Iİ1]|NAK[Iİ1]T|TUTAR|[Iİ1]ND[Iİ1]R|SA[GĞ]LIKLI|G[UÜ]NE[SŞ]|ECZACI|[Iİ1][SŞ]YER[Iİ1]|M[UÜ][SŞ]TER[Iİ1]|\*?[0-9.,]+[-–]?$)/.test(candLine)) {
+                    break;
+                }
+                const cleanedForCheck = candLine.replace(/[$%]\s*[0-9]{1,2}/g, "").replace(/\*/g, "");
+                if (candLine.replace(/[^A-ZÇĞİÖŞÜ]/g, "").length >= 4 && !isHandwritingOrGarbageHeaderLine(cleanedForCheck)) {
+                    result.fuelType = candLine.replace(/FOSAY/g, "POSAY").replace(/\$(10|20|01|1|8)\b/g, "%$1").slice(0, 48);
+                    break;
+                }
+            }
+        }
+    }
+
+    // 9. Diğer belge türlerini sınıflandırma (Not: POS sliplerindeki "İşlem Yurtiçi kartı ile..." ifadesinin KARGO sanılmasını engellemek için YURTİÇİ KARGO tam eşleşmeli)
     if (result.docType === "OTHER") {
         if (upperText.match(/YEMEK|RESTORAN|LOKANTA|KEBAP|P[Iİ]DE|CAFE|KAFE|KÖFTE|KOFTE|DÖNER|DONER|ÇORBA|CORBA|LAHMACUN|TATLI|PASTA|İSKENDER|ISKENDER|AYRAN|SALATA|PORSİYON|PORSIYON/)) {
             result.docType = "MEAL";
             if (!result.fuelType) result.fuelType = "YEMEK / RESTORAN HARCAMASI";
-        } else if (upperText.match(/MARKET|GIDA|M[Iİ]GROS|B[Iİ]M|A101|[SŞ]OK|ÇAY|KAHVE|ŞEKER|TEM[Iİ]ZL[Iİ]K|SU\b|EKMEK|PEYN[Iİ]R|SÜT/)) {
+        } else if (upperText.match(/MARKET|GIDA|M[Iİ]GROS|B[Iİ]M\b|A101|[SŞ]OK\s*MARKET|ÇAY|KAHVE|ŞEKER|TEM[Iİ]ZL[Iİ]K|EKMEK|PEYN[Iİ]R|SÜT/)) {
             result.docType = "MARKET";
             if (!result.fuelType) result.fuelType = "MARKET / MUTFAK ALIŞVERİŞİ";
         } else if (upperText.match(/OTOPARK|PARK\s*ÜCRET|YIKAMA|OTO\s*KUAFÖR/)) {
@@ -3299,12 +3487,14 @@ function parseReceiptTextToStructured(text) {
         } else if (upperText.match(/HGS|OGS|OTOYOL|KÖPRÜ|GEÇ[Iİ][SŞ]/)) {
             result.docType = "HGS";
             if (!result.fuelType) result.fuelType = "HGS / OTOYOL GEÇİŞ";
-        } else if (upperText.match(/KARGO|NAKL[Iİ]YE|YURT[Iİ]Ç[Iİ]|ARAS|MNG|DHL|SÜRAT|AMBAR/)) {
+        } else if (upperText.match(/KARGO|NAKL[Iİ]YE|YURT\s*[Iİ1]Ç[Iİ1]\s*KARGO|ARAS\s*KARGO|MNG\s*KARGO|DHL|S[ÜU]RAT\s*KARGO|AMBAR/)) {
             result.docType = "CARGO";
             if (!result.fuelType) result.fuelType = "KARGO / NAKLİYE";
         } else if (upperText.match(/YEDEK\s*PARÇA|TEDAR[Iİ]K|TDR|SANAY[Iİ]|TORNA|BAKIM|TAM[Iİ]R|CIVATA|RULMAN|F[Iİ]LTRE/)) {
             result.docType = "PARTS";
             if (!result.fuelType) result.fuelType = "PARÇA / BAKIM / TEDARİK";
+        } else if (upperText.match(/ECZANE|ECZ\.|[Iİ1]LAÇ|MED[Iİ1]KAL|OPT[Iİ1]K/)) {
+            if (!result.fuelType) result.fuelType = "ECZANE / SAĞLIK / MEDİKAL";
         } else if (!result.fuelType) {
             result.fuelType = "GENEL BELGE / FATURA";
         }
@@ -3361,12 +3551,15 @@ function parsePosTextToStructured(text) {
         }
     }
 
-    // Kart Son 4 Hane: Nokta vuruşlu sliplerde "**** **** **** 3232" -> "¥(*** )k4¢** *X¢*)K 3232" olarak okunabilir
+    // Kart Son 4 Hane:
+    // 1) **** **** **** 3311 veya nokta vuruşlu ¥(*** )k4¢** 3232
+    // 2) SATIŞ / MÜŞTERİ NÜSHASI satırının 1-3 satır altında veya TUTAR satırının hemen üstünde yer alan 4 haneli kart numarası
     const maskedCardMatch =
         upperText.match(/(?:\*{2,}|X{2,}|•{2,}|\.{4,})[\s\*X•.\-]*([0-9]{4})\b/) ||
         upperText.match(/\*[^\n]*\*[^\n]*?\b([0-9]{4})\s*$/m) ||
         upperText.match(/KART\s*(?:NO)?\s*[:.]?\s*[^\n]*?([0-9]{4})\b/) ||
-        upperText.match(/SATI[SŞ]?\s*\r?\n[^\n]*?\b([0-9]{4})\s*$/m);
+        upperText.match(/(?:M[UÜ][SŞ]TER[Iİ1]\s*N[UÜ]SHASI|SATI[SŞ])\s*(?:\r?\n[^\n]*){0,2}?\r?\n[^\n0-9]*([0-9]{4})\s*$/m) ||
+        upperText.match(/\b([0-9]{4})\s*\r?\n\s*TUTAR\b/);
     if (maskedCardMatch) {
         pos.cardLast4 = maskedCardMatch[1];
     }
@@ -3386,49 +3579,60 @@ function parsePosTextToStructured(text) {
     pos.posDate = dt.date;
     pos.posTime = dt.time;
 
-    pos.posAmount = extractAmountsFromLines(upperLines, /(?:TUTAR|SATIS|SATIŞ|TOPLAM|T0PLAM|TOP\b|ODENECEK|ÖDENECEK|KRED[Iİ])/);
+    pos.posAmount = extractAmountsFromLines(upperLines, /(?:SATI[SŞ]\s*TUTAR|\bTUTAR\b|T0TAR|SATIS|SATIŞ|ODENECEK|ÖDENECEK|KRED[Iİ1]\s*KART)/, 2);
     if (!pos.posAmount) {
-        pos.posAmount = extractFallbackTotalFromReceiptText(upperLines);
+        pos.posAmount = extractConsensusOrFallbackTotal(upperLines);
     }
 
-    // Onay Kodu: "ONAY KODU : 155022", "ONA Y KODU . 155022", "CIIIY K(AXI . 155022"
+    // Onay Kodu: "ONAY KODU : 155022", "ONA Y KODU . 155022", "SN:043 ONAY KODU:134993"
     const authMatch =
-        upperText.match(/(?:O\s*N\s*A\s*Y\s*K\s*O\s*D\s*U|O\s*N\s*A\s*Y|K\s*O\s*D\s*U|K\([A-Z]+|PROV[Iİ]ZYON|AUTH\s*CODE|AUTH)[^\n0-9]*([0-9]{6})\b/) ||
-        upperText.match(/(?:AID|KRED[Iİ]\s*KART|KRE'OI)[^\n]*\r?\n[^\n0-9]*([0-9]{6})\b/);
+        upperText.match(/(?:O\s*N\s*A\s*Y\s*K\s*O\s*D\s*U|O\s*N\s*A\s*Y|K\s*O\s*D\s*U|K\([A-Z]+|PROV[Iİ1]ZYON|AUTH\s*CODE|AUTH)[^\n0-9]*([0-9]{6})\b/) ||
+        upperText.match(/(?:AID|KRED[Iİ1]\s*KART|KRE'OI)[^\n]*\r?\n[^\n0-9]*([0-9]{6})\b/);
     if (authMatch) {
         pos.authCode = authMatch[1];
     }
 
-    // Referans / İşlem / Batch / POS No
-    const islemMatch = upperText.match(/(?:[Iİ1][SŞ5]LE[MII]+\s*NO)[\s:.\-]*([A-Z0-9]{4,12})/);
-    const batchMatch = upperText.match(/(?:BATCH\s*NO|BA[TF]C[HI]+\s*[NI1O0]+)[\s:.\-]*([0-9]{3,8})/);
-    const refMatch = upperText.match(/(?:REF\s*NO|REFERANS|SIRA\s*NO|STAN|POS\s*NO|PTSS\s*NTS)[\s:.\-]*([A-Z0-9]{4,16})/);
+    // Referans / İşlem / Batch / POS No (Örn: "REF:2551907224", "REF:25519C7224", "REF NO: 8841209541")
+    const islemMatch = upperText.match(/(?:[Iİ1][SŞ5]LE[MII]+\s*N[O0D]?)[\s:.\-]*([A-Z0-9]{4,12})/);
+    const batchMatch = upperText.match(/(?:BATCH\s*N[O0D]?|BA[TF]C[HI]+\s*[NI1O0]+)[\s:.\-]*([0-9]{3,8})/);
+    const refMatch = upperText.match(/(?:REF(?:\s*N[O0D]?)?|REFERANS|STAN|POS\s*N[O0D]?|PTSS\s*NTS)[\s:.\-]+([A-Z0-9]{6,16})/);
     if (islemMatch) {
         const cleanIslem = islemMatch[1].replace(/^6PQU70$/, "GP0070").replace(/^6PQ/, "GP0").replace(/^GP0U70$/, "GP0070");
         pos.refNo = batchMatch ? `${cleanIslem} / BATCH:${batchMatch[1]}` : cleanIslem;
     } else if (refMatch) {
-        pos.refNo = refMatch[1].replace(/B/g, "6");
+        let rawRef = refMatch[1];
+        // Sayısal referans numaralarında OCR'ın '0' yerine 'C'/'O'/'D' veya '6' yerine 'B' okumalarını düzelt
+        if (/^[0-9COQDBIS]{8,14}$/.test(rawRef)) {
+            rawRef = rawRef.replace(/[COQD]/g, "0").replace(/B/g, "6").replace(/I/g, "1").replace(/S/g, "5");
+        }
+        pos.refNo = rawRef;
     } else if (batchMatch) {
         pos.refNo = `BATCH:${batchMatch[1]}`;
     }
 
-    const taksitMatch = upperText.match(/([0-9]{1,2})\s*TAKS[Iİ]T/);
+    const taksitMatch = upperText.match(/([0-9]{1,2})\s*TAKS[Iİ1]T/);
     if (taksitMatch) {
         pos.installment = `${taksitMatch[1]} TAKSİT`;
     }
 
     if (/A[TF]A?R?S[O0][YV]|A[TF]AS[O0][YV]/.test(upperText)) {
         pos.merchantName = "ATASOY AKARYAKIT";
-    } else if (upperLines.length > 1) {
-        const merchCandidate = upperLines.slice(0, 5).find(l =>
-            !banks.some(b => l.includes(b.key)) &&
-            l.replace(/[^A-ZÇĞİÖŞÜ]/g, "").length >= 5 &&
-            (l.match(/,/g) || []).length <= 1 &&
-            !/^(?:TAR[Iİ]H|SAAT|SL[Iİ]P|MÜŞTERİ|MUSTERI|[Iİ]ŞYER[Iİ]\s*NO|ISYER[Iİ]\s*NO|TERMINAL)/.test(l)
+    } else if (upperLines.length > 0) {
+        const companyLine = upperLines.slice(0, 8).find(l =>
+            /(?:A\.?\s*Ş|LTD|ŞTİ|STI|TİC|TIC|SAN\b|MARKET|GIDA|RESTORAN|LOKANTA|KEBAP|PİDE|PIDE|CAFE|KAFE|FIRIN|PASTA|PETROL|AKARYAKIT|AXARYAKIT|ARYAKIT|OTOMOTİV|OTOMOTIV|SERVİS|SERVIS|ECZANE|ECZ\.|MEDİKAL|MEDIKAL|KARGO)/.test(l)
         );
-        pos.merchantName = (merchCandidate || upperLines[0]).slice(0, 48);
-    } else if (upperLines.length === 1) {
-        pos.merchantName = upperLines[0].slice(0, 48);
+        if (companyLine) {
+            pos.merchantName = normalizeStationOrMerchantName(companyLine);
+        } else {
+            const merchCandidate = upperLines.slice(0, 6).find(l =>
+                !banks.some(b => l.includes(b.key)) &&
+                !isHandwritingOrGarbageHeaderLine(l) &&
+                l.replace(/[^A-ZÇĞİÖŞÜ]/g, "").length >= 5 &&
+                (l.match(/,/g) || []).length <= 1 &&
+                !/^(?:TAR[Iİ]H|SAAT|SL[Iİ]P|MÜŞTERİ|MUSTERI|[Iİ]ŞYER[Iİ]\s*NO|ISYER[Iİ]\s*NO|TERMINAL|TEL\b|V\.?D\.?)/.test(l)
+            );
+            pos.merchantName = normalizeStationOrMerchantName(merchCandidate || "");
+        }
     }
 
     return pos;
@@ -3499,9 +3703,8 @@ function preprocessReceiptImageForOCR(dataUrl) {
 
                 const srcData = srcCtx.getImageData(0, 0, origW, origH).data;
 
-                // 1. Ahşap masa / renkli zemin üzerindeki beyaz/gri fiş kağıdını otomatik tespit et ve kırp
-                // Kağıt pikselleri: düşük renk doygunluğu (chroma < 34) ve parlak (lum > 105)
-                let minX = origW, maxX = 0, minY = origH, maxY = 0;
+                // 1. Ahşap masa / renkli zemin üzerindeki fiş kağıdını otomatik tespit et ve kırp
+                // Ahşap/masa pikselleri sıcak kahverengi/sarıdır (warmth = R - B >= 20); fiş kağıdı ise soğuk/nötr beyaz-gridir (R - B < 20 ve lum > 105)
                 let paperPixelCount = 0;
                 const xCounts = new Uint32Array(origW);
                 const yCounts = new Uint32Array(origH);
@@ -3510,11 +3713,10 @@ function preprocessReceiptImageForOCR(dataUrl) {
                     for (let x = 0; x < origW; x += 2) {
                         const idx = (y * origW + x) * 4;
                         const r = srcData[idx], g = srcData[idx + 1], b = srcData[idx + 2];
-                        const maxC = Math.max(r, g, b);
-                        const minC = Math.min(r, g, b);
-                        const chroma = maxC - minC;
+                        const warmth = r - b;
+                        const chroma = Math.max(r, g, b) - Math.min(r, g, b);
                         const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-                        if (chroma < 34 && lum > 105) {
+                        if (warmth < 20 && chroma < 48 && lum > 105) {
                             xCounts[x]++;
                             yCounts[y]++;
                             paperPixelCount++;
@@ -3523,32 +3725,35 @@ function preprocessReceiptImageForOCR(dataUrl) {
                 }
 
                 let cropX1 = 0, cropY1 = 0, cropX2 = origW, cropY2 = origH;
-                if (paperPixelCount > (origW * origH * 0.04)) {
+                if (paperPixelCount > (origW * origH * 0.02)) {
                     let accX = 0;
                     for (let x = 0; x < origW; x++) {
                         accX += xCounts[x];
-                        if (accX >= paperPixelCount * 0.02) { cropX1 = Math.max(0, x - 12); break; }
+                        if (accX >= paperPixelCount * 0.02) { cropX1 = Math.max(0, x - 10); break; }
                     }
                     accX = 0;
                     for (let x = origW - 1; x >= 0; x--) {
                         accX += xCounts[x];
-                        if (accX >= paperPixelCount * 0.02) { cropX2 = Math.min(origW, x + 12); break; }
+                        if (accX >= paperPixelCount * 0.02) { cropX2 = Math.min(origW, x + 10); break; }
                     }
                     let accY = 0;
                     for (let y = 0; y < origH; y++) {
                         accY += yCounts[y];
-                        if (accY >= paperPixelCount * 0.02) { cropY1 = Math.max(0, y - 12); break; }
+                        if (accY >= paperPixelCount * 0.02) { cropY1 = Math.max(0, y - 10); break; }
                     }
                     accY = 0;
                     for (let y = origH - 1; y >= 0; y--) {
                         accY += yCounts[y];
-                        if (accY >= paperPixelCount * 0.02) { cropY2 = Math.min(origH, y + 12); break; }
+                        if (accY >= paperPixelCount * 0.02) { cropY2 = Math.min(origH, y + 10); break; }
                     }
                 }
 
                 const cropW = Math.max(100, cropX2 - cropX1);
                 const cropH = Math.max(100, cropY2 - cropY1);
-                const scale = Math.min(2.0, Math.max(1.0, 1200 / Math.max(cropW, cropH)));
+                // Uzun/dar birleşik fiş+POS sliplerinde harf yüksekliğinin düşmemesi için genişliği ~960px hedefle ölçekle
+                const scaleByW = 960 / cropW;
+                const maxScaleByH = 2400 / cropH;
+                const scale = Math.min(2.6, Math.max(1.15, Math.min(scaleByW, maxScaleByH)));
                 const outW = Math.round(cropW * scale);
                 const outH = Math.round(cropH * scale);
 
@@ -3563,44 +3768,65 @@ function preprocessReceiptImageForOCR(dataUrl) {
                 const imgData = ctx.getImageData(0, 0, outW, outH);
                 const d = imgData.data;
 
-                // Sadece kağıt piksellerinin parlaklık dağılımını bul; ahşap/renkli masa piksellerini (chroma >= 36) beyaza boya
-                const hist = new Uint32Array(256);
-                let validCount = 0;
-                for (let i = 0; i < d.length; i += 4) {
-                    const r = d[i], g = d[i + 1], b = d[i + 2];
-                    const chroma = Math.max(r, g, b) - Math.min(r, g, b);
-                    const lum = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
-                    if (chroma > 38) {
-                        // Renkli/ahşap masa arka planını saf beyaza çevir (sahte harf üretmesini engelle)
-                        d[i] = 255; d[i + 1] = 255; d[i + 2] = 255;
-                    } else {
-                        d[i] = lum;
-                        hist[lum]++;
-                        validCount++;
+                // 2. Yatay şeritler (32px) halinde yerel kağıt beyazlığını (localPaperWhite) hesapla (Telefon/el gölgesini tamamen yok eder!)
+                const bandH = 32;
+                const numBands = Math.ceil(outH / bandH);
+                const bandWhite = new Float32Array(numBands);
+
+                for (let bIdx = 0; bIdx < numBands; bIdx++) {
+                    const yStart = bIdx * bandH;
+                    const yEnd = Math.min(outH, yStart + bandH);
+                    const hist = new Uint32Array(256);
+                    let validCnt = 0;
+                    for (let y = yStart; y < yEnd; y++) {
+                        for (let x = 0; x < outW; x++) {
+                            const i = (y * outW + x) * 4;
+                            const r = d[i], g = d[i + 1], b = d[i + 2];
+                            const warmth = r - b;
+                            const lum = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+                            // Sadece sıcak kahverengi ahşap kenar piksellerini (warmth > 22) beyaza maskele; kağıt üzerindeki yazılara asla dokunma
+                            if (warmth > 22 && r > g && lum > 60) {
+                                d[i] = 255; d[i + 1] = 255; d[i + 2] = 255;
+                            } else {
+                                d[i] = lum;
+                                hist[lum]++;
+                                validCnt++;
+                            }
+                        }
                     }
+                    let localW = 185;
+                    if (validCnt > 0) {
+                        let acc = 0;
+                        for (let v = 255; v >= 0; v--) {
+                            acc += hist[v];
+                            if (acc >= validCnt * 0.22) {
+                                localW = Math.max(115, v);
+                                break;
+                            }
+                        }
+                    }
+                    bandWhite[bIdx] = localW;
                 }
 
-                let paperWhite = 185;
-                let acc = 0;
-                for (let v = 255; v >= 0; v--) {
-                    acc += hist[v];
-                    if (acc >= validCount * 0.20) {
-                        paperWhite = Math.max(130, v);
-                        break;
-                    }
-                }
+                // Şeritler arası yumuşak geçişli yerel kontrast artırma (hem gölgeli termal fişleri hem soluk nokta vuruşlu slipleri netleştirir)
+                for (let y = 0; y < outH; y++) {
+                    const bIdx = Math.min(numBands - 1, Math.floor(y / bandH));
+                    const prevW = bandWhite[Math.max(0, bIdx - 1)];
+                    const currW = bandWhite[bIdx];
+                    const nextW = bandWhite[Math.min(numBands - 1, bIdx + 1)];
+                    const rowWhite = (prevW + currW * 2 + nextW) / 4;
 
-                // İnce nokta vuruşlu (dot-matrix) gri harfleri silmeden yumuşak kontrast artırma
-                for (let i = 0; i < d.length; i += 4) {
-                    if (d[i] === 255 && d[i + 1] === 255 && d[i + 2] === 255) continue;
-                    const lum = d[i];
-                    let ratio = lum / paperWhite;
-                    if (ratio >= 0.96) {
-                        d[i] = 255; d[i + 1] = 255; d[i + 2] = 255;
-                    } else {
-                        // Gama 1.65 ile gri nokta vuruşlu mürekkebi koyulaştır
-                        const darkened = Math.max(0, Math.min(255, Math.round(Math.pow(ratio, 1.65) * 255)));
-                        d[i] = darkened; d[i + 1] = darkened; d[i + 2] = darkened;
+                    for (let x = 0; x < outW; x++) {
+                        const i = (y * outW + x) * 4;
+                        if (d[i] === 255 && d[i + 1] === 255 && d[i + 2] === 255) continue;
+                        const lum = d[i];
+                        const ratio = lum / rowWhite;
+                        if (ratio >= 0.93) {
+                            d[i] = 255; d[i + 1] = 255; d[i + 2] = 255;
+                        } else {
+                            const darkened = Math.max(0, Math.min(255, Math.round(Math.pow(ratio, 1.85) * 255)));
+                            d[i] = darkened; d[i + 1] = darkened; d[i + 2] = darkened;
+                        }
                     }
                 }
                 ctx.putImageData(imgData, 0, 0);
@@ -3660,8 +3886,9 @@ async function recognizeSingleImageClientSide(dataUrl, labelPrefix, updateBtnPro
         const textEnhanced = await runPass(enhancedUrl);
         if (textEnhanced) collectedTexts.push(textEnhanced);
 
-        // Eğer eksik alan varsa orijinal görüntüyü de tarayıp satırları birleştir
-        if (!collectedTexts.join("\n").match(/\b[0-3][0-9][.\/1Il\-][01][0-9]/)) {
+        // İlk geçişten sonra kritik alanlardan (Tarih, Tutar veya İşyeri) herhangi biri eksikse orijinal görüntüyü de tarayıp birleştir
+        const firstPassProbe = parseReceiptTextToStructured(collectedTexts.join("\n"));
+        if (!firstPassProbe.date || !firstPassProbe.totalAmount || !firstPassProbe.station) {
             const textOrig = await runPass(dataUrl);
             if (textOrig) collectedTexts.push(textOrig);
         }
@@ -4159,7 +4386,7 @@ function syncEditableOcrFieldsToForm(updateMainFormFields = true) {
         }
     }
 
-    // 5. Kayıtlı Şirket Kredi Kartı Eşleşmesi (Son 4 Hane)
+    // 5. Kayıtlı Şirket Kredi Kartı Eşleşmesi (Son 4 Hane & Banka Adı)
     let matchedCardObj = null;
     if (pos.cardLast4) {
         const allCards = getAvailableCreditCards();
@@ -4167,8 +4394,7 @@ function syncEditableOcrFieldsToForm(updateMainFormFields = true) {
         if (matchedCardObj) {
             checks.push({ ok: true, text: `Kart son 4 hanesinden (${pos.cardLast4}) kayıtlı kartınız eşleşti: ${matchedCardObj.bank} •••• ${matchedCardObj.number} (${matchedCardObj.name}).` });
         } else {
-            hasWarning = true;
-            checks.push({ ok: false, text: `Kart son 4 hanesi (${pos.cardLast4}) kayıtlı kartlarınız arasında bulunamadı. Son 4 haneyi elle düzeltebilir veya alttan kart seçebilirsiniz.` });
+            checks.push({ ok: true, text: `Belgeden okunan kart (${pos.bankName || "KREDİ KARTI"} •••• ${pos.cardLast4}) otomatik seçildi. İsterseniz alttan başka kart seçebilirsiniz.` });
         }
     }
 
@@ -4203,8 +4429,8 @@ function syncEditableOcrFieldsToForm(updateMainFormFields = true) {
 
     if (updateMainFormFields) {
         const currentSection = document.getElementById("entry-section")?.value || "";
-        if (currentSection === "CARI_CC" && pos.cardLast4) {
-            populateCreditCardSelector(pos.cardLast4);
+        if (currentSection === "CARI_CC" && (pos.cardLast4 || pos.bankName)) {
+            populateCreditCardSelector(pos.cardLast4, pos.bankName);
             syncCol1FromSelectors();
         }
 

@@ -1,8 +1,8 @@
 {
-  "version": "1.0.7",
-  "updatedAt": "22.10.2026 20:17:02",
-  "updatedAtMs": 1792689422110,
-  "stateRevision": 43,
+  "version": "1.1.1",
+  "updatedAt": "23.10.2026 12:10:27",
+  "updatedAtMs": 1792746627389,
+  "stateRevision": 45,
   "users": [
     {
       "order": 0,
@@ -234,8 +234,8 @@
     },
     "2026-10-22": {
       "dateISO": "2026-10-22",
-      "euroRate": "55,8253",
-      "usdRate": "49,6283",
+      "euroRate": "55,7046",
+      "usdRate": "49,7396",
       "prevInOverride": null,
       "prevOutOverride": null,
       "carryoverOverride": null,
@@ -258,7 +258,7 @@
           "createdAt": "22.10.2026 02:34:59"
         }
       ],
-      "tcmbSlotKey": "2026-10-22_AFTER_1630"
+      "tcmbSlotKey": "2026-10-22_HISTORICAL"
     },
     "2026-10-21": {
       "dateISO": "2026-10-21",
@@ -454,6 +454,35 @@
       "isLocked": false,
       "entries": [],
       "tcmbSlotKey": "2026-10-06_HISTORICAL"
+    },
+    "2026-10-31": {
+      "dateISO": "2026-10-31",
+      "euroRate": "--",
+      "usdRate": "--",
+      "prevInOverride": null,
+      "prevOutOverride": null,
+      "carryoverOverride": null,
+      "carryoverLabel": "30/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
+      "cashierName": "GÖKHAN ÖZBULUT",
+      "controllerName": "RAFET CANBEK",
+      "controllerApproved": false,
+      "isLocked": false,
+      "entries": []
+    },
+    "2026-10-23": {
+      "dateISO": "2026-10-23",
+      "euroRate": "55,8253",
+      "usdRate": "49,6283",
+      "prevInOverride": null,
+      "prevOutOverride": null,
+      "carryoverOverride": null,
+      "carryoverLabel": "22/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
+      "cashierName": "GÖKHAN ÖZBULUT",
+      "controllerName": "RAFET CANBEK",
+      "controllerApproved": false,
+      "isLocked": false,
+      "entries": [],
+      "tcmbSlotKey": "2026-10-23_BEFORE_1630"
     }
   },
   "auditLogs": [
@@ -535,5 +564,9 @@
       "category": "SİSTEM",
       "detail": "Dizsan Günlük Kasa Formu %100 manuel giriş modunda (0,00 TL başlangıç ile) hazırlandı."
     }
-  ]
+  ],
+  "lastActiveDateISO": null,
+  "lastFullResetMs": 0,
+  "deletedEntryIds": [],
+  "clearedDays": {}
 }

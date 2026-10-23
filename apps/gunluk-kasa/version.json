@@ -1,11 +1,11 @@
 {
   "appId": "dizsan-kasa",
   "appName": "Dizsan Günlük Kasa Formu & Kasa Takip",
-  "version": "1.1.1",
-  "build": 106,
-  "releasedAt": "2026-10-22 03:26:00",
-  "releaseNotes": "Yapay Zekâ & Apple Vision Destekli Genel Belge Tarama (Yemek, Market, Yakıt, Fatura, POS Slipi), 6'lı Çapraz Kontrol, Elle Düzeltilebilir Kutular ve Kullanıcı Alt Kategori Seçimi Sistemi.",
+  "version": "1.1.2",
+  "build": 107,
+  "releasedAt": "2026-10-23 13:30:00",
+  "releaseNotes": "Yapay Zekâ & Apple Vision Destekli Genel Belge Tarama (Yemek, Market, Yakıt, Eczane, Fatura, POS Slipi), Gölgeli/Ahşap Zemin Adaptif Görüntü İyileştirme, 2 Sütunlu TOPKDV/TOPLAM/İNDİRİM Çapraz Mutabakat ve Otomatik Kart Seçimi (v1.1.2).",
   "author": "Ömer Eren & DİZSAN",
-  "notes": "Günlük Kasa tablosuna Kaydeden Personel sütunu ve saat bilgisi eklendi",
+  "notes": "Belge tarama ve OCR analiz motorunda gölgeli fiş, indirim satırı, KDV, fiş no, referans no ve kart son 4 hane okuma doğruluğu kalıcı olarak güçlendirildi",
   "updatedAt": "2026-10-22T18:00:57.686750+00:00"
 }

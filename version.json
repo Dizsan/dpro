@@ -1,6 +1,6 @@
 {
-  "version": "1.6.1",
-  "updatedAt": "2026-10-19T12:58:00Z",
-  "notes": "v1.6.1 — Dizsan Günlük Kasa (%100 Manuel Günlük Kasa Formu, Yetki Matrisi & A4 Çıktı), D-Met ve DiKas D-Pro Sol Menü Entegrasyonu",
+  "version": "1.6.7",
+  "updatedAt": "2026-10-23T10:30:00Z",
+  "notes": "v1.6.7 — Dizsan Günlük Kasa v1.1.2 (Gelişmiş Belge & POS Slipi OCR Analiz Motoru, Gölgeli/Ahşap Zemin Filtresi, İndirim/KDV/Toplam Çapraz Doğrulama)",
   "mandatory": true
 }
