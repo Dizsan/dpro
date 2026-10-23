@@ -1,8 +1,8 @@
 {
-  "version": "1.2.6",
-  "updatedAt": "23.10.2026 23:12:24",
-  "updatedAtMs": 1792786344357,
-  "stateRevision": 83,
+  "version": "1.2.7",
+  "updatedAt": "23.10.2026 23:16:12",
+  "updatedAtMs": 1792786572913,
+  "stateRevision": 84,
   "users": [
     {
       "order": 0,
@@ -254,6 +254,12 @@
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "23.10.2026 23:16:12",
+      "user": "ÖMER EREN",
+      "category": "OTURUM",
+      "detail": "ÖMER EREN çıkış yaptı."
+    },
     {
       "timestamp": "23.10.2026 23:12:24",
       "user": "ÖMER EREN",
