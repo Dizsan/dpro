@@ -1,8 +1,8 @@
 {
-  "version": "1.2.7",
-  "updatedAt": "23.10.2026 23:17:33",
-  "updatedAtMs": 1792786653425,
-  "stateRevision": 90,
+  "version": "1.2.9",
+  "updatedAt": "23.10.2026 23:25:36",
+  "updatedAtMs": 1792787136969,
+  "stateRevision": 96,
   "users": [
     {
       "order": 0,
@@ -10,6 +10,7 @@
       "username": "ömer",
       "email": "oeren@dizsan.com.tr",
       "pinStamp": "621976239-623787727-2631164839",
+      "pinUpdatedAtMs": 1792787040000,
       "dept": "Yönetim Kurulu / Sistem Yöneticisi",
       "rolePreset": "ADMIN",
       "permissions": {
@@ -254,6 +255,12 @@
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "23.10.2026 23:25:36",
+      "user": "ÖMER EREN",
+      "category": "OTURUM",
+      "detail": "ÖMER EREN çıkış yaptı."
+    },
     {
       "timestamp": "23.10.2026 23:17:33",
       "user": "ÖMER EREN",
