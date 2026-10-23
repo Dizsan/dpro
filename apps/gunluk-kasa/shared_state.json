@@ -135,6 +135,16 @@
       "approvedBy": "ÖMER EREN (Otomatik Yönetici Cihazı)",
       "approvedAt": "23.10.2026 18:44:19",
       "approvedAtMs": 1792770259420
+    },
+    "DEV-874458-9G4U": {
+      "deviceId": "DEV-874458-9G4U",
+      "username": "ömer",
+      "userFullName": "ÖMER EREN",
+      "dept": "Yönetim Kurulu / Sistem Yöneticisi",
+      "platform": "Apple Mac (macOS) • Safari",
+      "approvedBy": "ÖMER EREN (Otomatik Yönetici Cihazı)",
+      "approvedAt": "24.10.2026 00:30:51",
+      "approvedAtMs": 1792791051456
     }
   },
   "pendingDevices": {},
