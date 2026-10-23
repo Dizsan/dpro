@@ -1,11 +1,11 @@
 {
   "appId": "dizsan-kasa",
   "appName": "Dizsan Günlük Kasa Formu & Kasa Takip",
-  "version": "1.2.2",
-  "build": 117,
-  "releasedAt": "2026-10-23 17:15:00",
-  "releaseNotes": "v1.2.2 Güncellemesi: Demo/test için yapılan tüm geçmiş girişler komple sıfırlandı (0,00 TL). Yarından itibaren gerçek kasa girişlerine tertemiz başlangıç için hazırlandı.",
+  "version": "1.2.3",
+  "build": 118,
+  "releasedAt": "2026-10-23 17:34:30",
+  "releaseNotes": "v1.2.3 Güncellemesi: Ana kasa ekranı sadeleştirildi (en başta Devir rakamı, altında temiz Giren/Çıkan listesi). Tüm ekran ve tablolara tek tıkla Excel (.xls) rapor indirme eklendi.",
   "author": "Ömer Eren & DİZSAN",
-  "notes": "Demo kayıtları komple sıfırlandı — Gerçek kullanıma hazır temiz başlangıç (0,00 TL)",
+  "notes": "Sadeleştirilmiş Kasa Listesi (Üstte Devir + Giren/Çıkan) & Tüm Raporları Excel (.xls) İndirme",
   "updatedAt": "2026-10-23T14:15:00.000000+00:00"
 }

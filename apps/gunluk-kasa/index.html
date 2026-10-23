@@ -215,8 +215,11 @@
                             </button>
                         </div>
 
-                        <div class="clean-topbar-actions" style="display:flex; gap:6px; align-items:center;">
-                            <button type="button" class="btn btn-sm" style="background:rgba(16,185,129,0.16); border-color:rgba(52,211,153,0.45); color:#a7f3d0; font-weight:700;" onclick="switchTab('reports')" title="Kategori, Kredi Kartı, Plaka/Yakıt, Şahsi/Ofis/Atölye ve Dönemsel Raporları Aç">
+                        <div class="clean-topbar-actions" style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                            <button type="button" class="btn btn-sm" style="background:rgba(16,185,129,0.22); border-color:rgba(52,211,153,0.65); color:#6ee7b7; font-weight:800;" onclick="exportCurrentDayCleanExcel()" title="Seçili günün kasa listesini ve devir bakiyesini Excel (.xls) olarak indir">
+                                <i class="fa-solid fa-file-excel" style="color:#10b981;"></i> <span>Excel İndir</span>
+                            </button>
+                            <button type="button" class="btn btn-sm" style="background:rgba(16,185,129,0.14); border-color:rgba(52,211,153,0.40); color:#a7f3d0; font-weight:700;" onclick="switchTab('reports')" title="Kategori, Kredi Kartı, Plaka/Yakıt, Şahsi/Ofis/Atölye ve Dönemsel Raporları Aç">
                                 <i class="fa-solid fa-chart-pie" style="color:#34d399;"></i> <span>Raporlama</span>
                             </button>
                             <button type="button" class="btn btn-sm perm-require-add" style="background:rgba(245,158,11,0.16); border-color:rgba(251,191,36,0.45); color:#fde68a; font-weight:700;" onclick="openIntercompanyQuickModal('GELIR')" title="Diğer şirketten nakit veya banka yoluyla borç/para girişi ekle">
@@ -268,53 +271,6 @@
                                         </tr>
                                     </thead>
                                     <tbody id="tbody-clean-entries"></tbody>
-                                    <tfoot class="no-print">
-                                        <tr style="background:rgba(14,165,233,0.07); border-top:2px solid rgba(56,189,248,0.35);">
-                                            <td style="padding:8px 6px;">
-                                                <select id="bottom-manual-flow" class="form-control" style="font-size:0.74rem; font-weight:800; padding:5px 6px;" onchange="handleBottomManualFlowChange(this.value)">
-                                                    <option value="GIDER">GİDER (-)</option>
-                                                    <option value="GELIR">GELİR (+)</option>
-                                                </select>
-                                            </td>
-                                            <td style="padding:8px 6px;">
-                                                <select id="bottom-manual-cat" class="form-control" style="font-size:0.74rem; font-weight:700; padding:5px 6px;" onchange="handleBottomManualCatChange(this.value)">
-                                                    <option value="CASH_OUT|ARAÇ GİDERLERİ / YAKIT (MAZOT / BENZİN)">⛽ Nakit · Yakıt (Mazot/Benzin)</option>
-                                                    <option value="CASH_OUT|ARAÇ GİDERLERİ / LPG / OTOGAZ">⛽ Nakit · LPG / Otogaz</option>
-                                                    <option value="CARI_CC|ARAÇ GİDERLERİ / YAKIT (MAZOT / BENZİN)">💳 Kredi Kartı · Yakıt</option>
-                                                    <option value="CASH_OUT|YEMEK &amp; MUTFAK / GÜNLÜK YEMEK">🍽️ Nakit · Günlük Yemek</option>
-                                                    <option value="CASH_OUT|GENEL GİDERLER / ŞAHSİ">👤 Nakit · ŞAHSİ</option>
-                                                    <option value="CASH_OUT|GENEL GİDERLER / OFİS">🏢 Nakit · OFİS</option>
-                                                    <option value="CASH_OUT|GENEL GİDERLER / ATÖLYE">🔧 Nakit · ATÖLYE</option>
-                                                    <option value="CASH_OUT|SERBEST">✍️ Elle Serbest Giriş...</option>
-                                                </select>
-                                            </td>
-                                            <td style="padding:8px 6px;">
-                                                <div id="bottom-manual-plate-wrap" style="margin-bottom:4px;">
-                                                    <div style="display:grid; grid-template-columns:1.25fr 0.75fr; gap:4px;">
-                                                        <select id="bottom-manual-plate" class="form-control" style="font-size:0.73rem; font-weight:800; padding:4px 6px; border-color:rgba(52,211,153,0.55); color:#34d399;" onchange="handleBottomManualPlateChange(this.value)">
-                                                        </select>
-                                                        <input type="text" inputmode="numeric" id="bottom-manual-km" class="form-control" style="font-size:0.73rem; font-weight:800; padding:4px 6px; border-color:rgba(251,191,36,0.65); color:#fde68a;" placeholder="Araç KM *" title="Bütün yakıt alımlarında güncel araç KM bilgisi zorunludur" oninput="handleBottomManualKmLive(this)">
-                                                    </div>
-                                                    <input type="text" id="bottom-manual-plate-custom" class="form-control" style="display:none; margin-top:4px; font-size:0.73rem; font-weight:800; padding:4px 6px; text-transform:uppercase;" placeholder="Plakayı elle yazın (Örn: 19AK404)" oninput="this.value = normalizeVehiclePlateString(this.value)">
-                                                </div>
-                                                <input type="text" id="bottom-manual-col1" class="form-control" style="font-size:0.73rem; padding:4px 6px;" placeholder="Cari / Firma / Kart (İsteğe bağlı)">
-                                            </td>
-                                            <td style="padding:8px 6px;">
-                                                <input type="text" id="bottom-manual-desc" class="form-control" style="font-size:0.75rem; padding:5px 8px;" placeholder="Açıklama elle yazın (Enter ile kaydet)..." onkeydown="if(event.key==='Enter'){event.preventDefault(); submitBottomManualEntry();}">
-                                            </td>
-                                            <td style="padding:8px 6px; font-size:0.68rem; color:var(--text-muted);">
-                                                <i class="fa-solid fa-keyboard" style="color:var(--dizsan-cyan);"></i> Hızlı Elle Giriş
-                                            </td>
-                                            <td style="padding:8px 6px;">
-                                                <input type="text" inputmode="decimal" id="bottom-manual-amount" class="form-control tr-money-input" style="font-size:0.82rem; font-weight:800; text-align:right; padding:5px 8px;" placeholder="0,00" oninput="formatMoneyInputLive(this)" onkeydown="if(event.key==='Enter'){event.preventDefault(); submitBottomManualEntry();}">
-                                            </td>
-                                            <td style="padding:8px 6px; text-align:right;">
-                                                <button type="button" class="btn btn-xs btn-success perm-require-add" style="padding:6px 10px; font-weight:800;" onclick="submitBottomManualEntry()">
-                                                    <i class="fa-solid fa-plus"></i> Ekle
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </tfoot>
                                 </table>
                             </div>
                         </div>
@@ -333,6 +289,9 @@
                                 <span>ŞİRKETLER ARASI BORÇ / ALACAK OTOMATİK NET BAKİYE ÖZETİ (DÖVİZ &amp; TL)</span>
                             </div>
                             <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                <button type="button" class="btn btn-xs btn-success" onclick="exportIntercompanyExcel()" title="Şirketler arası borç/alacak özetini ve hareket tablosunu Excel (.xls) olarak indir">
+                                    <i class="fa-solid fa-file-excel"></i> <span>Excel (.xls) Rapor İndir</span>
+                                </button>
                                 <button type="button" class="btn btn-xs btn-success perm-require-add" onclick="openIntercompanyQuickModal('GELIR')">
                                     <i class="fa-solid fa-arrow-down-long"></i> <span>+ Diğer Şirketten Giriş (Borç Al)</span>
                                 </button>
@@ -489,6 +448,9 @@
                                     <i class="fa-solid fa-layer-group" style="color:#fbbf24;"></i>
                                     <span>1. KATEGORİ &amp; ALT KATEGORİ GİDER DAĞILIMI</span>
                                 </div>
+                                <button type="button" class="btn btn-xs btn-success no-print" onclick="exportSingleReportTableExcel('CATEGORIES')">
+                                    <i class="fa-solid fa-file-excel"></i> <span>Excel</span>
+                                </button>
                             </div>
                             <div class="kasa-table-wrap" style="max-height:340px; overflow-y:auto;">
                                 <table class="kasa-table">
@@ -513,6 +475,9 @@
                                     <i class="fa-solid fa-credit-card" style="color:#38bdf8;"></i>
                                     <span>2. ŞİRKET KREDİ KARTLARI BAZLI HARCAMA RAPORU</span>
                                 </div>
+                                <button type="button" class="btn btn-xs btn-success no-print" onclick="exportSingleReportTableExcel('CARDS')">
+                                    <i class="fa-solid fa-file-excel"></i> <span>Excel</span>
+                                </button>
                             </div>
                             <div class="kasa-table-wrap" style="max-height:340px; overflow-y:auto;">
                                 <table class="kasa-table">
@@ -530,13 +495,16 @@
                             </div>
                         </div>
 
-                        <!-- 3. Araç Plakası & Yakıt (Litre / Tutar) Raporu -->
+                        <!-- 3. Araç Plakası & Yakıt (Litre / KM / Tutar) Raporu -->
                         <div class="kasa-panel">
                             <div class="kasa-panel-header">
                                 <div class="kasa-panel-title">
                                     <i class="fa-solid fa-gas-pump" style="color:#34d399;"></i>
-                                    <span>3. ARAÇ PLAKASI &amp; YAKIT (LİTRE / BENZİN / MOTORİN / LPG) RAPORU</span>
+                                    <span>3. ARAÇ PLAKASI, YAKIT &amp; KM RAPORU</span>
                                 </div>
+                                <button type="button" class="btn btn-xs btn-success no-print" onclick="exportSingleReportTableExcel('PLATES')">
+                                    <i class="fa-solid fa-file-excel"></i> <span>Excel</span>
+                                </button>
                             </div>
                             <div class="kasa-table-wrap" style="max-height:340px; overflow-y:auto;">
                                 <table class="kasa-table">
@@ -544,9 +512,10 @@
                                         <tr>
                                             <th>ARAÇ PLAKASI</th>
                                             <th>YAKIT / İŞLEM TÜRÜ</th>
-                                            <th style="text-align:center; width:60px;">ADET</th>
-                                            <th style="text-align:right; width:95px;">TOPLAM LT</th>
-                                            <th style="text-align:right; width:125px;">TOPLAM (₺)</th>
+                                            <th style="text-align:right; width:95px;">SON KM</th>
+                                            <th style="text-align:center; width:55px;">ADET</th>
+                                            <th style="text-align:right; width:85px;">TOPLAM LT</th>
+                                            <th style="text-align:right; width:120px;">TOPLAM (₺)</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tbody-rep-plates"></tbody>
@@ -561,6 +530,9 @@
                                     <i class="fa-solid fa-store" style="color:#c084fc;"></i>
                                     <span>4. İŞYERİ / İSTASYON / CARİ BAZLI ÖDEME ÖZETİ</span>
                                 </div>
+                                <button type="button" class="btn btn-xs btn-success no-print" onclick="exportSingleReportTableExcel('MERCHANTS')">
+                                    <i class="fa-solid fa-file-excel"></i> <span>Excel</span>
+                                </button>
                             </div>
                             <div class="kasa-table-wrap" style="max-height:340px; overflow-y:auto;">
                                 <table class="kasa-table">
@@ -586,18 +558,23 @@
                                 <i class="fa-solid fa-list-check" style="color:var(--dizsan-cyan);"></i>
                                 <span id="rep-detail-table-title">SEÇİLİ DÖNEM HAREKET DETAY LİSTESİ</span>
                             </div>
+                            <button type="button" class="btn btn-xs btn-success no-print" onclick="exportSingleReportTableExcel('ENTRIES')">
+                                <i class="fa-solid fa-file-excel"></i> <span>Bu Tabloyu Excel (.xls) İndir</span>
+                            </button>
                         </div>
                         <div class="kasa-table-wrap">
                             <table class="kasa-table">
                                 <thead>
                                     <tr>
-                                        <th style="width:95px;">TARİH</th>
-                                        <th style="width:125px;">KANAL / TÜR</th>
-                                        <th style="width:180px;">KATEGORİ / ALT KATEGORİ</th>
-                                        <th style="width:185px;">İŞYERİ / KART / CARİ</th>
-                                        <th>AÇIKLAMA &amp; PLAKA</th>
-                                        <th style="width:95px; text-align:right;">KDV (₺)</th>
-                                        <th style="width:130px; text-align:right;">TUTAR (₺)</th>
+                                        <th style="width:90px;">TARİH</th>
+                                        <th style="width:120px;">KANAL / TÜR</th>
+                                        <th style="width:165px;">KATEGORİ / ALT KATEGORİ</th>
+                                        <th style="width:170px;">İŞYERİ / KART / CARİ</th>
+                                        <th style="width:120px;">PLAKA &amp; KM</th>
+                                        <th>AÇIKLAMA</th>
+                                        <th style="width:115px;">KAYDEDEN</th>
+                                        <th style="width:90px; text-align:right;">KDV (₺)</th>
+                                        <th style="width:125px; text-align:right;">TUTAR (₺)</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tbody-rep-entries"></tbody>
@@ -664,9 +641,14 @@
                                     <option value="ALL">Tümü (TDR + Normal)</option>
                                     <option value="ONLY_TDR">Sadece TDR (Tedarik) Kalemleri</option>
                                 </select>
-                                <button class="btn btn-sm" onclick="exportArchiveSearchCSV()">
-                                    <i class="fa-solid fa-download"></i> <span>CSV İndir</span>
-                                </button>
+                                <div style="display:flex; gap:6px;">
+                                    <button class="btn btn-sm btn-success" onclick="exportArchiveSearchExcel()">
+                                        <i class="fa-solid fa-file-excel"></i> <span>Excel (.xls) İndir</span>
+                                    </button>
+                                    <button class="btn btn-sm" onclick="exportArchiveSearchCSV()">
+                                        <i class="fa-solid fa-download"></i> <span>CSV</span>
+                                    </button>
+                                </div>
                             </div>
                             <div class="kasa-table-wrap">
                                 <table class="kasa-table">
@@ -693,6 +675,9 @@
                                 <i class="fa-solid fa-calendar-days" style="color:#10b981;"></i>
                                 <span>GÜNLÜK KASA DEFTERİ ÖZETLERİ (GEÇMİŞ &amp; GÜNCEL GÜNLER)</span>
                             </div>
+                            <button type="button" class="btn btn-xs btn-success" onclick="exportDailyLedgerSummaryExcel()">
+                                <i class="fa-solid fa-file-excel"></i> <span>Günlük Devir Özeti Excel (.xls) İndir</span>
+                            </button>
                         </div>
                         <div class="kasa-table-wrap">
                             <table class="kasa-table">
@@ -1320,8 +1305,8 @@
 
     <!-- SCRIPTS -->
     <script src="auto-date-helper.js"></script>
-    <script src="app.js?v=1.2.2"></script>
-    <script src="dizsan-back-navigation.js?v=1.2.2"></script>
-    <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.2.2"></script>
+    <script src="app.js?v=1.2.3"></script>
+    <script src="dizsan-back-navigation.js?v=1.2.3"></script>
+    <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.2.3"></script>
 </body>
 </html>
