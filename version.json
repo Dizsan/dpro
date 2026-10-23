@@ -1,6 +1,6 @@
 {
-  "version": "1.7.8",
-  "updatedAt": "2026-10-23T14:34:30Z",
-  "notes": "v1.7.8 — Dizsan Günlük Kasa v1.2.3 (Sadeleştirilmiş Liste + Üstte Devir + Tüm Tablolarda Excel Raporu)",
+  "version": "1.8.0",
+  "updatedAt": "2026-10-23T15:30:00Z",
+  "notes": "v1.8.0 — D-Pro Canlı Kasa Modu (Ömer Eren hariç tüm personel sadece Günlük Kasa'yı görür), Cihaz Kurulum Onay Linki, Açık/Koyu Tema ve Mobil/PC Kurulum Karekodu",
   "mandatory": true
 }

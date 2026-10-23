@@ -1,8 +1,8 @@
 {
-  "version": "1.2.2",
-  "updatedAt": "23.10.2026 17:34:30",
-  "updatedAtMs": 1792766070000,
-  "stateRevision": 75,
+  "version": "1.2.3",
+  "updatedAt": "23.10.2026 18:02:12",
+  "updatedAtMs": 1792767732011,
+  "stateRevision": 80,
   "users": [
     {
       "order": 0,
@@ -127,8 +127,8 @@
   "days": {
     "2026-10-23": {
       "dateISO": "2026-10-23",
-      "euroRate": "55,7566",
-      "usdRate": "49,7436",
+      "euroRate": "55,7896",
+      "usdRate": "49,7424",
       "prevInOverride": null,
       "prevOutOverride": null,
       "carryoverOverride": null,
@@ -241,19 +241,31 @@
   },
   "auditLogs": [
     {
-      "timestamp": "23.10.2026 17:34:30",
+      "timestamp": "23.10.2026 18:02:12",
       "user": "ÖMER EREN",
-      "category": "SİSTEM SIFIRLAMA",
-      "detail": "Demo / test girişlerinin tamamı temizlendi; kasa gerçek üretim girişleri için 0,00 TL bakiye ile sıfırlandı."
+      "category": "KAYIT SİLME",
+      "detail": "23.10.2026 [Günlük Nakit Ödeme] \"DENEME\" (800,00 ₺) silindi."
     },
     {
-      "timestamp": "23.10.2026 17:25:38",
+      "timestamp": "23.10.2026 18:02:09",
+      "user": "ÖMER EREN",
+      "category": "KAYIT SİLME",
+      "detail": "23.10.2026 [Nakit Kasa Girişi] \"DENEME\" (500,00 ₺) silindi."
+    },
+    {
+      "timestamp": "23.10.2026 17:49:27",
+      "user": "ÖMER EREN",
+      "category": "MANUEL GİRİŞ",
+      "detail": "23.10.2026 [Günlük Nakit Ödeme] \"TEDARİK & ATÖLYE / ATÖLYE - DENEME\" (800,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "23.10.2026 17:48:46",
       "user": "ÖMER EREN",
       "category": "MANUEL GİRİŞ",
       "detail": "23.10.2026 [Nakit Kasa Girişi] \"SERVİS & İŞÇİLİK GELİRİ / ARAÇ SERVİS BAKIM TAHSİLATI - DENEME\" (500,00 ₺) eklendi."
     },
     {
-      "timestamp": "23.10.2026 17:18:00",
+      "timestamp": "23.10.2026 17:34:30",
       "user": "ÖMER EREN",
       "category": "SİSTEM SIFIRLAMA",
       "detail": "Demo / test girişlerinin tamamı temizlendi; kasa gerçek üretim girişleri için 0,00 TL bakiye ile sıfırlandı."
@@ -271,7 +283,9 @@
     "ENT-1792690464483-839",
     "ENT-1792756015807-529",
     "ENT-1792761061351-250",
-    "ENT-1792761374746-698"
+    "ENT-1792761374746-698",
+    "ENT-1792766926300-0",
+    "ENT-1792766967444-15"
   ],
   "clearedDays": {
     "2026-10-16": 1792762500000,

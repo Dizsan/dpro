@@ -24,7 +24,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <link rel="stylesheet" href="style.css?v=1.1.2">
+    <link rel="stylesheet" href="style.css?v=1.2.5">
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" defer></script>
 </head>
 <body>
@@ -77,19 +77,90 @@
                 </button>
             </form>
 
-            <div style="margin-top:10px; display:flex; gap:6px;">
-                <button type="button" onclick="openInstallModal()" class="btn" style="flex:1; background:rgba(56,189,248,0.12); border-color:rgba(56,189,248,0.35); color:#e0f2fe; font-size:0.73rem;">
-                    <i class="fa-solid fa-mobile-screen-button" style="color:#38bdf8;"></i>
-                    <span>Mobil / Masaüstü Kurulum</span>
+            <div style="margin-top:10px; display:flex; gap:6px; flex-wrap:wrap;">
+                <button type="button" onclick="openInstallModal()" class="btn" style="flex:1; background:rgba(56,189,248,0.14); border-color:rgba(56,189,248,0.45); color:var(--text-primary); font-size:0.8rem; font-weight:700;">
+                    <i class="fa-solid fa-qrcode" style="color:#38bdf8;"></i>
+                    <span>Karekod &amp; PC/Mobil Kurulum</span>
                 </button>
-                <a href="../index.html" class="btn" style="background:rgba(255,255,255,0.06); color:#cbd5e1; text-decoration:none; font-size:0.73rem;">
-                    <i class="fa-solid fa-grid-2"></i> Portal
-                </a>
+                <button type="button" onclick="toggleLightDarkTheme()" class="btn theme-toggle-btn" title="Açık / Koyu Tema Değiştir" style="font-size:0.8rem; font-weight:700;">
+                    <i class="fa-solid fa-sun theme-toggle-icon" style="color:#fbbf24;"></i>
+                    <span class="theme-toggle-label">Açık Tema</span>
+                </button>
             </div>
 
             <div class="quick-user-chips">
                 <span><i class="fa-solid fa-users-gear"></i> Yetkili Personel Seçimi (Kullanıcı adını doldurur):</span>
                 <div id="quick-user-list" class="chip-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         1B. YENİ CİHAZ KURULUM & ERİŞİM ONAYI EKRANI (ÖMER EREN ONAYI ZORUNLU)
+         ========================================================================== -->
+    <div id="device-approval-overlay" class="login-overlay hidden" style="z-index:9600;">
+        <div class="login-card" style="max-width:500px; border-color:rgba(245,158,11,0.55);">
+            <div class="login-brand" style="margin-bottom:14px;">
+                <div style="width:64px; height:64px; border-radius:16px; background:rgba(245,158,11,0.16); border:2px solid rgba(251,191,36,0.55); display:inline-flex; align-items:center; justify-content:center; font-size:1.8rem; color:#fbbf24; margin-bottom:10px;">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h1 style="font-size:1.35rem;">Cihaz Kurulum &amp; Giriş Onayı Gerekli</h1>
+                <p style="font-size:0.86rem; margin-top:6px; line-height:1.45;">
+                    Güvenlik gereği yeni bir telefon veya bilgisayara kurulum yapılırken <strong>Sistem Yöneticisi (Ömer Eren)</strong> onayı zorunludur.
+                </p>
+            </div>
+
+            <div style="padding:12px 14px; border-radius:12px; background:rgba(15,23,42,0.75); border:1px solid rgba(56,189,248,0.35); margin-bottom:14px; font-size:0.84rem; display:flex; flex-direction:column; gap:6px;">
+                <div style="display:flex; justify-content:space-between; gap:8px;">
+                    <span style="color:var(--text-muted); font-weight:700;">Personel:</span>
+                    <strong id="dev-req-user-name" style="color:var(--text-white);">-</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; gap:8px;">
+                    <span style="color:var(--text-muted); font-weight:700;">Cihaz Türü:</span>
+                    <strong id="dev-req-platform" style="color:#38bdf8;">-</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; gap:8px;">
+                    <span style="color:var(--text-muted); font-weight:700;">Cihaz Kimlik Kodu:</span>
+                    <strong id="dev-req-device-id" style="color:#fbbf24; font-family:monospace; font-size:0.9rem;">-</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; gap:8px;">
+                    <span style="color:var(--text-muted); font-weight:700;">Durum:</span>
+                    <span id="dev-req-status-badge" class="badge badge-warning"><i class="fa-solid fa-clock fa-spin"></i> Ömer Eren Onayı Bekleniyor...</span>
+                </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:9px; margin-bottom:14px;">
+                <button type="button" class="btn" onclick="sendDeviceApprovalLinkToOmer()" style="width:100%; padding:12px 14px; background:linear-gradient(135deg, #10b981 0%, #059669 100%); border-color:#34d399; color:#ffffff; font-size:0.92rem; font-weight:800;">
+                    <i class="fa-brands fa-whatsapp" style="font-size:1.15rem;"></i>
+                    <span>Ömer Eren'e Onay Linki Gönder (WhatsApp)</span>
+                </button>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" class="btn" onclick="copyDeviceApprovalLink()" style="flex:1; padding:9px 10px; font-size:0.8rem; font-weight:700;">
+                        <i class="fa-solid fa-copy" style="color:#38bdf8;"></i>
+                        <span>Onay Linkini Kopyala</span>
+                    </button>
+                    <button type="button" class="btn" onclick="checkDeviceApprovalNow(true)" style="flex:1; padding:9px 10px; font-size:0.8rem; font-weight:700;">
+                        <i class="fa-solid fa-arrows-rotate" style="color:#34d399;"></i>
+                        <span>Onayı Şimdi Kontrol Et</span>
+                    </button>
+                </div>
+            </div>
+
+            <div style="padding:11px 12px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px dashed var(--border-subtle); margin-bottom:12px;">
+                <label for="manual-device-approval-code" style="display:block; font-size:0.78rem; font-weight:700; color:var(--text-secondary); margin-bottom:6px;">
+                    <i class="fa-solid fa-key" style="color:#fbbf24;"></i> Veya Ömer Eren'den Aldığınız 6 Haneli Onay Kodunu Girin:
+                </label>
+                <div style="display:flex; gap:8px;">
+                    <input type="text" inputmode="numeric" maxlength="6" id="manual-device-approval-code" class="form-control" placeholder="6 Haneli Onay Kodu" style="text-align:center; font-weight:800; font-size:1rem; letter-spacing:3px;">
+                    <button type="button" class="btn btn-primary" onclick="verifyManualDeviceApprovalCode()" style="font-weight:800; padding:8px 16px;">Onayla</button>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.78rem;">
+                <span style="color:var(--text-muted);"><i class="fa-solid fa-satellite-dish" style="color:#38bdf8;"></i> Onaylandığında ekran otomatik açılır</span>
+                <button type="button" class="btn btn-xs" onclick="handleLogout()">
+                    <i class="fa-solid fa-arrow-left"></i> Farklı Kullanıcı
+                </button>
             </div>
         </div>
     </div>
@@ -153,6 +224,12 @@
                         <div class="user-mini-role" id="sidebar-user-role">Yönetici (Tam Yetki)</div>
                     </div>
                     <div style="display:flex; gap:4px;">
+                        <button class="btn btn-xs theme-toggle-btn" onclick="toggleLightDarkTheme()" title="Açık / Koyu Tema Değiştir">
+                            <i class="fa-solid fa-sun theme-toggle-icon" style="color:#fbbf24;"></i>
+                        </button>
+                        <button class="btn btn-xs" onclick="openInstallModal()" title="Mobil Karekod &amp; PC Kurulum Rehberi">
+                            <i class="fa-solid fa-qrcode" style="color:var(--dizsan-cyan);"></i>
+                        </button>
                         <button class="btn btn-xs" onclick="openChangePasswordModal()" title="Şifre Değiştir">
                             <i class="fa-solid fa-key"></i>
                         </button>
@@ -161,8 +238,8 @@
                         </button>
                     </div>
                 </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.68rem; color:var(--text-muted);">
-                    <a href="../D-Pro/index.html" onclick="if(window.parent && window.parent !== window){ event.preventDefault(); window.parent.postMessage({type:'DPRO_BACK_TO_MAIN'}, '*'); }" style="color:var(--dizsan-cyan); text-decoration:none;"><i class="fa-solid fa-arrow-left"></i> D-Pro / Portal</a>
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted);">
+                    <a id="sidebar-dpro-back-link" href="../D-Pro/index.html" onclick="if(window.parent && window.parent !== window){ event.preventDefault(); window.parent.postMessage({type:'DPRO_BACK_TO_MAIN'}, '*'); }" style="color:var(--dizsan-cyan); text-decoration:none; font-weight:700;"><i class="fa-solid fa-arrow-left"></i> D-Pro / Portal</a>
                     <span id="sync-status-indicator"><i class="fa-solid fa-circle-check" style="color:var(--emerald-ok);"></i> Kayıtlı</span>
                 </div>
             </div>
@@ -174,8 +251,11 @@
             <!-- GÖVDE İÇERİĞİ -->
             <div class="workspace-body">
 
+                <!-- ÖMER EREN İÇİN CANLI YENİ CİHAZ KURULUM ONAY BİLDİRİM ŞERİDİ -->
+                <div id="admin-device-requests-banner" class="no-print" style="display:none; margin-bottom:12px; padding:12px 14px; border-radius:12px; background:linear-gradient(90deg, rgba(245,158,11,0.22), rgba(16,185,129,0.16)); border:2px solid rgba(251,191,36,0.75); box-shadow:0 8px 24px rgba(0,0,0,0.28);"></div>
+
                 <!-- YETKİ BİLGİLENDİRME ŞERİDİ -->
-                <div id="role-permission-banner" style="display:none; margin-bottom:10px; padding:8px 12px; border-radius:10px; font-size:0.76rem; align-items:center; justify-content:space-between; gap:8px;"></div>
+                <div id="role-permission-banner" style="display:none; margin-bottom:10px; padding:9px 14px; border-radius:10px; font-size:0.84rem; font-weight:600; align-items:center; justify-content:space-between; gap:8px;"></div>
 
                 <!-- ======================================================================
                      SEKME 1: SADE VE TEMİZ GÜNLÜK KASA EKRANI
@@ -215,15 +295,10 @@
                             </button>
                         </div>
 
-                        <div class="clean-topbar-actions" style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-                            <button type="button" class="btn btn-sm" style="background:rgba(16,185,129,0.22); border-color:rgba(52,211,153,0.65); color:#6ee7b7; font-weight:800;" onclick="exportCurrentDayCleanExcel()" title="Seçili günün kasa listesini ve devir bakiyesini Excel (.xls) olarak indir">
-                                <i class="fa-solid fa-file-excel" style="color:#10b981;"></i> <span>Excel İndir</span>
-                            </button>
-                            <button type="button" class="btn btn-sm" style="background:rgba(16,185,129,0.14); border-color:rgba(52,211,153,0.40); color:#a7f3d0; font-weight:700;" onclick="switchTab('reports')" title="Kategori, Kredi Kartı, Plaka/Yakıt, Şahsi/Ofis/Atölye ve Dönemsel Raporları Aç">
-                                <i class="fa-solid fa-chart-pie" style="color:#34d399;"></i> <span>Raporlama</span>
-                            </button>
-                            <button type="button" class="btn btn-sm perm-require-add" style="background:rgba(245,158,11,0.16); border-color:rgba(251,191,36,0.45); color:#fde68a; font-weight:700;" onclick="openIntercompanyQuickModal('GELIR')" title="Diğer şirketten nakit veya banka yoluyla borç/para girişi ekle">
-                                <i class="fa-solid fa-right-left" style="color:#fbbf24;"></i> <span>Şirketler Arası Giriş/Çıkış</span>
+                        <div class="clean-topbar-actions" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                            <button type="button" class="btn btn-sm theme-toggle-btn" onclick="toggleLightDarkTheme()" title="Açık / Koyu Tema Seçimi">
+                                <i class="fa-solid fa-sun theme-toggle-icon" style="color:#fbbf24;"></i>
+                                <span class="theme-toggle-label">Açık Tema</span>
                             </button>
                             <button type="button" class="btn btn-add-hero perm-require-add" onclick="openEntryModal()">
                                 <i class="fa-solid fa-plus"></i> <span>Ekle</span>
@@ -704,6 +779,38 @@
                      SEKME 4: KULLANICILAR, YETKİ MATRİSİ VE DENETİM LOGLARI
                      ====================================================================== -->
                 <section id="tab-admin" class="tab-section">
+                    <!-- CİHAZ KURULUM & ERİŞİM ONAY YÖNETİMİ (ÖMER EREN ONAY PANELİ) -->
+                    <div class="kasa-panel" style="margin-bottom:14px; border-color:rgba(245,158,11,0.45);">
+                        <div class="kasa-panel-header" style="background:linear-gradient(90deg, rgba(245,158,11,0.16), rgba(14,165,233,0.10));">
+                            <div class="kasa-panel-title">
+                                <i class="fa-solid fa-mobile-screen-button" style="color:#fbbf24;"></i>
+                                <span>CİHAZ KURULUM &amp; ERİŞİM ONAY YÖNETİMİ (BAŞKA CİHAZLARA KURULUM İZNİ)</span>
+                            </div>
+                            <button type="button" class="btn btn-xs btn-warning" onclick="openInstallModal()">
+                                <i class="fa-solid fa-qrcode"></i> <span>Kurulum Karekodu &amp; PC Rehberi</span>
+                            </button>
+                        </div>
+                        <div style="padding:10px 12px; font-size:0.84rem; color:var(--text-secondary); border-bottom:1px solid var(--border-subtle);">
+                            Başka telefon veya bilgisayarlara kurulum yapılırken gelen onay talepleri burada listelenir. <strong>Ömer Eren</strong> onayladıktan sonra ilgili cihazda kurulum ve kasa kullanımı aktif olur.
+                        </div>
+                        <div class="kasa-table-wrap">
+                            <table class="kasa-table">
+                                <thead>
+                                    <tr>
+                                        <th>PERSONEL ADI</th>
+                                        <th>CİHAZ TÜRÜ &amp; TARAYICI</th>
+                                        <th>CİHAZ KİMLİK KODU</th>
+                                        <th>ONAY KODU (6 HANE)</th>
+                                        <th>TALEP / ONAY TARİHİ</th>
+                                        <th>DURUM</th>
+                                        <th style="text-align:right;">İŞLEM</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-admin-devices"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <div class="kasa-panel" style="margin-bottom:14px;">
                         <div class="kasa-panel-header">
                             <div class="kasa-panel-title">
@@ -762,23 +869,30 @@
                         <div class="kasa-panel">
                             <div class="kasa-panel-header">
                                 <div class="kasa-panel-title">
-                                    <i class="fa-solid fa-database" style="color:#10b981;"></i>
-                                    <span>VERİ YEDEKLEME &amp; GERİ YÜKLEME</span>
+                                    <i class="fa-solid fa-shield-halved" style="color:#10b981;"></i>
+                                    <span>3-KATMANLI YEDEKLEME, VERİ KURTARMA &amp; GÜVENLİK KONTROLÜ</span>
                                 </div>
+                                <button type="button" class="btn btn-xs btn-success" onclick="runSecurityAndBackupSelfTest(true)">
+                                    <i class="fa-solid fa-vial-circle-check"></i> <span>Güvenlik &amp; Yedek Testi Yap</span>
+                                </button>
                             </div>
                             <div style="padding:14px; display:flex; flex-direction:column; gap:10px;">
-                                <p style="font-size:0.76rem; color:var(--text-secondary);">
-                                    Tüm günlük kasa föyleriniz %100 manuel olarak girilir; hiçbir dış sistemden veri çekilmez. Verileriniz yerel olarak kaydedilir ve istediğiniz zaman JSON veya Excel yedeği alabilirsiniz.
-                                </p>
+                                <div id="backup-security-health-box" style="padding:10px 12px; border-radius:9px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); font-size:0.72rem; color:var(--text-secondary);">
+                                    Yedekleme ve güvenlik durumu kontrol ediliyor...
+                                </div>
                                 <div style="display:flex; flex-wrap:wrap; gap:8px;">
                                     <button class="btn btn-primary btn-sm" onclick="exportFullBackupJSON()">
                                         <i class="fa-solid fa-download"></i> <span>Tam Yedek İndir (.JSON)</span>
                                     </button>
+                                    <button class="btn btn-success btn-sm" onclick="exportReportsExcel()">
+                                        <i class="fa-solid fa-file-excel"></i> <span>Tüm Kasayı Excel (.XLS) Yedekle</span>
+                                    </button>
                                     <label class="btn btn-sm perm-require-admin" style="cursor:pointer;">
-                                        <i class="fa-solid fa-upload"></i> <span>Yedek Dosyası Yükle</span>
+                                        <i class="fa-solid fa-upload"></i> <span>Yedek Dosyası Yükle (.JSON)</span>
                                         <input type="file" accept=".json" style="display:none;" onchange="importFullBackupJSON(event)">
                                     </label>
                                 </div>
+                                <div id="local-snapshots-list-box" style="font-size:0.70rem; color:var(--text-muted);"></div>
                             </div>
                         </div>
                     </div>
@@ -1245,56 +1359,95 @@
         </div>
     </div>
 
-    <!-- ŞİFREMİ UNUTTUM MODALI -->
+    <!-- ŞİFREMİ UNUTTUM MODALI (YÖNETİCİ ONAYLI GÜVENLİ SIFIRLAMA) -->
     <div id="modal-forgot-password" class="modal-backdrop">
-        <div class="modal-dialog" style="max-width:410px;">
+        <div class="modal-dialog" style="max-width:420px;">
             <div class="modal-header">
-                <h3><i class="fa-solid fa-unlock-keyhole" style="color:var(--amber-warn);"></i> <span>Şifre Sıfırlama</span></h3>
+                <h3><i class="fa-solid fa-unlock-keyhole" style="color:var(--amber-warn);"></i> <span>Yönetici Onaylı Şifre Sıfırlama</span></h3>
                 <button class="btn btn-xs" onclick="closeModal('modal-forgot-password')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body">
                 <div id="forgot-step-1">
+                    <div style="padding:8px 10px; border-radius:8px; background:rgba(245,158,11,0.12); border:1px solid rgba(251,191,36,0.35); font-size:0.72rem; color:#fde68a; margin-bottom:10px;">
+                        <i class="fa-solid fa-shield-halved"></i> Güvenlik gereği personel şifre sıfırlama işlemi için <strong>Sistem Yöneticisi (Ömer Eren)</strong> onay şifresi gereklidir.
+                    </div>
                     <div class="form-group">
-                        <label>Kullanıcı Adınız veya Ad Soyad</label>
+                        <label>Şifresi Sıfırlanacak Kullanıcı Adı veya Ad Soyad</label>
                         <input type="text" id="forgot-username" class="form-control" placeholder="Örn: gokhan.ozbulut">
                     </div>
-                    <button type="button" class="btn btn-primary" style="width:100%;" onclick="sendPasswordResetCode()">Doğrulama Kodu Oluştur</button>
+                    <div class="form-group">
+                        <label>Sistem Yöneticisi (Ömer Eren) Onay Şifresi *</label>
+                        <input type="password" id="forgot-admin-pin" class="form-control" placeholder="Yönetici şifresini giriniz">
+                    </div>
+                    <button type="button" class="btn btn-primary" style="width:100%;" onclick="sendPasswordResetCode()">Yönetici Onayı ile Devam Et</button>
                 </div>
                 <div id="forgot-step-2" style="display:none;">
-                    <div id="forgot-code-display" style="padding:8px 10px; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); border-radius:8px; font-size:0.75rem; margin-bottom:10px;"></div>
+                    <div id="forgot-code-display" style="padding:8px 10px; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); border-radius:8px; font-size:0.75rem; margin-bottom:10px;"></div>
                     <div class="form-group">
                         <label>Doğrulama Kodu</label>
-                        <input type="text" id="forgot-code-input" class="form-control">
+                        <input type="text" id="forgot-code-input" class="form-control" readonly>
                     </div>
                     <div class="form-group">
-                        <label>Yeni Şifreniz</label>
-                        <input type="password" id="forgot-new-pass" class="form-control">
+                        <label>Yeni Şifre (En az 4 karakter)</label>
+                        <input type="password" id="forgot-new-pass" class="form-control" placeholder="Yeni şifreyi belirleyiniz">
                     </div>
-                    <button type="button" class="btn btn-primary" style="width:100%;" onclick="verifyAndResetPassword()">Şifreyi Yenile</button>
+                    <button type="button" class="btn btn-primary" style="width:100%;" onclick="verifyAndResetPassword()">Şifreyi Güvenle Yenile</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- KURULUM REHBERİ MODALI -->
+    <!-- KURULUM REHBERİ & UYGULAMA KAREKODU MODALI -->
     <div id="modal-install-guide" class="modal-backdrop">
-        <div class="modal-dialog" style="max-width:460px;">
+        <div class="modal-dialog" style="max-width:560px;">
             <div class="modal-header">
-                <h3><i class="fa-solid fa-mobile-screen-button" style="color:var(--dizsan-cyan);"></i> <span>iOS, Android &amp; Windows Kurulumu</span></h3>
+                <h3><i class="fa-solid fa-qrcode" style="color:var(--dizsan-cyan);"></i> <span>Telefon Karekod (QR) &amp; Bilgisayar (PC) Kurulum Rehberi</span></h3>
                 <button class="btn btn-xs" onclick="closeModal('modal-install-guide')"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="modal-body" style="font-size:0.78rem; color:var(--text-secondary); display:flex; flex-direction:column; gap:10px;">
-                <div style="padding:10px; background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid var(--border-subtle);">
-                    <strong style="color:var(--text-white);"><i class="fa-brands fa-apple"></i> iPhone &amp; iPad (iOS Safari):</strong>
-                    <p style="margin-top:4px;">Safari'de alt ortadaki <strong>Paylaş</strong> simgesine dokunun ve <strong>"Ana Ekrana Ekle"</strong> seçeneğini seçin.</p>
+            <div class="modal-body" style="font-size:0.86rem; color:var(--text-secondary); display:flex; flex-direction:column; gap:12px;">
+                <div style="text-align:center; padding:14px; border-radius:14px; background:rgba(14,165,233,0.08); border:1px solid rgba(56,189,248,0.35);">
+                    <div style="font-weight:800; color:var(--text-white); font-size:0.95rem; margin-bottom:8px;">
+                        📱 TELEFONA UYGULAMA OLARAK KURMAK İÇİN KAREKODU OKUTUN
+                    </div>
+                    <div style="display:inline-block; background:#ffffff; padding:12px; border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,0.25);">
+                        <img src="dizsan_dpro_kasa_qr.png" alt="D-Pro Günlük Kasa Kurulum Karekodu" style="width:210px; height:auto; display:block; border-radius:8px;" onerror="this.src='icon-192.png'">
+                    </div>
+                    <div style="margin-top:8px; font-family:monospace; font-weight:800; font-size:0.84rem; color:var(--dizsan-cyan);">
+                        https://dizsan.github.io/dpro/
+                    </div>
+                    <div style="margin-top:6px; font-size:0.78rem; color:var(--text-secondary);">
+                        <i class="fa-solid fa-shield-halved" style="color:#fbbf24;"></i> Not: Personel ilk kez kurduğunda ekranda <strong>"Ömer Eren'e Onay Linki Gönder"</strong> butonu çıkar; onayınızdan sonra cihaz otomatik açılır.
+                    </div>
                 </div>
-                <div style="padding:10px; background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid var(--border-subtle);">
-                    <strong style="color:var(--text-white);"><i class="fa-brands fa-android"></i> Android Telefon &amp; Tablet:</strong>
-                    <p style="margin-top:4px;">Tarayıcı menüsünden (⋮) <strong>"Uygulamayı Yükle / Ana Ekrana Ekle"</strong> seçeneğine dokunun.</p>
+
+                <div style="padding:12px; background:var(--bg-card); border-radius:10px; border:1px solid var(--border-subtle);">
+                    <strong style="color:var(--text-white); font-size:0.92rem;"><i class="fa-brands fa-apple" style="color:#38bdf8;"></i> 1. iPhone &amp; iPad (iOS Safari) Telefona Kurulum:</strong>
+                    <ol style="margin:6px 0 0 18px; line-height:1.55;">
+                        <li>Karekodu telefon kamerasıyla okutun (Safari'de açılır).</li>
+                        <li>Alt ortadaki <strong>Paylaş (⬆️)</strong> simgesine dokunun.</li>
+                        <li>Listeden <strong>"Ana Ekrana Ekle"</strong> seçeneğine basıp sağ üstten <strong>"Ekle"</strong> deyin.</li>
+                        <li>Uygulama telefonunuza kurulur; ilk girişte <strong>Ömer Eren'e Onay Linki Gönder</strong> tuşuna basarak onay alın.</li>
+                    </ol>
                 </div>
-                <div style="padding:10px; background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid var(--border-subtle);">
-                    <strong style="color:var(--text-white);"><i class="fa-brands fa-windows"></i> Windows &amp; Mac Masaüstü:</strong>
-                    <p style="margin-top:4px;">Adres çubuğunun sağındaki <strong>Uygulamayı Yükle</strong> simgesine tıklayarak masaüstü uygulaması olarak çalıştırabilirsiniz.</p>
+
+                <div style="padding:12px; background:var(--bg-card); border-radius:10px; border:1px solid var(--border-subtle);">
+                    <strong style="color:var(--text-white); font-size:0.92rem;"><i class="fa-brands fa-android" style="color:#34d399;"></i> 2. Android Telefon &amp; Tablet Kurulum:</strong>
+                    <ol style="margin:6px 0 0 18px; line-height:1.55;">
+                        <li>Karekodu telefon kamerasıyla okutun.</li>
+                        <li>Sağ üst köşedeki <strong>Üç Nokta (⋮)</strong> menüsüne dokunun.</li>
+                        <li><strong>"Uygulamayı Yükle"</strong> veya <strong>"Ana Ekrana Ekle"</strong> seçeneğine dokunun.</li>
+                        <li>İlk girişte ekrandaki butonla <strong>Ömer Eren'e Onay Linki</strong> gönderin; onaylandığı an açılır.</li>
+                    </ol>
+                </div>
+
+                <div style="padding:12px; background:var(--bg-card); border-radius:10px; border:1px solid var(--border-subtle);">
+                    <strong style="color:var(--text-white); font-size:0.92rem;"><i class="fa-solid fa-desktop" style="color:#fbbf24;"></i> 3. Bilgisayara (Windows PC &amp; Mac) Masaüstü Uygulaması Olarak Kurulum:</strong>
+                    <ol style="margin:6px 0 0 18px; line-height:1.55;">
+                        <li>Bilgisayarınızda tarayıcıdan <strong>https://dizsan.github.io/dpro/</strong> adresine girin.</li>
+                        <li><strong>Windows PC (Edge / Chrome):</strong> Adres çubuğunun sağ ucundaki <strong>💻 Uygulamayı Yükle (+)</strong> simgesine tıklayın ve <strong>"Yükle"</strong> deyin (Masaüstüne ve Görev Çubuğuna kısayol eklenir).</li>
+                        <li><strong>Mac (Safari):</strong> Üst menüden <strong>Dosya (File) ➔ Dock'a Ekle (Add to Dock)</strong> seçeneğine tıklayın.</li>
+                        <li>Uygulama açıldığında kullanıcı adınızla giriş yapıp <strong>Ömer Eren'e Onay Linki Gönder</strong> butonuna tıklayın; onaylandıktan sonra bilgisayarınızda tam ekran çalışır.</li>
+                    </ol>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1305,8 +1458,8 @@
 
     <!-- SCRIPTS -->
     <script src="auto-date-helper.js"></script>
-    <script src="app.js?v=1.2.3"></script>
-    <script src="dizsan-back-navigation.js?v=1.2.3"></script>
-    <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.2.3"></script>
+    <script src="app.js?v=1.2.5"></script>
+    <script src="dizsan-back-navigation.js?v=1.2.5"></script>
+    <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.2.5"></script>
 </body>
 </html>

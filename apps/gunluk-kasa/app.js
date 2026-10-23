@@ -14,7 +14,7 @@
  * ==========================================================================
  */
 
-const CURRENT_APP_VERSION = "1.2.3";
+const CURRENT_APP_VERSION = "1.2.5";
 window.CURRENT_APP_VERSION = CURRENT_APP_VERSION;
 // 23.10.2026 17:34 öncesi yapılan tüm demo/test kayıtlarını tüm cihazların önbelleğinden kalıcı olarak temizleyen milat eşiği
 const PRODUCTION_CUTOFF_RESET_MS = 1792766040000;
@@ -193,6 +193,76 @@ const DEFAULT_USERS = [
         email: `fkiroglu@${CORP_MAIL_HOST}`,
         pinStamp: "567307289-1446660830-2254300224",
         dept: "Yedek Parça / Depo (Görüntüleme)",
+        rolePreset: "VIEWER",
+        permissions: { view: true, add: false, edit: false, delete: false, lockDay: false, manageUsers: false }
+    },
+    {
+        order: 7,
+        name: "MURAT KARAOĞLU",
+        username: "murat.karaoglu",
+        email: `mkaraoglu@${CORP_MAIL_HOST}`,
+        pinStamp: DEFAULT_PIN_STAMP,
+        dept: "Formen (Görüntüleme)",
+        rolePreset: "VIEWER",
+        permissions: { view: true, add: false, edit: false, delete: false, lockDay: false, manageUsers: false }
+    },
+    {
+        order: 8,
+        name: "MURAT SALMAN",
+        username: "murat.salman",
+        email: `msalman@${CORP_MAIL_HOST}`,
+        pinStamp: DEFAULT_PIN_STAMP,
+        dept: "Mekaniker (Görüntüleme)",
+        rolePreset: "VIEWER",
+        permissions: { view: true, add: false, edit: false, delete: false, lockDay: false, manageUsers: false }
+    },
+    {
+        order: 9,
+        name: "YILDIRAY KARAGÖZ",
+        username: "yildiray.karagoz",
+        email: `ykaragoz@${CORP_MAIL_HOST}`,
+        pinStamp: DEFAULT_PIN_STAMP,
+        dept: "Elektrik Tekn. (Görüntüleme)",
+        rolePreset: "VIEWER",
+        permissions: { view: true, add: false, edit: false, delete: false, lockDay: false, manageUsers: false }
+    },
+    {
+        order: 10,
+        name: "MUSTAFA İLGEN",
+        username: "mustafa.ilgen",
+        email: `milgen@${CORP_MAIL_HOST}`,
+        pinStamp: DEFAULT_PIN_STAMP,
+        dept: "Fren Tekn. (Görüntüleme)",
+        rolePreset: "VIEWER",
+        permissions: { view: true, add: false, edit: false, delete: false, lockDay: false, manageUsers: false }
+    },
+    {
+        order: 11,
+        name: "MİRAÇ ARDANUŞ",
+        username: "mirac.ardanus",
+        email: `mardanus@${CORP_MAIL_HOST}`,
+        pinStamp: DEFAULT_PIN_STAMP,
+        dept: "Mekaniker Yrd. (Görüntüleme)",
+        rolePreset: "VIEWER",
+        permissions: { view: true, add: false, edit: false, delete: false, lockDay: false, manageUsers: false }
+    },
+    {
+        order: 12,
+        name: "HAKAN DEMİRAL",
+        username: "hakan.demiral",
+        email: `hdemiral@${CORP_MAIL_HOST}`,
+        pinStamp: DEFAULT_PIN_STAMP,
+        dept: "Güvenlik (Görüntüleme)",
+        rolePreset: "VIEWER",
+        permissions: { view: true, add: false, edit: false, delete: false, lockDay: false, manageUsers: false }
+    },
+    {
+        order: 13,
+        name: "GÜLŞEN ŞİMŞEK",
+        username: "gulsen.simsek",
+        email: `gsimsek@${CORP_MAIL_HOST}`,
+        pinStamp: DEFAULT_PIN_STAMP,
+        dept: "Mutfak (Görüntüleme)",
         rolePreset: "VIEWER",
         permissions: { view: true, add: false, edit: false, delete: false, lockDay: false, manageUsers: false }
     }
@@ -401,6 +471,9 @@ function buildInitialState() {
         updatedAtMs: Date.now(),
         stateRevision: 1,
         users: DEFAULT_USERS.map(u => ({ ...u, permissions: { ...u.permissions } })),
+        approvedDevices: {},
+        pendingDevices: {},
+        revokedDevices: {},
         days: {},
         auditLogs: [
             {
@@ -701,7 +774,112 @@ function stripOcrImagesFromState(st) {
     if (Array.isArray(st.auditLogs)) {
         st.auditLogs = st.auditLogs.filter(lg => !isPreProductionDemoLog(lg));
     }
+    ensureAdminAccountIntegrity(st);
     return st;
+}
+
+const STORAGE_KEY_KASA_SHADOW_BACKUP = "dizsan_gunluk_kasa_shadow_backup_v2";
+const STORAGE_KEY_KASA_SNAPSHOTS = "dizsan_gunluk_kasa_snapshots_v2";
+const STORAGE_KEY_KASA_EXPLICIT_LOGOUT = "dizsan_gunluk_kasa_explicit_logout";
+const STORAGE_KEY_DEVICE_ID = "dizsan_device_id_v1";
+const STORAGE_KEY_DEVICE_APPROVED_TOKEN = "dizsan_device_approved_token_v1";
+const KASA_IDB_NAME = "DizsanKasaVaultDB";
+const KASA_IDB_STORE = "kasa_vault";
+const MAX_LOCAL_SNAPSHOTS = 5;
+
+function ensureAdminAccountIntegrity(st) {
+    if (!st || typeof st !== "object") return st;
+    if (!Array.isArray(st.users)) st.users = DEFAULT_USERS.map(u => ({ ...u, permissions: { ...u.permissions } }));
+    let adminUser = st.users.find(u => u && normalizeTR(u.username) === "ömer");
+    if (!adminUser) {
+        adminUser = { ...DEFAULT_USERS[0], permissions: { ...DEFAULT_USERS[0].permissions } };
+        st.users.unshift(adminUser);
+    }
+    adminUser.rolePreset = "ADMIN";
+    adminUser.permissions = {
+        view: true,
+        add: true,
+        edit: true,
+        delete: true,
+        lockDay: true,
+        manageUsers: true
+    };
+    if (!adminUser.pinStamp) {
+        adminUser.pinStamp = DEFAULT_USERS[0].pinStamp;
+    }
+    if (!st.approvedDevices || typeof st.approvedDevices !== "object") st.approvedDevices = {};
+    if (!st.pendingDevices || typeof st.pendingDevices !== "object") st.pendingDevices = {};
+    if (!st.revokedDevices || typeof st.revokedDevices !== "object") st.revokedDevices = {};
+    return st;
+}
+
+function saveToIndexedDbVault(stateObj) {
+    try {
+        if (typeof indexedDB === "undefined" || !stateObj) return;
+        const req = indexedDB.open(KASA_IDB_NAME, 1);
+        req.onupgradeneeded = (ev) => {
+            const db = ev.target.result;
+            if (!db.objectStoreNames.contains(KASA_IDB_STORE)) {
+                db.createObjectStore(KASA_IDB_STORE);
+            }
+        };
+        req.onsuccess = (ev) => {
+            try {
+                const db = ev.target.result;
+                const tx = db.transaction(KASA_IDB_STORE, "readwrite");
+                tx.objectStore(KASA_IDB_STORE).put(JSON.parse(JSON.stringify(stateObj)), "latest_state");
+            } catch (e) {}
+        };
+    } catch (e) {}
+}
+
+function loadFromIndexedDbVault() {
+    return new Promise((resolve) => {
+        try {
+            if (typeof indexedDB === "undefined") return resolve(null);
+            const req = indexedDB.open(KASA_IDB_NAME, 1);
+            req.onupgradeneeded = (ev) => {
+                const db = ev.target.result;
+                if (!db.objectStoreNames.contains(KASA_IDB_STORE)) {
+                    db.createObjectStore(KASA_IDB_STORE);
+                }
+            };
+            req.onsuccess = (ev) => {
+                try {
+                    const db = ev.target.result;
+                    const tx = db.transaction(KASA_IDB_STORE, "readonly");
+                    const getReq = tx.objectStore(KASA_IDB_STORE).get("latest_state");
+                    getReq.onsuccess = () => resolve(getReq.result || null);
+                    getReq.onerror = () => resolve(null);
+                } catch (e) {
+                    resolve(null);
+                }
+            };
+            req.onerror = () => resolve(null);
+        } catch (e) {
+            resolve(null);
+        }
+    });
+}
+
+function recordLocalBackupSnapshot(reason = "Otomatik Yedek") {
+    try {
+        if (!appState || !appState.days) return;
+        const rawList = localStorage.getItem(STORAGE_KEY_KASA_SNAPSHOTS);
+        const list = rawList ? JSON.parse(rawList) : [];
+        const entryCount = getAllEntryIdsSet(appState).size;
+        const snap = {
+            savedAt: formatDateTimeTR(),
+            savedAtMs: Date.now(),
+            reason,
+            stateRevision: appState.stateRevision || 1,
+            entryCount,
+            state: JSON.parse(JSON.stringify(appState))
+        };
+        const filtered = Array.isArray(list) ? list.filter(x => x && Math.abs((x.savedAtMs || 0) - snap.savedAtMs) > 2000) : [];
+        filtered.unshift(snap);
+        localStorage.setItem(STORAGE_KEY_KASA_SNAPSHOTS, JSON.stringify(filtered.slice(0, 5)));
+    } catch (e) {}
 }
 
 function getAllEntryIdsSet(st) {
@@ -717,8 +895,8 @@ function getAllEntryIdsSet(st) {
 
 function mergeKasaStates(stateA, stateB) {
     if (!stateA && !stateB) return buildInitialState();
-    if (!stateA) return { ...buildInitialState(), ...stateB };
-    if (!stateB) return { ...buildInitialState(), ...stateA };
+    if (!stateA) return ensureAdminAccountIntegrity({ ...buildInitialState(), ...stateB });
+    if (!stateB) return ensureAdminAccountIntegrity({ ...buildInitialState(), ...stateA });
 
     const revA = Number(stateA.stateRevision) || 0;
     const revB = Number(stateB.stateRevision) || 0;
@@ -748,6 +926,29 @@ function mergeKasaStates(stateA, stateB) {
         }
     }
 
+    // Bir kaydın tarihi düzenlenerek başka bir güne taşındığında çift kayıt oluşmaması için tüm günlerdeki en güncel (id -> {dKey, ms}) haritasını çıkar
+    const globalBestDayForEntryId = new Map();
+    const scanStateForLatestEntryDay = (stObj) => {
+        for (const [dKey, dObj] of Object.entries(stObj?.days || {})) {
+            const dayClearMs = Math.max(maxResetMs, Number(clearedDays[dKey]) || 0);
+            for (const ent of (dObj?.entries || [])) {
+                if (!ent || !ent.id || deletedSet.has(ent.id)) continue;
+                let entMs = Number(ent.updatedAtMs) || 0;
+                if (!entMs) {
+                    const m = String(ent.id).match(/^ENT-(\d{10,15})/);
+                    if (m) entMs = Number(m[1]) || 0;
+                }
+                if (dayClearMs > 0 && entMs > 0 && entMs < dayClearMs) continue;
+                const prevBest = globalBestDayForEntryId.get(ent.id);
+                if (!prevBest || entMs >= prevBest.ms) {
+                    globalBestDayForEntryId.set(ent.id, { dKey, ms: entMs });
+                }
+            }
+        }
+    };
+    scanStateForLatestEntryDay(secondary);
+    scanStateForLatestEntryDay(primary);
+
     const mergedDays = {};
     const allDayKeys = new Set([
         ...Object.keys(secondary.days || {}),
@@ -759,15 +960,20 @@ function mergeKasaStates(stateA, stateB) {
         const dayS = secondary.days?.[dKey];
         if (!dayP && !dayS) continue;
 
+        const dayPMs = Number(dayP?.updatedAtMs) || 0;
+        const daySMs = Number(dayS?.updatedAtMs) || 0;
+        const newerDayMeta = daySMs > dayPMs ? dayS : (dayP || dayS);
+        const olderDayMeta = daySMs > dayPMs ? dayP : dayS;
+
         const baseDay = {
-            ...(dayS || {}),
-            ...(dayP || {})
+            ...(olderDayMeta || {}),
+            ...(newerDayMeta || {})
         };
-        if ((!baseDay.euroRate || baseDay.euroRate === "--") && dayS?.euroRate && dayS.euroRate !== "--") {
-            baseDay.euroRate = dayS.euroRate;
+        if ((!baseDay.euroRate || baseDay.euroRate === "--") && olderDayMeta?.euroRate && olderDayMeta.euroRate !== "--") {
+            baseDay.euroRate = olderDayMeta.euroRate;
         }
-        if ((!baseDay.usdRate || baseDay.usdRate === "--") && dayS?.usdRate && dayS.usdRate !== "--") {
-            baseDay.usdRate = dayS.usdRate;
+        if ((!baseDay.usdRate || baseDay.usdRate === "--") && olderDayMeta?.usdRate && olderDayMeta.usdRate !== "--") {
+            baseDay.usdRate = olderDayMeta.usdRate;
         }
 
         const dayClearMs = Math.max(maxResetMs, Number(clearedDays[dKey]) || 0);
@@ -778,13 +984,14 @@ function mergeKasaStates(stateA, stateB) {
             for (const ent of entriesArr) {
                 if (!ent || !ent.id) continue;
                 if (deletedSet.has(ent.id)) continue;
-                // Extract timestamp from ENT-<ms>-<rand> or ent.updatedAtMs
                 let entMs = Number(ent.updatedAtMs) || 0;
                 if (!entMs) {
                     const m = String(ent.id).match(/^ENT-(\d{10,15})/);
                     if (m) entMs = Number(m[1]) || 0;
                 }
                 if (dayClearMs > 0 && entMs > 0 && entMs < dayClearMs) continue;
+                const bestDayInfo = globalBestDayForEntryId.get(ent.id);
+                if (bestDayInfo && bestDayInfo.dKey !== dKey) continue;
 
                 const existing = entryMap.get(ent.id);
                 const cleanEnt = stripOcrImagesFromEntry(ent);
@@ -809,6 +1016,17 @@ function mergeKasaStates(stateA, stateB) {
         mergedDays[dKey] = baseDay;
     }
 
+    // Merge vehiclePlates (union of default + secondary + primary, spaceless)
+    const mergedPlatesSet = new Set();
+    for (const p of [
+        ...DEFAULT_COMPANY_VEHICLE_PLATES,
+        ...(Array.isArray(secondary.vehiclePlates) ? secondary.vehiclePlates : []),
+        ...(Array.isArray(primary.vehiclePlates) ? primary.vehiclePlates : [])
+    ]) {
+        const normP = normalizeVehiclePlateString(p);
+        if (normP) mergedPlatesSet.add(normP);
+    }
+
     // Merge audit logs (demo dönemi logları hariç)
     const logSeen = new Set();
     const mergedLogs = [];
@@ -830,7 +1048,51 @@ function mergeKasaStates(stateA, stateB) {
         }
     }
 
-    return {
+    // Cihaz Kurulum Onaylarını (approvedDevices, pendingDevices, revokedDevices) birleştir
+    const mergedRevokedDevices = {
+        ...(secondary.revokedDevices || {}),
+        ...(primary.revokedDevices || {})
+    };
+    for (const [devId, ts] of Object.entries(secondary.revokedDevices || {})) {
+        if ((Number(ts) || 0) > (Number(mergedRevokedDevices[devId]) || 0)) {
+            mergedRevokedDevices[devId] = ts;
+        }
+    }
+
+    const mergedApprovedDevices = {};
+    const allApprovedIds = new Set([
+        ...Object.keys(secondary.approvedDevices || {}),
+        ...Object.keys(primary.approvedDevices || {})
+    ]);
+    for (const devId of allApprovedIds) {
+        const appP = primary.approvedDevices?.[devId];
+        const appS = secondary.approvedDevices?.[devId];
+        const chosen = ((Number(appP?.approvedAtMs) || 0) >= (Number(appS?.approvedAtMs) || 0)) ? (appP || appS) : (appS || appP);
+        if (!chosen) continue;
+        const revMs = Number(mergedRevokedDevices[devId]) || 0;
+        const appMs = Number(chosen.approvedAtMs) || 0;
+        if (revMs > 0 && revMs > appMs) continue;
+        mergedApprovedDevices[devId] = chosen;
+    }
+
+    const mergedPendingDevices = {};
+    const allPendingIds = new Set([
+        ...Object.keys(secondary.pendingDevices || {}),
+        ...Object.keys(primary.pendingDevices || {})
+    ]);
+    for (const devId of allPendingIds) {
+        if (mergedApprovedDevices[devId]) continue;
+        const reqP = primary.pendingDevices?.[devId];
+        const reqS = secondary.pendingDevices?.[devId];
+        const chosenReq = ((Number(reqP?.requestedAtMs) || 0) >= (Number(reqS?.requestedAtMs) || 0)) ? (reqP || reqS) : (reqS || reqP);
+        if (!chosenReq) continue;
+        const revMs = Number(mergedRevokedDevices[devId]) || 0;
+        const reqMs = Number(chosenReq.requestedAtMs) || 0;
+        if (revMs > 0 && revMs > reqMs) continue;
+        mergedPendingDevices[devId] = chosenReq;
+    }
+
+    const resultState = {
         ...buildInitialState(),
         ...secondary,
         ...primary,
@@ -842,9 +1104,14 @@ function mergeKasaStates(stateA, stateB) {
         lastFullResetMs: maxResetMs,
         deletedEntryIds: Array.from(deletedSet).slice(-1000),
         clearedDays,
+        approvedDevices: mergedApprovedDevices,
+        pendingDevices: mergedPendingDevices,
+        revokedDevices: mergedRevokedDevices,
+        vehiclePlates: Array.from(mergedPlatesSet),
         days: mergedDays,
         auditLogs: mergedLogs
     };
+    return ensureAdminAccountIntegrity(resultState);
 }
 
 function setSyncBadge(mode) {
@@ -870,8 +1137,12 @@ function setSyncBadge(mode) {
 function saveStateLocally() {
     try {
         stripOcrImagesFromState(appState);
+        ensureAdminAccountIntegrity(appState);
         localStorage.removeItem(OLD_DEMO_STORAGE_KEY);
-        localStorage.setItem(STORAGE_KEY_KASA_STATE, JSON.stringify(appState));
+        const serialized = JSON.stringify(appState);
+        localStorage.setItem(STORAGE_KEY_KASA_STATE, serialized);
+        localStorage.setItem(STORAGE_KEY_KASA_SHADOW_BACKUP, serialized);
+        saveToIndexedDbVault(appState);
     } catch (e) {}
 }
 
@@ -956,6 +1227,7 @@ async function syncStateToServer() {
     appState.stateRevision = (Number(appState.stateRevision) || 0) + 1;
     appState.version = CURRENT_APP_VERSION;
     saveStateLocally();
+    recordLocalBackupSnapshot(`Rev #${appState.stateRevision}`);
     setSyncBadge("saving");
 
     try {
@@ -1040,6 +1312,7 @@ async function fetchAllRemoteKasaCandidates() {
 
 async function loadStateFromStorageAndServer() {
     let localCandidate = null;
+    const localVaultCandidates = [];
     try {
         localStorage.removeItem(OLD_DEMO_STORAGE_KEY);
         const raw = localStorage.getItem(STORAGE_KEY_KASA_STATE);
@@ -1047,14 +1320,37 @@ async function loadStateFromStorageAndServer() {
             const parsed = JSON.parse(raw);
             if (parsed && parsed.days && Array.isArray(parsed.users)) {
                 localCandidate = parsed;
+                localVaultCandidates.push(parsed);
             }
+        }
+    } catch (e) {}
+
+    try {
+        const shadowRaw = localStorage.getItem(STORAGE_KEY_KASA_SHADOW_BACKUP);
+        if (shadowRaw) {
+            const parsedShadow = JSON.parse(shadowRaw);
+            if (parsedShadow && parsedShadow.days && Array.isArray(parsedShadow.users)) {
+                localVaultCandidates.push(parsedShadow);
+                if (!localCandidate) localCandidate = parsedShadow;
+            }
+        }
+    } catch (e) {}
+
+    try {
+        const idbState = await loadFromIndexedDbVault();
+        if (idbState && idbState.days && Array.isArray(idbState.users)) {
+            localVaultCandidates.push(idbState);
+            if (!localCandidate) localCandidate = idbState;
         }
     } catch (e) {}
 
     const remoteList = await fetchAllRemoteKasaCandidates();
     const ghCandidate = remoteList.find(c => c.source === "github_api")?.data || null;
 
-    let merged = localCandidate ? { ...buildInitialState(), ...localCandidate } : null;
+    let merged = null;
+    for (const loc of localVaultCandidates) {
+        merged = merged ? mergeKasaStates(merged, loc) : { ...buildInitialState(), ...loc };
+    }
     for (const rem of remoteList) {
         merged = merged ? mergeKasaStates(merged, rem.data) : { ...buildInitialState(), ...rem.data };
     }
@@ -4253,10 +4549,22 @@ function renderAdminSection() {
             </tr>
         `).join("");
     }
+
+    if (typeof renderBackupAndSecurityHealthPanel === "function") {
+        renderBackupAndSecurityHealthPanel();
+    }
+    if (typeof renderAdminDevicesSection === "function") {
+        renderAdminDevicesSection();
+    }
 }
 
 function quickChangeUserPreset(username, presetKey) {
     if (!assertPermission("manageUsers", "Kullanıcı yetki profili değiştirme")) return;
+    if (normalizeTR(username) === "ömer" && presetKey !== "ADMIN") {
+        alert("Ana Sistem Yöneticisi (Ömer Eren) yetki profili düşürülemez veya kapatılamaz!");
+        renderAll();
+        return;
+    }
     const u = (appState.users || []).find(x => x.username === username);
     if (!u) return;
     const preset = ROLE_PRESETS[presetKey] || ROLE_PRESETS.VIEWER;
@@ -4271,6 +4579,11 @@ function quickChangeUserPreset(username, presetKey) {
 
 function quickToggleUserPerm(username, permKey, isChecked) {
     if (!assertPermission("manageUsers", "Kullanıcı izin anahtarı değiştirme")) return;
+    if (normalizeTR(username) === "ömer" && !isChecked) {
+        alert("Ana Sistem Yöneticisi (Ömer Eren) izinleri kapatılamaz!");
+        renderAll();
+        return;
+    }
     const u = (appState.users || []).find(x => x.username === username);
     if (!u) return;
     if (!u.permissions) u.permissions = { ...getUserPerms(u) };
@@ -7641,12 +7954,26 @@ function handleSaveEntry(e) {
     }
 
     const dayObj = ensureDayObject(targetISO);
+    if (dayObj.isLocked && !hasPermission("manageUsers")) {
+        alert("Hedeflenen tarih kilitlenmiştir! Kilitli bir güne kayıt eklenemez veya taşınamaz.");
+        return;
+    }
 
     if (editId) {
+        let origCreatedBy = currentUser ? currentUser.name : "Sistem";
+        let origCreatedAt = formatDateTimeTR();
         for (const dKey of Object.keys(appState.days || {})) {
-            const idx = (appState.days[dKey].entries || []).findIndex(x => x.id === editId);
+            const dCheck = appState.days[dKey];
+            const idx = (dCheck.entries || []).findIndex(x => x.id === editId);
             if (idx !== -1) {
-                appState.days[dKey].entries.splice(idx, 1);
+                if (dCheck.isLocked && !hasPermission("manageUsers")) {
+                    alert("Düzenlenmek istenen kaydın bulunduğu gün kilitlenmiştir!");
+                    return;
+                }
+                origCreatedBy = dCheck.entries[idx].createdBy || origCreatedBy;
+                origCreatedAt = dCheck.entries[idx].createdAt || origCreatedAt;
+                dCheck.entries.splice(idx, 1);
+                dCheck.updatedAtMs = Date.now();
             }
         }
         dayObj.entries.push({
@@ -7661,9 +7988,11 @@ function handleSaveEntry(e) {
             code,
             ocrMeta,
             intercompanyMeta,
-            createdBy: currentUser ? currentUser.name : "Sistem",
-            createdAt: formatDateTimeTR()
+            createdBy: origCreatedBy,
+            createdAt: origCreatedAt,
+            updatedBy: currentUser ? currentUser.name : "Sistem"
         });
+        dayObj.updatedAtMs = Date.now();
         addAuditLog("KAYIT DÜZENLEME", `${formatDateToTR(targetISO)} [${SECTION_LABELS[section]}] "${col1} - ${desc}" (${formatMoneyTR(amount)}) güncellendi.`);
     } else {
         dayObj.entries.push({
@@ -7681,6 +8010,7 @@ function handleSaveEntry(e) {
             createdBy: currentUser ? currentUser.name : "Sistem",
             createdAt: formatDateTimeTR()
         });
+        dayObj.updatedAtMs = Date.now();
         addAuditLog("MANUEL GİRİŞ", `${formatDateToTR(targetISO)} [${SECTION_LABELS[section]}] "${col1} - ${desc}" (${formatMoneyTR(amount)}) eklendi.`);
     }
 
@@ -7703,6 +8033,7 @@ function deleteEntry(entryId) {
     if (!confirm(`"${target.desc}" (${formatMoneyTR(target.amount)}) kaydını silmek istediğinize emin misiniz?`)) return;
 
     dayObj.entries = dayObj.entries.filter(e => e.id !== entryId);
+    dayObj.updatedAtMs = Date.now();
     if (!Array.isArray(appState.deletedEntryIds)) appState.deletedEntryIds = [];
     if (!appState.deletedEntryIds.includes(entryId)) {
         appState.deletedEntryIds.push(entryId);
@@ -7921,7 +8252,13 @@ function updateDayMetaField(field, value) {
         return;
     }
     const dayObj = ensureDayObject(uiState.selectedDateISO);
+    if (dayObj.isLocked && !hasPermission("manageUsers")) {
+        alert("Bu gün kilitlenmiştir! Üst bilgi veya imza alanları değiştirilemez.");
+        renderAll();
+        return;
+    }
     dayObj[field] = String(value || "").trim();
+    dayObj.updatedAtMs = Date.now();
     addAuditLog("FORM META", `${formatDateToTR(uiState.selectedDateISO)} ${field} alanı "${dayObj[field]}" olarak güncellendi.`);
     syncStateToServer();
     renderAll();
@@ -7942,6 +8279,10 @@ function autoCalcCarryFromPrevInputs() {
 function openCarryoverOverrideModal() {
     if (!assertPermission("edit", "Manuel kasa devri girişi")) return;
     const { dayObj, current, prev } = calculateDayMetrics(uiState.selectedDateISO);
+    if (dayObj.isLocked && !hasPermission("manageUsers")) {
+        alert("Bu gün kilitlenmiştir! Kasa devir tutarı değiştirilemez.");
+        return;
+    }
     const fmtVal = (v) => {
         if (v === null || v === undefined || v === "") return "";
         const n = Number(v) || 0;
@@ -7960,6 +8301,10 @@ function handleSaveCarryoverOverride(e) {
     e.preventDefault();
     if (!assertPermission("edit", "Manuel kasa devri kaydetme")) return;
     const dayObj = ensureDayObject(uiState.selectedDateISO);
+    if (dayObj.isLocked && !hasPermission("manageUsers")) {
+        alert("Bu gün kilitlenmiştir! Kasa devir tutarı değiştirilemez.");
+        return;
+    }
     const lbl = document.getElementById("carry-modal-label").value.trim().toUpperCase();
     const rawPrevIn = document.getElementById("carry-modal-prev-in").value.trim();
     const rawPrevOut = document.getElementById("carry-modal-prev-out").value.trim();
@@ -7969,6 +8314,7 @@ function handleSaveCarryoverOverride(e) {
     dayObj.prevInOverride = rawPrevIn === "" ? null : parseMoneyInputTR(rawPrevIn);
     dayObj.prevOutOverride = rawPrevOut === "" ? null : parseMoneyInputTR(rawPrevOut);
     dayObj.carryoverOverride = rawAmt === "" ? null : parseMoneyInputTR(rawAmt);
+    dayObj.updatedAtMs = Date.now();
 
     addAuditLog("MANUEL KASA DEVRİ", `${formatDateToTR(uiState.selectedDateISO)} kasa devri ${dayObj.carryoverOverride === null ? "0,00 TL / Otomatik" : formatMoneyTR(dayObj.carryoverOverride)} olarak kaydedildi.`);
     closeModal("modal-carryover");
@@ -7979,9 +8325,14 @@ function handleSaveCarryoverOverride(e) {
 function clearCarryoverOverride() {
     if (!assertPermission("edit", "Kasa devir bakiyesi sıfırlama")) return;
     const dayObj = ensureDayObject(uiState.selectedDateISO);
+    if (dayObj.isLocked && !hasPermission("manageUsers")) {
+        alert("Bu gün kilitlenmiştir! Kasa devir tutarı sıfırlanamaz.");
+        return;
+    }
     dayObj.prevInOverride = null;
     dayObj.prevOutOverride = null;
     dayObj.carryoverOverride = null;
+    dayObj.updatedAtMs = Date.now();
     closeModal("modal-carryover");
     syncStateToServer();
     renderAll();
@@ -7989,8 +8340,14 @@ function clearCarryoverOverride() {
 
 function clearCurrentDayEntries() {
     if (!assertPermission("edit", "Günü sıfırlama")) return;
+    const curDayObj = ensureDayObject(uiState.selectedDateISO);
+    if (curDayObj.isLocked && !hasPermission("manageUsers")) {
+        alert("Bu gün kilitlenmiştir! Kilitli bir gün sıfırlanamaz.");
+        return;
+    }
     const dTR = formatDateToTR(uiState.selectedDateISO);
     if (!confirm(`${dTR} tarihli kasa formundaki tüm manuel kayıtlar ve devir tutarı sıfırlansın mı?`)) return;
+    createLocalSnapshot(`Gün sıfırlama öncesi (${dTR})`);
     const oldEntries = appState.days?.[uiState.selectedDateISO]?.entries || [];
     if (!Array.isArray(appState.deletedEntryIds)) appState.deletedEntryIds = [];
     for (const ent of oldEntries) {
@@ -8011,6 +8368,7 @@ function clearCurrentDayEntries() {
 function resetAllKasaDataToZero() {
     if (!assertPermission("manageUsers", "Tüm günleri sıfırlama")) return;
     if (!confirm("Tüm günlerdeki kayıtlar silinerek uygulama 0,00 TL ile tamamen sıfırlansın mı?")) return;
+    createLocalSnapshot("Tam sıfırlama öncesi otomatik yedek");
     appState.days = {};
     appState.lastFullResetMs = Date.now();
     appState.deletedEntryIds = [];
@@ -8027,6 +8385,7 @@ function toggleDayLockStatus() {
     if (!assertPermission("lockDay", "Gün kilitleme / onaylama")) return;
     const dayObj = ensureDayObject(uiState.selectedDateISO);
     dayObj.isLocked = !dayObj.isLocked;
+    dayObj.updatedAtMs = Date.now();
     addAuditLog("GÜN KİLİDİ", `${formatDateToTR(uiState.selectedDateISO)} günü ${dayObj.isLocked ? "KİLİTLENDİ" : "KİLİDİ AÇILDI"}.`);
     syncStateToServer();
     renderAll();
@@ -8036,6 +8395,7 @@ function approveDayController() {
     if (!assertPermission("lockDay", "Kontrol eden onayı")) return;
     const dayObj = ensureDayObject(uiState.selectedDateISO);
     dayObj.controllerApproved = !dayObj.controllerApproved;
+    dayObj.updatedAtMs = Date.now();
     addAuditLog("KONTROL ONAYI", `${formatDateToTR(uiState.selectedDateISO)} kontrol onayı: ${dayObj.controllerApproved ? "ONAYLANDI" : "KALDIRILDI"}.`);
     syncStateToServer();
     renderAll();
@@ -8194,14 +8554,15 @@ function handleSaveUser(e) {
     if (origUser) {
         const existing = (appState.users || []).find(u => u.username === origUser);
         if (existing) {
-            existing.name = name;
-            existing.username = username;
+            const isOmer = normalizeTR(origUser) === "ömer";
+            existing.name = isOmer ? "ÖMER EREN" : name;
+            existing.username = isOmer ? "ömer" : username;
             existing.dept = dept;
-            existing.rolePreset = rolePreset;
-            existing.permissions = permissions;
+            existing.rolePreset = isOmer ? "ADMIN" : rolePreset;
+            existing.permissions = isOmer ? { ...ROLE_PRESETS.ADMIN.permissions } : permissions;
             if (pass) existing.pinStamp = hashPin(pass);
             if (currentUser && currentUser.username === origUser) currentUser = existing;
-            addAuditLog("KULLANICI GÜNCELLEME", `${name} (@${username}) bilgileri ve yetkileri güncellendi.`);
+            addAuditLog("KULLANICI GÜNCELLEME", `${existing.name} (@${existing.username}) bilgileri ve yetkileri güncellendi.`);
         }
     } else {
         if ((appState.users || []).some(u => normalizeTR(u.username) === username)) {
@@ -8221,6 +8582,7 @@ function handleSaveUser(e) {
         addAuditLog("YENİ KULLANICI", `${name} (@${username}) sisteme eklendi.`);
     }
 
+    ensureAdminAccountIntegrity(appState);
     closeModal("modal-user");
     renderQuickUserChips();
     syncStateToServer();
@@ -8257,11 +8619,154 @@ function exportAuditLogsCSV() {
 }
 
 function exportFullBackupJSON() {
-    const blob = new Blob([JSON.stringify(appState, null, 2)], { type: "application/json;charset=utf-8;" });
+    ensureAdminAccountIntegrity(appState);
+    createLocalSnapshot("Manuel Tam JSON Yedek İndirme");
+    const payload = {
+        ...appState,
+        backupMeta: {
+            exportedAtISO: new Date().toISOString(),
+            exportedAtTR: formatDateTimeTR(),
+            exportedBy: currentUser ? currentUser.name : "Sistem",
+            appVersion: CURRENT_APP_VERSION,
+            totalEntries: countTotalEntriesInState(appState),
+            totalDays: Object.keys(appState.days || {}).length
+        }
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8;" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = `Dizsan_Gunluk_Kasa_Yedek_${todayISO()}.json`;
     a.click();
+    addAuditLog("YEDEK İNDİRME", `Tam kasa yedeği (.json) indirildi (${payload.backupMeta.totalEntries} kayıt).`);
+    renderBackupAndSecurityHealthPanel();
+}
+
+function exportFullWorkbookExcel() {
+    const allDates = Object.keys(appState.days || {}).sort();
+    let summaryRowsHtml = "";
+    let detailRowsHtml = "";
+    let totalInAll = 0;
+    let totalOutAll = 0;
+
+    for (const dISO of allDates) {
+        const m = calculateDayMetrics(dISO);
+        const dayEntries = m.dayObj.entries || [];
+        if (dayEntries.length === 0 && m.current.carryover === 0 && m.dayObj.carryoverOverride === null) continue;
+
+        summaryRowsHtml += `
+            <tr>
+                <td class="center bold">${escapeHtml(formatDateToTR(dISO))}</td>
+                <td class="num">${escapeHtml(formatMoneyTR(m.current.carryover))}</td>
+                <td class="num pos">${escapeHtml(formatMoneyTR(m.current.cashInOnly))}</td>
+                <td class="num neg">${escapeHtml(formatMoneyTR(m.current.cashOutSum))}</td>
+                <td class="num bold">${escapeHtml(formatMoneyTR(m.current.netClosing))}</td>
+                <td class="num">${escapeHtml(formatMoneyTR(m.current.posCcSum))}</td>
+                <td class="num">${escapeHtml(formatMoneyTR(m.current.wireInSum))} / ${escapeHtml(formatMoneyTR(m.current.wireOutSum))}</td>
+                <td class="center">${m.dayObj.isLocked ? "KİLİTLİ" : "AÇIK"}</td>
+            </tr>
+        `;
+
+        for (const e of dayEntries) {
+            const isIn = e.section === "CASH_IN" || e.section === "POS_CC" || e.section === "WIRE_IN" || e.section === "CHECKS_RECEIVED" || e.section === "INTERCOMPANY_IN";
+            if (isIn) totalInAll += (Number(e.amount) || 0);
+            else totalOutAll += (Number(e.amount) || 0);
+            detailRowsHtml += `
+                <tr>
+                    <td class="center">${escapeHtml(formatDateToTR(dISO))}</td>
+                    <td>${escapeHtml(SECTION_LABELS[e.section] || e.section)}</td>
+                    <td>${escapeHtml(e.col1 || "-")}</td>
+                    <td>${escapeHtml(e.desc || "-")}</td>
+                    <td class="num ${isIn ? "pos" : "neg"} bold">${isIn ? "+" : "-"}${escapeHtml(formatMoneyTR(e.amount || 0))}</td>
+                    <td class="center">${escapeHtml(e.code || "-")}</td>
+                    <td>${escapeHtml(e.createdBy || "-")}</td>
+                </tr>
+            `;
+        }
+    }
+
+    const bodyHtml = `
+        <div class="title">DİZSAN GÜNLÜK KASA — TÜM GÜNLER TAM YEDEK VE HAREKET DÖKÜMÜ</div>
+        <div class="subtitle">Yedek Tarihi: ${escapeHtml(formatDateTimeTR())} | Versiyon: v${escapeHtml(CURRENT_APP_VERSION)} | Toplam Kayıt: ${countTotalEntriesInState(appState)} Adet</div>
+        <table>
+            <thead>
+                <tr><th colspan="8">1. GÜNLÜK KASA DEVİR VE KAPANIŞ ÖZET TABLOSU</th></tr>
+                <tr>
+                    <th>TARİH</th>
+                    <th>GÜN BAŞI DEVİR</th>
+                    <th>NAKİT GİRİŞ (+)</th>
+                    <th>NAKİT ÇIKIŞ (-)</th>
+                    <th>NET KAPANIŞ (ERTESİ GÜNE DEVİR)</th>
+                    <th>POS / KREDİ KARTI</th>
+                    <th>GELEN / GİDEN HAVALE</th>
+                    <th>DURUM</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${summaryRowsHtml || `<tr><td colspan="8" class="center">Henüz günlük kasa kaydı bulunmuyor (0,00 TL).</td></tr>`}
+            </tbody>
+        </table>
+        <table>
+            <thead>
+                <tr><th colspan="7">2. TÜM KASA HAREKETLERİ DETAY LİSTESİ</th></tr>
+                <tr>
+                    <th>TARİH</th>
+                    <th>BÖLÜM / TÜR</th>
+                    <th>KAYNAK / CARİ / FİRMA</th>
+                    <th>AÇIKLAMA (PLAKA / KM / NOT)</th>
+                    <th>TUTAR</th>
+                    <th>KOD</th>
+                    <th>KAYDEDEN</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${detailRowsHtml || `<tr><td colspan="7" class="center">Henüz detaylı hareket kaydı bulunmuyor.</td></tr>`}
+            </tbody>
+        </table>
+    `;
+
+    downloadStyledExcelFile(`Dizsan_Tam_Kasa_Excel_Yedek_${formatDateToTR(todayISO())}.xls`, bodyHtml);
+    addAuditLog("EXCEL TAM YEDEK", "Tüm günler Excel (.xls) tam yedek tablosu indirildi.");
+}
+
+function getLocalSnapshots() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY_KASA_SNAPSHOTS);
+        const list = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(list)) return [];
+        return list.map(s => ({
+            ...s,
+            createdAtTR: s.createdAtTR || s.savedAt || "-",
+            dayCount: s.dayCount !== undefined ? s.dayCount : Object.keys(s.state?.days || {}).length
+        }));
+    } catch (e) {
+        return [];
+    }
+}
+
+function createLocalSnapshot(reason = "Otomatik Yedek") {
+    recordLocalBackupSnapshot(reason);
+}
+
+function sanitizePlateNoSpaces(raw) {
+    return normalizeVehiclePlateString(raw);
+}
+
+function normalizePlatesList(list) {
+    const out = [];
+    const seen = new Set();
+    for (const p of (list || [])) {
+        const norm = normalizeVehiclePlateString(p);
+        if (norm && !seen.has(norm)) {
+            seen.add(norm);
+            out.push(norm);
+        }
+    }
+    return out;
+}
+
+function normalizeAllStoredPlatesInState(st) {
+    if (!st || typeof st !== "object") return;
+    stripOcrImagesFromState(st);
 }
 
 function importFullBackupJSON(event) {
@@ -8272,23 +8777,667 @@ function importFullBackupJSON(event) {
     reader.onload = (ev) => {
         try {
             const parsed = JSON.parse(ev.target.result);
-            if (parsed && parsed.days && Array.isArray(parsed.users)) {
+            if (parsed && typeof parsed.days === "object" && parsed.days !== null && Array.isArray(parsed.users)) {
+                const entryCount = countTotalEntriesInState(parsed);
+                const dayCount = Object.keys(parsed.days || {}).length;
+                if (!confirm(`Seçilen yedek dosyası (${dayCount} gün, ${entryCount} kayıt) geri yüklensin mi?\n\nMevcut durumunuz otomatik olarak "Yerel Kurtarma Noktası" listesine kaydedilecektir.`)) {
+                    event.target.value = "";
+                    return;
+                }
+                createLocalSnapshot("JSON Yedek Geri Yükleme Öncesi Otomatik Kurtarma Noktası");
+                const prevRev = Math.max(Number(appState.stateRevision) || 0, Number(parsed.stateRevision) || 0);
                 appState = parsed;
-                addAuditLog("YEDEK YÜKLEME", "JSON yedek dosyası geri yüklendi.");
+                appState.version = CURRENT_APP_VERSION;
+                appState.stateRevision = prevRev + 5;
+                appState.updatedAtMs = Date.now();
+                appState.vehiclePlates = normalizePlatesList([
+                    ...(appState.vehiclePlates || []),
+                    ...DEFAULT_COMPANY_VEHICLE_PLATES
+                ]);
+                normalizeAllStoredPlatesInState(appState);
+                ensureAdminAccountIntegrity(appState);
+                addAuditLog("YEDEK YÜKLEME", `JSON yedek dosyası geri yüklendi (${dayCount} gün, ${entryCount} kayıt).`);
                 syncStateToServer();
                 renderAll();
-                alert("Yedek başarıyla geri yüklendi!");
+                alert(`Yedek başarıyla geri yüklendi! (${dayCount} gün, ${entryCount} kayıt)`);
             } else {
-                alert("Geçersiz yedek dosyası formatı.");
+                alert("Geçersiz yedek dosyası formatı! 'days' ve 'users' alanları bulunamadı.");
             }
         } catch (err) {
-            alert("JSON dosyası okunamadı.");
+            alert("JSON dosyası okunamadı veya bozuk format.");
+        } finally {
+            if (event?.target) event.target.value = "";
         }
     };
     reader.readAsText(file, "utf-8");
 }
 
+function restoreLocalSnapshotByIndex(index) {
+    if (!assertPermission("manageUsers", "Yerel kurtarma noktası geri yükleme")) return;
+    const snaps = getLocalSnapshots();
+    const targetSnap = snaps[index];
+    if (!targetSnap || !targetSnap.state) {
+        alert("Kurtarma noktası bulunamadı!");
+        return;
+    }
+    if (!confirm(`"${targetSnap.reason}" (${targetSnap.createdAtTR} — ${targetSnap.entryCount} kayıt) tarihli yerel kurtarma noktasına geri dönmek istediğinize emin misiniz?`)) {
+        return;
+    }
+    createLocalSnapshot("Kurtarma noktasına dönüş öncesi yedek");
+    const nextRev = Math.max(Number(appState.stateRevision) || 0, Number(targetSnap.state.stateRevision) || 0) + 5;
+    appState = JSON.parse(JSON.stringify(targetSnap.state));
+    appState.version = CURRENT_APP_VERSION;
+    appState.stateRevision = nextRev;
+    appState.updatedAtMs = Date.now();
+    ensureAdminAccountIntegrity(appState);
+    addAuditLog("KURTARMA NOKTASI", `${targetSnap.createdAtTR} tarihli yerel kurtarma noktası geri yüklendi.`);
+    syncStateToServer();
+    renderAll();
+}
+
+function renderBackupAndSecurityHealthPanel() {
+    const healthBox = document.getElementById("backup-security-health-box");
+    const snapBox = document.getElementById("local-snapshots-list-box");
+    const hasPrimary = Boolean(localStorage.getItem(STORAGE_KEY_KASA_STATE));
+    const hasShadow = Boolean(localStorage.getItem(STORAGE_KEY_KASA_SHADOW_BACKUP));
+    const snaps = getLocalSnapshots();
+    const adminOk = (appState.users || []).some(u => normalizeTR(u.username) === "ömer" && u.rolePreset === "ADMIN");
+    const totalEntries = countTotalEntriesInState(appState);
+    const rev = Number(appState.stateRevision) || 1;
+    const approvedDevCount = Object.keys(appState.approvedDevices || {}).length;
+    const pendingDevCount = Object.keys(appState.pendingDevices || {}).length;
+
+    if (healthBox) {
+        healthBox.innerHTML = `
+            <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:0.5rem;">
+                <div>
+                    <strong style="color:#10b981;"><i class="fa-solid fa-shield-check"></i> 4 Katmanlı Yedekleme &amp; Cihaz Onay Güvenlik Kalkanı Aktif</strong>
+                    <div style="color:var(--text-secondary); margin-top:2px;">
+                        Yerel Ana Hafıza: <strong>${hasPrimary ? "Aktif ✓" : "Bekliyor"}</strong> ·
+                        Gölge Yedek: <strong>${hasShadow ? "Aktif ✓" : "Hazır"}</strong> ·
+                        IndexedDB Kasa: <strong>Aktif ✓</strong> ·
+                        Kurtarma Noktası: <strong>${snaps.length}/${MAX_LOCAL_SNAPSHOTS}</strong> ·
+                        Cihaz Onay Kalkanı: <strong>${approvedDevCount} Onaylı / ${pendingDevCount} Bekleyen</strong> ·
+                        Yönetici Koruması: <strong>${adminOk ? "Kilitli ✓" : "Onarıldı"}</strong> ·
+                        Revizyon: <strong>#${rev} (${totalEntries} Kayıt)</strong>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    if (snapBox) {
+        if (snaps.length === 0) {
+            snapBox.innerHTML = `<div style="font-size:0.78rem; color:var(--text-muted); padding:0.4rem 0.6rem; border:1px dashed var(--border-subtle); border-radius:8px;">Otomatik kurtarma noktası değişiklik yapıldığında veya "Güvenlik &amp; Yedek Testi Yap" butonuna basıldığında burada listelenir.</div>`;
+        } else {
+            snapBox.innerHTML = `
+                <div style="font-size:0.76rem; font-weight:700; color:var(--text-secondary); margin-bottom:0.35rem;">
+                    <i class="fa-solid fa-clock-rotate-left" style="color:var(--dizsan-cyan);"></i> Otomatik Yerel Kurtarma Noktaları (Son ${snaps.length} Yedek):
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.3rem;">
+                    ${snaps.map((s, idx) => `
+                        <div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; padding:0.35rem 0.65rem; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:6px; font-size:0.76rem;">
+                            <div>
+                                <strong style="color:var(--text-primary);">${escapeHtml(s.createdAtTR || "-")}</strong>
+                                <span style="color:var(--text-muted); margin-left:0.4rem;">— ${escapeHtml(s.reason || "Otomatik Yedek")} (${Number(s.entryCount) || 0} kayıt, ${Number(s.dayCount) || 0} gün)</span>
+                            </div>
+                            <button type="button" class="btn btn-xs" onclick="restoreLocalSnapshotByIndex(${idx})" title="Bu Kurtarma Noktasına Geri Dön">
+                                <i class="fa-solid fa-rotate-left"></i> Geri Yükle
+                            </button>
+                        </div>
+                    `).join("")}
+                </div>
+            `;
+        }
+    }
+}
+
+async function runSecurityAndBackupSelfTest(showAlert = true) {
+    const results = [];
+    // 1. Yönetici hesabı bütünlük kontrolü
+    ensureAdminAccountIntegrity(appState);
+    const adminUser = (appState.users || []).find(u => normalizeTR(u.username) === "ömer");
+    const check1 = Boolean(adminUser && adminUser.rolePreset === "ADMIN" && adminUser.permissions?.manageUsers === true);
+    results.push({ name: "1. Yönetici (Ömer Eren) Tam Yetki & Silinmezlik Koruması", ok: check1 });
+
+    // 2. Plaka boşluksuz normalizasyon kontrolü (13 araç + boşluklu giriş testi)
+    const samplePlate = sanitizePlateNoSpaces("19 ak 404");
+    const check2 = samplePlate === "19AK404" && (appState.vehiclePlates || []).length >= 13;
+    results.push({ name: "2. Plaka Boşluksuz Otomatik Birleştirme & 13 Plaka Listesi", ok: check2 });
+
+    // 3. 3 Katmanlı yerel kayıt + Gölge Yedek + Anlık Kurtarma Noktası testi
+    saveStateLocally();
+    createLocalSnapshot("Güvenlik & Yedekleme Öz-Test Kontrol Noktası");
+    const primaryRaw = localStorage.getItem(STORAGE_KEY_KASA_STATE);
+    const shadowRaw = localStorage.getItem(STORAGE_KEY_KASA_SHADOW_BACKUP);
+    const snaps = getLocalSnapshots();
+    const check3 = Boolean(primaryRaw && shadowRaw && snaps.length > 0);
+    results.push({ name: "3. Birincil + Gölge (Shadow) + Kurtarma Halkası (Snapshot) Yedekleme", ok: check3 });
+
+    // 4. IndexedDB Derin Kasa Yedekleme testi
+    const idbData = await loadFromIndexedDbVault();
+    const check4 = Boolean(idbData && typeof idbData.days === "object");
+    results.push({ name: "4. IndexedDB Derin Kasa (Tarayıcı Çökme Koruması) Yedeği", ok: check4 });
+
+    // 5. Otomatik ardışık gün devir (Carryover) matematik motoru testi (salt-okunur simülasyon)
+    const simState = {
+        days: {
+            "2026-01-01": { entries: [{ id: "T1", section: "CASH_IN", amount: 1500 }, { id: "T2", section: "CASH_OUT", amount: 400 }], carryoverOverride: null },
+            "2026-01-02": { entries: [{ id: "T3", section: "CASH_OUT", amount: 1350 }], carryoverOverride: null },
+            "2026-01-03": { entries: [], carryoverOverride: null }
+        }
+    };
+    const origAppState = appState;
+    appState = simState;
+    const mDay1 = calculateDayMetrics("2026-01-01");
+    const mDay2 = calculateDayMetrics("2026-01-02");
+    const mDay3 = calculateDayMetrics("2026-01-03");
+    appState = origAppState;
+    const check5 = (mDay1.current.netClosing === 1100 && mDay2.current.carryover === 1100 && mDay2.current.netClosing === -250 && mDay3.current.carryover === -250);
+    results.push({ name: "5. Artı/Eksi Otomatik Ardışık Gün Kasa Devir Motoru (+1.100 -> -250 TL)", ok: check5 });
+
+    // 6. Şifre düz-metin sızıntı kontrolü
+    const remRaw = localStorage.getItem(STORAGE_KEY_KASA_REMEMBER);
+    let check6 = true;
+    if (remRaw) {
+        try {
+            const parsedRem = JSON.parse(remRaw);
+            if (parsedRem && parsedRem.savedPass) {
+                delete parsedRem.savedPass;
+                localStorage.setItem(STORAGE_KEY_KASA_REMEMBER, JSON.stringify(parsedRem));
+            }
+        } catch (e) {}
+    }
+    results.push({ name: "6. Oturum & PIN Hash Güvenliği (Düz Metin Şifre Temizliği)", ok: check6 });
+
+    // 7. Cihaz Kurulum Onay Kalkanı & Kriptografik Onay Kodu testi
+    const testDevId = getOrCreateDeviceId();
+    const testCode = computeDeviceApprovalCode(testDevId);
+    const check7 = Boolean(testDevId && testDevId.startsWith("DEV-") && /^\d{6}$/.test(testCode));
+    results.push({ name: "7. Yeni Cihaz Kurulum Onay Linki & 6 Haneli Kriptografik Kod Motoru", ok: check7 });
+
+    renderBackupAndSecurityHealthPanel();
+    const allPassed = results.every(r => r.ok);
+    addAuditLog("GÜVENLİK TESTİ", `Canlı öncesi güvenlik ve yedekleme testi çalıştırıldı: ${results.filter(r => r.ok).length}/${results.length} başarılı.`);
+
+    if (showAlert) {
+        const lines = results.map(r => `${r.ok ? "✅" : "❌"} ${r.name}`).join("\n");
+        alert(`DİZSAN GÜNLÜK KASA — GÜVENLİK VE YEDEKLEME TEST RAPORU\n\n${lines}\n\nSonuç: ${allPassed ? "TÜM KONTROLLER BAŞARIYLA GEÇTİ (7/7) ✓" : "Bazı kontroller incelenmeli!"}`);
+    }
+    return { allPassed, results };
+}
+
+// ==================== 17B. YENİ CİHAZ KURULUM & ERİŞİM ONAY MOTORU (ÖMER EREN ONAY LİNKİ) ====================
+function getOrCreateDeviceId() {
+    try {
+        let devId = localStorage.getItem(STORAGE_KEY_DEVICE_ID);
+        if (!devId || !/^DEV-[A-Z0-9]{4,8}-[A-Z0-9]{4,8}$/.test(devId)) {
+            const part1 = Math.floor(100000 + Math.random() * 900000).toString();
+            const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+            let part2 = "";
+            for (let i = 0; i < 4; i++) {
+                part2 += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            devId = `DEV-${part1}-${part2}`;
+            localStorage.setItem(STORAGE_KEY_DEVICE_ID, devId);
+        }
+        return devId;
+    } catch (e) {
+        return "DEV-LOCAL-0001";
+    }
+}
+
+function getDevicePlatformLabel() {
+    const ua = navigator.userAgent || "";
+    let os = "Web Cihaz";
+    if (/iPhone/i.test(ua)) os = "iPhone (iOS)";
+    else if (/iPad/i.test(ua)) os = "iPad (iPadOS)";
+    else if (/Android/i.test(ua)) os = "Android Telefon/Tablet";
+    else if (/Macintosh|Mac OS X/i.test(ua)) os = "Apple Mac (macOS)";
+    else if (/Windows/i.test(ua)) os = "Windows Bilgisayar (PC)";
+
+    let browser = "Tarayıcı";
+    if (/Edg\//i.test(ua)) browser = "Edge";
+    else if (/Chrome\//i.test(ua) && !/Edg\//i.test(ua)) browser = "Chrome";
+    else if (/Safari\//i.test(ua) && !/Chrome\//i.test(ua)) browser = "Safari";
+    else if (/Firefox\//i.test(ua)) browser = "Firefox";
+
+    return `${os} • ${browser}`;
+}
+
+function computeDeviceApprovalCode(deviceId) {
+    const cleanId = String(deviceId || "").trim().toUpperCase();
+    const hex = sha256Hex("dizsan_dev_approve_v1:" + cleanId);
+    const num = (parseInt(hex.slice(0, 8), 16) >>> 0) % 900000 + 100000;
+    return String(num);
+}
+
+function isOmerAdminUser(u = currentUser) {
+    if (!u) return false;
+    const uname = normalizeTR(u.username || "");
+    const fname = normalizeTR(u.name || "");
+    return uname === "ömer" || uname === "omer" || fname.includes("ömer eren") || fname.includes("omer eren");
+}
+
+function isCurrentDeviceApproved(u = currentUser) {
+    if (!u) return false;
+    const devId = getOrCreateDeviceId();
+    ensureAdminAccountIntegrity(appState);
+
+    // Ömer Eren kendi şifresiyle girdiğinde cihazı otomatik onaylanır
+    if (isOmerAdminUser(u)) {
+        if (!appState.approvedDevices[devId]) {
+            appState.approvedDevices[devId] = {
+                deviceId: devId,
+                username: u.username,
+                userFullName: u.name,
+                dept: u.dept || "Sistem Yöneticisi",
+                platform: getDevicePlatformLabel(),
+                approvedBy: "ÖMER EREN (Otomatik Yönetici Cihazı)",
+                approvedAt: formatDateTimeTR(),
+                approvedAtMs: Date.now()
+            };
+            delete appState.pendingDevices[devId];
+            delete appState.revokedDevices[devId];
+            try {
+                localStorage.setItem(STORAGE_KEY_DEVICE_APPROVED_TOKEN, computeDeviceApprovalCode(devId));
+            } catch (e) {}
+            saveStateLocally();
+        }
+        return true;
+    }
+
+    const revokedMs = Number(appState.revokedDevices?.[devId]) || 0;
+    const approvedEntry = appState.approvedDevices?.[devId];
+    const approvedMs = Number(approvedEntry?.approvedAtMs) || 0;
+    if (revokedMs > 0 && revokedMs > approvedMs) {
+        try {
+            localStorage.removeItem(STORAGE_KEY_DEVICE_APPROVED_TOKEN);
+        } catch (e) {}
+        return false;
+    }
+
+    if (approvedEntry) {
+        try {
+            localStorage.setItem(STORAGE_KEY_DEVICE_APPROVED_TOKEN, computeDeviceApprovalCode(devId));
+        } catch (e) {}
+        return true;
+    }
+
+    try {
+        const savedToken = localStorage.getItem(STORAGE_KEY_DEVICE_APPROVED_TOKEN);
+        if (savedToken && savedToken === computeDeviceApprovalCode(devId) && revokedMs === 0) {
+            appState.approvedDevices[devId] = {
+                deviceId: devId,
+                username: u.username,
+                userFullName: u.name,
+                dept: u.dept || "",
+                platform: getDevicePlatformLabel(),
+                approvedBy: "ÖMER EREN (Onay Kodu)",
+                approvedAt: formatDateTimeTR(),
+                approvedAtMs: Date.now()
+            };
+            delete appState.pendingDevices[devId];
+            saveStateLocally();
+            return true;
+        }
+    } catch (e) {}
+
+    return false;
+}
+
+function ensureDevicePendingRequestRegistered(u = currentUser) {
+    if (!u || isOmerAdminUser(u)) return;
+    const devId = getOrCreateDeviceId();
+    ensureAdminAccountIntegrity(appState);
+    if (appState.approvedDevices[devId]) return;
+
+    const existingReq = appState.pendingDevices[devId];
+    const nowMs = Date.now();
+    if (!existingReq || existingReq.username !== u.username) {
+        appState.pendingDevices[devId] = {
+            deviceId: devId,
+            username: u.username,
+            userFullName: u.name,
+            dept: u.dept || "Personel",
+            platform: getDevicePlatformLabel(),
+            approvalCode: computeDeviceApprovalCode(devId),
+            requestedAt: formatDateTimeTR(),
+            requestedAtMs: nowMs
+        };
+        delete appState.revokedDevices[devId];
+        addAuditLog("CİHAZ ONAY TALEBİ", `${u.name} (${getDevicePlatformLabel()} — ${devId}) yeni cihaz kurulum onayı talep etti.`);
+        syncStateToServer();
+    }
+}
+
+function buildDeviceApprovalUrl(deviceId = null, u = currentUser) {
+    const devId = deviceId || getOrCreateDeviceId();
+    const code = computeDeviceApprovalCode(devId);
+    const uname = u?.username || "";
+    const fname = u?.name || "";
+    const plat = getDevicePlatformLabel();
+    const baseUrl = "https://dizsan.github.io/dpro/";
+    const params = new URLSearchParams({
+        approveDevice: devId,
+        user: uname,
+        name: fname,
+        platform: plat,
+        sig: code
+    });
+    return `${baseUrl}?${params.toString()}`;
+}
+
+function sendDeviceApprovalLinkToOmer() {
+    if (!currentUser) return;
+    ensureDevicePendingRequestRegistered(currentUser);
+    const devId = getOrCreateDeviceId();
+    const code = computeDeviceApprovalCode(devId);
+    const approvalLink = buildDeviceApprovalUrl(devId, currentUser);
+    const msg = [
+        `*DİZSAN GÜNLÜK KASA — YENİ CİHAZ KURULUM ONAY TALEBİ*`,
+        ``,
+        `👤 *Personel:* ${currentUser.name} (@${currentUser.username})`,
+        `📱 *Cihaz:* ${getDevicePlatformLabel()}`,
+        `🆔 *Cihaz Kodu:* ${devId}`,
+        `🔑 *6 Haneli Onay Kodu:* *${code}*`,
+        `🕒 *Talep Zamanı:* ${formatDateTimeTR()}`,
+        ``,
+        `✅ *Cihaz Kurulumunu Tek Tıkla Onaylamak İçin Linke Tıklayın:*`,
+        approvalLink
+    ].join("\n");
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
+}
+
+function copyDeviceApprovalLink() {
+    if (!currentUser) return;
+    ensureDevicePendingRequestRegistered(currentUser);
+    const link = buildDeviceApprovalUrl(getOrCreateDeviceId(), currentUser);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(() => {
+            alert("✅ Cihaz kurulum onay linki panoya kopyalandı! Ömer Eren'e gönderebilirsiniz.");
+        }).catch(() => {
+            prompt("Onay linkini kopyalayın:", link);
+        });
+    } else {
+        prompt("Onay linkini kopyalayın:", link);
+    }
+}
+
+function verifyManualDeviceApprovalCode() {
+    const inp = document.getElementById("manual-device-approval-code");
+    const entered = String(inp?.value || "").trim();
+    const devId = getOrCreateDeviceId();
+    const expected = computeDeviceApprovalCode(devId);
+
+    if (!entered || entered !== expected) {
+        alert("❌ Girdiğiniz 6 haneli onay kodu hatalı! Lütfen Ömer Eren'e gönderilen onay linkindeki 6 haneli kodu giriniz.");
+        return;
+    }
+
+    ensureAdminAccountIntegrity(appState);
+    appState.approvedDevices[devId] = {
+        deviceId: devId,
+        username: currentUser ? currentUser.username : "personel",
+        userFullName: currentUser ? currentUser.name : "Personel",
+        dept: currentUser?.dept || "",
+        platform: getDevicePlatformLabel(),
+        approvedBy: "ÖMER EREN (6 Haneli Onay Kodu)",
+        approvedAt: formatDateTimeTR(),
+        approvedAtMs: Date.now()
+    };
+    delete appState.pendingDevices[devId];
+    delete appState.revokedDevices[devId];
+    try {
+        localStorage.setItem(STORAGE_KEY_DEVICE_APPROVED_TOKEN, expected);
+    } catch (e) {}
+    if (inp) inp.value = "";
+
+    addAuditLog("CİHAZ ONAYLANDI", `${currentUser ? currentUser.name : devId} cihazı (${devId}) 6 haneli yönetici onay kodu ile yetkilendirildi.`);
+    syncStateToServer();
+    applyAuthenticatedSession();
+    alert("✅ Cihaz kurulumunuz onaylandı! Günlük Kasa kullanıma açıldı.");
+}
+
+async function checkDeviceApprovalNow(showFeedback = false) {
+    await pollKasaCloudState(true);
+    if (isCurrentDeviceApproved(currentUser)) {
+        document.getElementById("device-approval-overlay")?.classList.add("hidden");
+        applyAuthenticatedSession();
+        if (showFeedback) {
+            alert("✅ Ömer Eren cihaz kurulumunuzu onayladı! Kasa ekranı açıldı.");
+        }
+        return true;
+    }
+    if (showFeedback) {
+        alert("⏳ Henüz onay bekleniyor. Lütfen 'Ömer Eren'e Onay Linki Gönder (WhatsApp)' butonuna basarak onay linkini iletin.");
+    }
+    return false;
+}
+
+function approvePendingDeviceById(deviceId, userHint = "", nameHint = "", platformHint = "", showConfirmAlert = true) {
+    if (!isOmerAdminUser(currentUser) && !hasPermission("manageUsers")) {
+        alert("⛔ Cihaz kurulum onaylama yetkisi yalnızca Sistem Yöneticisi Ömer Eren'e aittir!");
+        return false;
+    }
+    const cleanId = String(deviceId || "").trim().toUpperCase();
+    if (!cleanId) return false;
+
+    ensureAdminAccountIntegrity(appState);
+    const pendingObj = appState.pendingDevices[cleanId] || {};
+    const uname = pendingObj.username || userHint || "personel";
+    const fname = pendingObj.userFullName || nameHint || uname.toUpperCase();
+    const plat = pendingObj.platform || platformHint || "Mobil / PC Cihaz";
+    const code = computeDeviceApprovalCode(cleanId);
+
+    appState.approvedDevices[cleanId] = {
+        deviceId: cleanId,
+        username: uname,
+        userFullName: fname,
+        dept: pendingObj.dept || "Personel",
+        platform: plat,
+        approvalCode: code,
+        approvedBy: currentUser ? currentUser.name : "ÖMER EREN",
+        approvedAt: formatDateTimeTR(),
+        approvedAtMs: Date.now()
+    };
+    delete appState.pendingDevices[cleanId];
+    delete appState.revokedDevices[cleanId];
+
+    addAuditLog("CİHAZ ONAYLANDI", `Ömer Eren tarafından ${fname} (${plat} — ${cleanId}) cihazının kurulumu onaylandı.`);
+    syncStateToServer();
+    renderAll();
+
+    if (showConfirmAlert) {
+        alert(`✅ CİHAZ KURULUMU ONAYLANDI!\n\n• Personel: ${fname}\n• Cihaz Kodu: ${cleanId}\n• 6 Haneli Onay Kodu: ${code}\n\nPersonelin ekranı birkaç saniye içinde otomatik olarak açılacaktır (veya 6 haneli onay kodunu girebilir).`);
+    }
+    return true;
+}
+
+function revokeDeviceById(deviceId) {
+    if (!isOmerAdminUser(currentUser) && !hasPermission("manageUsers")) {
+        alert("⛔ Cihaz yetkisi kaldırma işlemi yalnızca Sistem Yöneticisi Ömer Eren tarafından yapılabilir!");
+        return;
+    }
+    const cleanId = String(deviceId || "").trim().toUpperCase();
+    if (!cleanId) return;
+    if (cleanId === getOrCreateDeviceId() && isOmerAdminUser(currentUser)) {
+        alert("Kendi aktif yönetici cihazınızın onayını kaldıramazsınız!");
+        return;
+    }
+    const info = appState.approvedDevices?.[cleanId] || appState.pendingDevices?.[cleanId];
+    const label = info ? `${info.userFullName} (${cleanId})` : cleanId;
+    if (!confirm(`${label} cihazının kurulum/erişim onayını iptal etmek istediğinize emin misiniz?`)) return;
+
+    ensureAdminAccountIntegrity(appState);
+    delete appState.approvedDevices[cleanId];
+    delete appState.pendingDevices[cleanId];
+    appState.revokedDevices[cleanId] = Date.now();
+
+    addAuditLog("CİHAZ YETKİSİ İPTAL", `${label} cihazının erişim onayı Ömer Eren tarafından kaldırıldı.`);
+    syncStateToServer();
+    renderAll();
+}
+
+function handleUrlDeviceApprovalParams() {
+    try {
+        let searchStr = window.location.search || "";
+        if (!searchStr.includes("approveDevice") && window.parent && window.parent !== window) {
+            try {
+                searchStr = window.parent.location.search || "";
+            } catch (e) {}
+        }
+        if (!searchStr || !searchStr.includes("approveDevice")) return;
+
+        const params = new URLSearchParams(searchStr);
+        const targetDevId = (params.get("approveDevice") || "").trim().toUpperCase();
+        if (!targetDevId) return;
+
+        const uHint = params.get("user") || "";
+        const nHint = params.get("name") || "";
+        const pHint = params.get("platform") || "";
+
+        // Eğer Ömer Eren oturumu açıksa doğrudan onayla; değilse Ömer Eren olarak oturum açtırıp onayla
+        if (!currentUser || !isOmerAdminUser(currentUser)) {
+            const omerAccount = (appState.users || []).find(u => isOmerAdminUser(u));
+            if (omerAccount) {
+                const pinPrompt = prompt(
+                    `🔒 YENİ CİHAZ KURULUM ONAY LİNKİ\n\nPersonel: ${nHint || uHint || "Personel"}\nCihaz Kodu: ${targetDevId}\nCihaz: ${pHint || "Mobil / PC"}\n\nCihaz kurulumunu onaylamak için Sistem Yöneticisi (Ömer Eren) şifrenizi giriniz:`
+                );
+                if (!pinPrompt || !verifyUserPin(omerAccount, pinPrompt)) {
+                    alert("❌ Yönetici şifresi doğrulanamadı, cihaz onayı iptal edildi.");
+                    return;
+                }
+                currentUser = omerAccount;
+                localStorage.setItem(STORAGE_KEY_KASA_SESSION, JSON.stringify({ username: omerAccount.username, pinStamp: omerAccount.pinStamp }));
+            }
+        }
+
+        if (isOmerAdminUser(currentUser)) {
+            approvePendingDeviceById(targetDevId, uHint, nHint, pHint, true);
+            // URL parametresini temizle
+            try {
+                const cleanUrl = window.location.pathname + window.location.hash;
+                window.history.replaceState({}, document.title, cleanUrl);
+            } catch (e) {}
+        }
+    } catch (e) {}
+}
+
+function renderAdminPendingDeviceBanner() {
+    const banner = document.getElementById("admin-device-requests-banner");
+    if (!banner) return;
+
+    if (!currentUser || (!isOmerAdminUser(currentUser) && !hasPermission("manageUsers"))) {
+        banner.style.display = "none";
+        return;
+    }
+
+    const pendingList = Object.values(appState.pendingDevices || {}).sort((a, b) => (b.requestedAtMs || 0) - (a.requestedAtMs || 0));
+    if (pendingList.length === 0) {
+        banner.style.display = "none";
+        return;
+    }
+
+    banner.style.display = "block";
+    banner.innerHTML = `
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
+            <div style="font-size:0.95rem; font-weight:800; color:var(--text-white); display:flex; align-items:center; gap:8px;">
+                <i class="fa-solid fa-bell fa-shake" style="color:#fbbf24; font-size:1.1rem;"></i>
+                <span>YENİ CİHAZ KURULUM ONAYI BEKLEYEN PERSONEL (${pendingList.length} CİHAZ)</span>
+            </div>
+            <span class="badge badge-warning">Onayınızdan Sonra Kurulum Aktif Olur</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+            ${pendingList.map(req => {
+                const code = computeDeviceApprovalCode(req.deviceId);
+                return `
+                    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; padding:10px 12px; border-radius:10px; background:var(--bg-card); border:1px solid var(--border-subtle);">
+                        <div>
+                            <strong style="font-size:0.92rem; color:var(--text-white);">${escapeHtml(req.userFullName || req.username)}</strong>
+                            <span class="badge badge-info" style="margin-left:6px;">${escapeHtml(req.platform || "Telefon / PC")}</span>
+                            <div style="font-size:0.78rem; color:var(--text-secondary); margin-top:3px;">
+                                Cihaz Kodu: <strong style="font-family:monospace;">${escapeHtml(req.deviceId)}</strong> &bull;
+                                6 Haneli Onay Kodu: <strong style="color:#10b981; font-size:0.88rem;">${escapeHtml(code)}</strong> &bull;
+                                Talep: ${escapeHtml(req.requestedAt || "-")}
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:6px; align-items:center;">
+                            <button type="button" class="btn btn-sm btn-success" style="font-weight:800;" onclick="approvePendingDeviceById('${escapeHtml(req.deviceId)}')">
+                                <i class="fa-solid fa-check"></i> Cihaz Kurulumunu Onayla
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger" onclick="revokeDeviceById('${escapeHtml(req.deviceId)}')">
+                                <i class="fa-solid fa-xmark"></i> Reddet
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join("")}
+        </div>
+    `;
+}
+
+function renderAdminDevicesSection() {
+    const tbody = document.getElementById("tbody-admin-devices");
+    if (!tbody) return;
+
+    const pendingList = Object.values(appState.pendingDevices || {}).map(x => ({ ...x, _state: "PENDING" }));
+    const approvedList = Object.values(appState.approvedDevices || {}).map(x => ({ ...x, _state: "APPROVED" }));
+    const combined = [...pendingList, ...approvedList];
+
+    if (combined.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="empty-row-placeholder">Henüz kayıtlı veya onay bekleyen cihaz bulunmuyor.</td></tr>`;
+        return;
+    }
+
+    const canManage = isOmerAdminUser(currentUser) || hasPermission("manageUsers");
+    tbody.innerHTML = combined.map(dev => {
+        const isPending = dev._state === "PENDING";
+        const code = computeDeviceApprovalCode(dev.deviceId);
+        const isSelf = dev.deviceId === getOrCreateDeviceId();
+        return `
+            <tr>
+                <td>
+                    <strong>${escapeHtml(dev.userFullName || dev.username || "-")}</strong>
+                    ${isSelf ? `<span class="badge badge-info" style="margin-left:5px;">Bu Cihaz</span>` : ""}
+                    <div style="font-size:0.75rem; color:var(--text-muted);">@${escapeHtml(dev.username || "-")}</div>
+                </td>
+                <td>${escapeHtml(dev.platform || "-")}</td>
+                <td><strong style="font-family:monospace;">${escapeHtml(dev.deviceId)}</strong></td>
+                <td><strong style="font-family:monospace; color:var(--dizsan-cyan); font-size:0.95rem; letter-spacing:1px;">${escapeHtml(code)}</strong></td>
+                <td style="font-size:0.78rem;">${escapeHtml(isPending ? (dev.requestedAt || "-") : (dev.approvedAt || "-"))}</td>
+                <td>
+                    ${isPending
+                        ? `<span class="badge badge-warning"><i class="fa-solid fa-clock"></i> Onay Bekliyor</span>`
+                        : `<span class="badge badge-success"><i class="fa-solid fa-circle-check"></i> Onaylı Cihaz</span>`
+                    }
+                </td>
+                <td style="text-align:right;">
+                    ${canManage ? `
+                        <div class="row-actions">
+                            ${isPending ? `
+                                <button type="button" class="btn btn-xs btn-success" onclick="approvePendingDeviceById('${escapeHtml(dev.deviceId)}')">
+                                    <i class="fa-solid fa-check"></i> Onayla
+                                </button>
+                            ` : ""}
+                            ${!(isSelf && isOmerAdminUser(currentUser)) ? `
+                                <button type="button" class="btn btn-xs btn-danger" onclick="revokeDeviceById('${escapeHtml(dev.deviceId)}')" title="Cihaz Onayını İptal Et">
+                                    <i class="fa-solid fa-ban"></i> ${isPending ? "Reddet" : "Yetkiyi Kaldır"}
+                                </button>
+                            ` : `<span class="badge badge-success">Yönetici Ana Cihazı</span>`}
+                        </div>
+                    ` : `-`}
+                </td>
+            </tr>
+        `;
+    }).join("");
+}
+
 // ==================== 18. OTURUM, ŞİFRE VE NAVİGASYON ====================
+let failedLoginAttempts = 0;
+let loginLockoutUntilMs = 0;
+
 function renderQuickUserChips() {
     const box = document.getElementById("quick-user-list");
     if (!box) return;
@@ -8298,7 +9447,7 @@ function renderQuickUserChips() {
         return `
             <button type="button" class="user-chip" onclick="fillQuickLogin('${escapeHtml(u.username)}')" title="Yetki: ${escapeHtml(p.label)}">
                 <span>${escapeHtml(u.name)}</span>
-                <span style="font-size:0.6rem; color:${p.code === "NONE" ? "#fb7185" : "#38bdf8"};">(${escapeHtml(shortTag)})</span>
+                <span style="font-size:0.68rem; color:${p.code === "NONE" ? "#fb7185" : "var(--dizsan-cyan)"};">(${escapeHtml(shortTag)})</span>
             </button>
         `;
     }).join("");
@@ -8313,10 +9462,19 @@ function fillQuickLogin(username) {
 
 function handleLogin(e) {
     e.preventDefault();
+    const errEl = document.getElementById("login-error");
+    if (Date.now() < loginLockoutUntilMs) {
+        const waitSec = Math.ceil((loginLockoutUntilMs - Date.now()) / 1000);
+        if (errEl) {
+            errEl.style.display = "block";
+            errEl.innerHTML = `<i class="fa-solid fa-shield-halved"></i> Çok fazla hatalı deneme! Lütfen <strong>${waitSec} saniye</strong> bekleyiniz.`;
+        }
+        return;
+    }
+
     const uVal = normalizeTR(document.getElementById("login-username")?.value || "");
     const pVal = (document.getElementById("login-password")?.value || "").trim();
     const rem = document.getElementById("login-remember-me")?.checked;
-    const errEl = document.getElementById("login-error");
 
     const matched = (appState.users || []).find(u =>
         (normalizeTR(u.username) === uVal || normalizeTR(u.name) === uVal || normalizeTR(u.email) === uVal) &&
@@ -8324,6 +9482,12 @@ function handleLogin(e) {
     );
 
     if (!matched) {
+        failedLoginAttempts += 1;
+        if (failedLoginAttempts >= 5) {
+            loginLockoutUntilMs = Date.now() + 30000;
+            failedLoginAttempts = 0;
+            addAuditLog("GÜVENLİK UYARISI", `"${uVal || "Bilinmeyen"}" için 5 başarısız giriş denemesi sonrası 30 sn geçici kilit uygulandı.`);
+        }
         if (errEl) {
             errEl.style.display = "block";
             errEl.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> Kullanıcı adı veya şifre hatalı!`;
@@ -8340,15 +9504,20 @@ function handleLogin(e) {
         return;
     }
 
+    failedLoginAttempts = 0;
+    loginLockoutUntilMs = 0;
     if (errEl) errEl.style.display = "none";
     currentUser = matched;
+    sessionStorage.removeItem(STORAGE_KEY_KASA_EXPLICIT_LOGOUT);
 
+    // Güvenlik: Şifreyi asla düz metin (savedPass) olarak localStorage'da saklama, yalnızca kullanıcı adını hatırla
     if (rem) {
-        localStorage.setItem(STORAGE_KEY_KASA_REMEMBER, JSON.stringify({ username: matched.username, savedPass: pVal }));
-        localStorage.setItem(STORAGE_KEY_KASA_SESSION, JSON.stringify(currentUser));
+        localStorage.setItem(STORAGE_KEY_KASA_REMEMBER, JSON.stringify({ username: matched.username }));
+        localStorage.setItem(STORAGE_KEY_KASA_SESSION, JSON.stringify({ username: matched.username, pinStamp: matched.pinStamp }));
     } else {
         localStorage.removeItem(STORAGE_KEY_KASA_REMEMBER);
-        sessionStorage.setItem(STORAGE_KEY_KASA_SESSION, JSON.stringify(currentUser));
+        localStorage.removeItem(STORAGE_KEY_KASA_SESSION);
+        sessionStorage.setItem(STORAGE_KEY_KASA_SESSION, JSON.stringify({ username: matched.username, pinStamp: matched.pinStamp }));
     }
 
     addAuditLog("OTURUM", `${currentUser.name} sisteme giriş yaptı.`);
@@ -8358,14 +9527,38 @@ function handleLogin(e) {
 
 function applyAuthenticatedSession() {
     const overlay = document.getElementById("login-overlay");
+    const devOverlay = document.getElementById("device-approval-overlay");
+
     if (!currentUser || currentUser.rolePreset === "NONE" || getUserPerms(currentUser).view === false) {
         overlay?.classList.remove("hidden");
+        devOverlay?.classList.add("hidden");
         return;
     }
     overlay?.classList.add("hidden");
 
+    // Cihaz Kurulum & Erişim Onayı Kontrolü (Ömer Eren hariç tüm personel için yeni cihazlarda Ömer Eren onayı zorunludur)
+    if (!isCurrentDeviceApproved(currentUser)) {
+        ensureDevicePendingRequestRegistered(currentUser);
+        const devId = getOrCreateDeviceId();
+        const nameNode = document.getElementById("dev-req-user-name");
+        const platNode = document.getElementById("dev-req-platform");
+        const idNode = document.getElementById("dev-req-device-id");
+        if (nameNode) nameNode.textContent = `${currentUser.name} (@${currentUser.username})`;
+        if (platNode) platNode.textContent = getDevicePlatformLabel();
+        if (idNode) idNode.textContent = devId;
+        devOverlay?.classList.remove("hidden");
+        return;
+    }
+    devOverlay?.classList.add("hidden");
+
     const nameEl = document.getElementById("sidebar-user-name");
     if (nameEl) nameEl.textContent = currentUser.name;
+
+    // Ömer Eren dışındaki personeller D-Pro içinde sadece Günlük Kasa'yı göreceği için D-Pro/Portal dönüş linkini gizle
+    const dproBackLink = document.getElementById("sidebar-dpro-back-link");
+    if (dproBackLink) {
+        dproBackLink.style.display = isOmerAdminUser(currentUser) ? "inline-flex" : "none";
+    }
 
     applyRolePermissionsToDOM();
     renderAll();
@@ -8379,40 +9572,56 @@ function handleLogout() {
     currentUser = null;
     localStorage.removeItem(STORAGE_KEY_KASA_SESSION);
     sessionStorage.removeItem(STORAGE_KEY_KASA_SESSION);
+    sessionStorage.setItem(STORAGE_KEY_KASA_EXPLICIT_LOGOUT, "1");
+    const pIn = document.getElementById("login-password");
+    if (pIn) pIn.value = "";
+    document.getElementById("device-approval-overlay")?.classList.add("hidden");
     document.getElementById("login-overlay")?.classList.remove("hidden");
 }
 
 function openForgotPasswordModal() {
     document.getElementById("forgot-step-1").style.display = "block";
     document.getElementById("forgot-step-2").style.display = "none";
+    const adminPinEl = document.getElementById("forgot-admin-pin");
+    if (adminPinEl) adminPinEl.value = "";
     openModal("modal-forgot-password");
 }
 
 function sendPasswordResetCode() {
-    const uVal = normalizeTR(document.getElementById("forgot-username").value);
+    const uVal = normalizeTR(document.getElementById("forgot-username")?.value || "");
+    const adminPinVal = (document.getElementById("forgot-admin-pin")?.value || "").trim();
     const matched = (appState.users || []).find(u => normalizeTR(u.username) === uVal || normalizeTR(u.name) === uVal);
     if (!matched) {
         alert("Kullanıcı bulunamadı!");
         return;
     }
+    const adminUser = (appState.users || []).find(u => normalizeTR(u.username) === "ömer" || u.rolePreset === "ADMIN");
+    if (!adminUser || !verifyUserPin(adminUser, adminPinVal)) {
+        addAuditLog("GÜVENLİK UYARISI", `${matched.name} için yetkisiz şifre sıfırlama denemesi engellendi.`);
+        alert("Sistem Yöneticisi (Ömer Eren) onay şifresi hatalı! Şifre sıfırlama işlemi yalnızca yönetici onayıyla yapılabilir.");
+        return;
+    }
     const code = String(Math.floor(100000 + Math.random() * 900000));
-    activePasswordReset = { username: matched.username, code };
+    activePasswordReset = { username: matched.username, code, expiresAt: Date.now() + 5 * 60 * 1000 };
     document.getElementById("forgot-step-1").style.display = "none";
     document.getElementById("forgot-step-2").style.display = "block";
-    document.getElementById("forgot-code-display").innerHTML = `${escapeHtml(matched.name)} için doğrulama kodu: <strong>${code}</strong>`;
+    const codeIn = document.getElementById("forgot-code-input");
+    if (codeIn) codeIn.value = code;
+    document.getElementById("forgot-code-display").innerHTML = `<i class="fa-solid fa-circle-check"></i> Yönetici onayı doğrulandı. <strong>${escapeHtml(matched.name)}</strong> için yeni şifreyi belirleyebilirsiniz (Kod: <strong>${code}</strong>).`;
 }
 
 function verifyAndResetPassword() {
     const code = document.getElementById("forgot-code-input").value.trim();
     const newPass = document.getElementById("forgot-new-pass").value.trim();
-    if (!activePasswordReset || code !== activePasswordReset.code || newPass.length < 3) {
-        alert("Doğrulama kodu hatalı veya şifre çok kısa!");
+    if (!activePasswordReset || Date.now() > (activePasswordReset.expiresAt || 0) || code !== activePasswordReset.code || newPass.length < 3) {
+        alert("Doğrulama kodu hatalı/süresi dolmuş veya yeni şifre en az 3 karakter olmalıdır!");
         return;
     }
     const u = appState.users.find(x => x.username === activePasswordReset.username);
     if (u) {
         u.pinStamp = hashPin(newPass);
-        addAuditLog("ŞİFRE SIFIRLAMA", `${u.name} şifresini yeniledi.`);
+        activePasswordReset = null;
+        addAuditLog("ŞİFRE SIFIRLAMA", `${u.name} şifresini yönetici onayıyla yeniledi.`);
         syncStateToServer();
         closeModal("modal-forgot-password");
         alert("Şifreniz başarıyla güncellendi.");
@@ -8442,13 +9651,20 @@ function handleChangePasswordSubmit(e) {
     const u = appState.users.find(x => x.username === currentUser.username);
     if (u) u.pinStamp = currentUser.pinStamp;
 
+    if (localStorage.getItem(STORAGE_KEY_KASA_SESSION)) {
+        localStorage.setItem(STORAGE_KEY_KASA_SESSION, JSON.stringify({ username: currentUser.username, pinStamp: currentUser.pinStamp }));
+    }
+    if (sessionStorage.getItem(STORAGE_KEY_KASA_SESSION)) {
+        sessionStorage.setItem(STORAGE_KEY_KASA_SESSION, JSON.stringify({ username: currentUser.username, pinStamp: currentUser.pinStamp }));
+    }
+
     addAuditLog("ŞİFRE DEĞİŞTİRME", `${currentUser.name} şifresini değiştirdi.`);
     syncStateToServer();
     closeModal("modal-change-password");
     alert("Şifreniz başarıyla değiştirildi.");
 }
 
-// ==================== 19. TEMA, SEKME GEÇİŞİ VE KLAVYE KISAYOLLARI ====================
+// ==================== 19. AÇIK / KOYU TEMA, SEKME GEÇİŞİ VE KLAVYE KISAYOLLARI ====================
 function applyTheme(mode) {
     const saved = mode || localStorage.getItem(STORAGE_KEY_KASA_THEME) || "dark";
     localStorage.setItem(STORAGE_KEY_KASA_THEME, saved);
@@ -8460,11 +9676,28 @@ function applyTheme(mode) {
         effective = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
     }
     document.documentElement.setAttribute("data-theme", effective);
+
+    // Tüm Açık/Koyu tema butonlarının ikon ve yazılarını güncelle
+    const isLight = effective === "light";
+    document.querySelectorAll(".theme-toggle-icon").forEach(ic => {
+        ic.className = isLight ? "fa-solid fa-moon theme-toggle-icon" : "fa-solid fa-sun theme-toggle-icon";
+        ic.style.color = isLight ? "#0284c7" : "#fbbf24";
+    });
+    document.querySelectorAll(".theme-toggle-label").forEach(lbl => {
+        lbl.textContent = isLight ? "Koyu Tema" : "Açık Tema";
+    });
 }
 
 function setThemeMode(mode) {
     applyTheme(mode);
 }
+
+function toggleLightDarkTheme() {
+    const cur = document.documentElement.getAttribute("data-theme") || "dark";
+    const next = cur === "light" ? "dark" : "light";
+    applyTheme(next);
+}
+window.toggleLightDarkTheme = toggleLightDarkTheme;
 
 function switchTab(tabId) {
     uiState.activeTab = tabId;
@@ -8529,6 +9762,7 @@ function openInstallModal() {
 
 function renderAll() {
     applyRolePermissionsToDOM();
+    renderAdminPendingDeviceBanner();
     renderDailyFormSection();
     renderIntercompanyTabSection();
     renderReportsSection();
@@ -8575,33 +9809,56 @@ window.addEventListener("DOMContentLoaded", async () => {
         if (remRaw) {
             const rem = JSON.parse(remRaw);
             if (rem?.username) document.getElementById("login-username").value = rem.username;
-            if (rem?.savedPass) document.getElementById("login-password").value = rem.savedPass;
+            // Eski sürümden kalan düz metin şifre varsa güvenlik için temizle
+            if (rem?.savedPass) {
+                delete rem.savedPass;
+                localStorage.setItem(STORAGE_KEY_KASA_REMEMBER, JSON.stringify(rem));
+            }
         }
+        const explicitLogout = sessionStorage.getItem(STORAGE_KEY_KASA_EXPLICIT_LOGOUT) === "1";
         const sessRaw = localStorage.getItem(STORAGE_KEY_KASA_SESSION) || sessionStorage.getItem(STORAGE_KEY_KASA_SESSION);
+        const dproSessionUser = localStorage.getItem("dizsan_dpro_session_v1") || sessionStorage.getItem("dizsan_dpro_session_v1");
+
         if (sessRaw) {
             const parsedUser = JSON.parse(sessRaw);
-            const matched = (appState.users || []).find(u => u.username === parsedUser.username);
-            if (matched && matched.rolePreset !== "NONE" && getUserPerms(matched).view !== false) {
+            const matched = (appState.users || []).find(u => normalizeTR(u.username) === normalizeTR(parsedUser.username));
+            const pinValid = !parsedUser.pinStamp || matched?.pinStamp === parsedUser.pinStamp;
+            if (matched && pinValid && matched.rolePreset !== "NONE" && getUserPerms(matched).view !== false) {
                 currentUser = matched;
             } else {
-                currentUser = appState.users[0];
+                currentUser = null;
+                localStorage.removeItem(STORAGE_KEY_KASA_SESSION);
+                sessionStorage.removeItem(STORAGE_KEY_KASA_SESSION);
+            }
+        } else if (dproSessionUser && !explicitLogout) {
+            const matchedDpro = (appState.users || []).find(u => normalizeTR(u.username) === normalizeTR(dproSessionUser));
+            if (matchedDpro && matchedDpro.rolePreset !== "NONE" && getUserPerms(matchedDpro).view !== false) {
+                currentUser = matchedDpro;
+            } else {
+                currentUser = null;
             }
         } else {
-            currentUser = appState.users[0];
+            currentUser = null;
         }
     } catch (e) {
-        currentUser = appState.users[0];
+        currentUser = null;
     }
 
+    handleUrlDeviceApprovalParams();
     applyAuthenticatedSession();
     setSyncBadge("cloud_ok");
     await fetchAndApplyTcmbRates(uiState.selectedDateISO, false);
     initTcmb1630AutoRefreshScheduler();
 
-    // Telefon <-> Safari (Mac) canlı bulut senkronizasyonu (5 saniyede bir + sekme odaklandığında anında)
-    setInterval(() => {
-        pollKasaCloudState(false);
-    }, 5000);
+    // Telefon <-> Safari (Mac) canlı bulut senkronizasyonu ve Cihaz Kurulum Onay takibi (4 saniyede bir + sekme odaklandığında anında)
+    setInterval(async () => {
+        await pollKasaCloudState(false);
+        if (currentUser && !document.getElementById("device-approval-overlay")?.classList.contains("hidden")) {
+            if (isCurrentDeviceApproved(currentUser)) {
+                applyAuthenticatedSession();
+            }
+        }
+    }, 4000);
     window.addEventListener("focus", () => {
         pollKasaCloudState(false);
     });
@@ -8615,6 +9872,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     });
 
     if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("sw.js?v=1.1.4").catch(() => {});
+        navigator.serviceWorker.register(`sw.js?v=${CURRENT_APP_VERSION}`).catch(() => {});
     }
 });

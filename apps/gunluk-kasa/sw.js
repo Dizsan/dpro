@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dizsan-kasa-v1.2.3';
+const CACHE_NAME = 'dizsan-kasa-v1.2.5';
 const ASSETS = [
   './',
   './index.html',

@@ -1565,8 +1565,10 @@
             { order: 24, name: "ENVER ( hitit ünv )",    username: "enver.hitit",      email: "rcanbek@dizsan.com.tr",  pinStamp: DEFAULT_PIN_STAMP,                role: "Personel", dept: "Hitit Ünv. Stajyer" }
         ];
 
-        // SADECE ÖMER EREN ÇALIŞMA MODU (Diğer tüm kullanıcıların girişi ve uygulama erişimleri kapalı)
-        const ONLY_OMER_EXCLUSIVE_MODE = true;
+        // CANLI ÇALIŞMA MODU: Ömer Eren hariç tüm personel şu an D-Pro'yu açınca SADECE Dizsan Günlük Kasa'yı görür
+        const ONLY_OMER_EXCLUSIVE_MODE = false;
+        const STAFF_ONLY_KASA_MODE = true;
+        const STAFF_ALLOWED_APP_ID = "Dizsan_Gunluk_Kasa";
 
         function isOnlyOmerEren(user) {
             if (!user) return false;
@@ -1580,21 +1582,28 @@
             const perms = { apps: {}, submodules: {} };
 
             getAllApps().forEach(app => {
-                perms.apps[app.id] = isOmer;
+                const allowApp = isOmer || (STAFF_ONLY_KASA_MODE && app.id === STAFF_ALLOWED_APP_ID);
+                perms.apps[app.id] = allowApp;
                 (app.submodules || []).forEach(sub => {
-                    perms.submodules[sub.id] = isOmer;
+                    perms.submodules[sub.id] = allowApp && (isOmer || sub.id !== "kasa_admin");
                 });
             });
             return perms;
         }
 
         let dproState = {
-            version: "v1.6.6",
+            version: "v1.8.0",
             users: [],
             permissions: {}, // username -> { apps: {}, submodules: {} }
             customApps: [],
             logs: [],
             changelog: [
+                {
+                    version: "v1.8.0",
+                    date: new Date().toLocaleDateString("tr-TR"),
+                    author: "ÖMER EREN",
+                    notes: "Canlıya Geçiş: Ömer Eren hariç tüm personel için Sadece Günlük Kasa görünümü, Yeni Cihaz Kurulum/Giriş Onay Sistemi, Açık/Koyu Tema ve Sadeleştirilmiş Ekran aktif edildi."
+                },
                 {
                     version: "v1.6.6",
                     date: new Date().toLocaleDateString("tr-TR"),
@@ -1646,8 +1655,7 @@
 
         function isUserAdmin(user) {
             if (!user) return false;
-            if (ONLY_OMER_EXCLUSIVE_MODE) return isOnlyOmerEren(user);
-            return user.role === "Yönetici" || user.username === "ömer";
+            return isOnlyOmerEren(user);
         }
 
         function getPlatformInfo() {
@@ -1669,15 +1677,15 @@
                     console.error("D-Pro state parse error:", e);
                 }
             }
-            dproState.version = "v1.6.6";
+            dproState.version = "v1.8.0";
             if (!Array.isArray(dproState.users) || dproState.users.length === 0) {
                 dproState.users = INITIAL_USERS.map(u => ({ ...u }));
             }
             if (!dproState.permissions) dproState.permissions = {};
             dproState.users.forEach(u => {
                 const defaults = buildDefaultPermissionsForUser(u);
-                if (ONLY_OMER_EXCLUSIVE_MODE && !isOnlyOmerEren(u)) {
-                    // Sadece Ömer Eren çalışacağı için diğer tüm kullanıcıların uygulama ve alt modül yetkilerini tamamen kapat
+                if (STAFF_ONLY_KASA_MODE && !isOnlyOmerEren(u)) {
+                    // Ömer Eren hariç tüm personel şu an D-Pro'yu açınca SADECE Günlük Kasa'yı görsün
                     dproState.permissions[u.username] = defaults;
                 } else if (!dproState.permissions[u.username]) {
                     dproState.permissions[u.username] = defaults;
@@ -1745,6 +1753,8 @@
         // ==================== YETKİ KONTROL FONKSİYONLARI ====================
         function canUserAccessApp(user, appId) {
             if (!user) return false;
+            if (isOnlyOmerEren(user)) return true;
+            if (STAFF_ONLY_KASA_MODE) return appId === STAFF_ALLOWED_APP_ID;
             if (ONLY_OMER_EXCLUSIVE_MODE && !isOnlyOmerEren(user)) return false;
             if (isUserAdmin(user)) return true;
             const uPerms = dproState.permissions[user.username];
@@ -1754,6 +1764,10 @@
 
         function canUserAccessSubmodule(user, subId) {
             if (!user) return false;
+            if (isOnlyOmerEren(user)) return true;
+            if (STAFF_ONLY_KASA_MODE) {
+                return subId.startsWith("kasa_") && subId !== "kasa_admin";
+            }
             if (ONLY_OMER_EXCLUSIVE_MODE && !isOnlyOmerEren(user)) return false;
             if (isUserAdmin(user)) return true;
             const uPerms = dproState.permissions[user.username];
@@ -1767,7 +1781,7 @@
             const forgotSel = document.getElementById("forgot-user-select");
             if (!sel || !forgotSel) return;
 
-            sel.innerHTML = `<option value="">-- Personel Seçin (Şu An Sadece Ömer Eren Aktif) --</option>`;
+            sel.innerHTML = `<option value="">-- Personel Seçin veya Kullanıcı Adı Yazın --</option>`;
             forgotSel.innerHTML = "";
 
             dproState.users.forEach(u => {
@@ -1775,19 +1789,14 @@
                 const opt = document.createElement("option");
                 opt.value = u.username;
                 opt.textContent = isOmer
-                    ? `👑 ${u.name} (${u.dept} — Aktif)`
-                    : `🔒 [Erişim Kapalı] ${u.name} (${u.dept})`;
-                if (ONLY_OMER_EXCLUSIVE_MODE && !isOmer) {
-                    opt.disabled = true;
-                }
+                    ? `👑 ${u.name} (${u.dept} — Tam Yetki)`
+                    : `💼 ${u.name} (${u.dept} — Günlük Kasa)`;
                 sel.appendChild(opt);
 
-                if (!ONLY_OMER_EXCLUSIVE_MODE || isOmer) {
-                    const fOpt = document.createElement("option");
-                    fOpt.value = u.username;
-                    fOpt.textContent = `${u.name} (${u.dept})`;
-                    forgotSel.appendChild(fOpt);
-                }
+                const fOpt = document.createElement("option");
+                fOpt.value = u.username;
+                fOpt.textContent = `${u.name} (${u.dept})`;
+                forgotSel.appendChild(fOpt);
             });
 
             // Beni Hatırla Kontrolü
@@ -1839,7 +1848,7 @@
 
             if (ONLY_OMER_EXCLUSIVE_MODE && !isOnlyOmerEren(foundUser)) {
                 addAuditLog("ERISIM_KAPALI_ENGELI", `${foundUser.name} giriş yapmaya çalıştı ancak sistem sadece Ömer Eren erişimine açık.`, foundUser);
-                alert("🔒 ERİŞİM KAPALI!\n\nSistem ve tüm alt uygulamalar şu anda yalnızca ÖMER EREN'in çalışma erişimine açıktır. Diğer kullanıcıların girişleri geçici olarak kapatılmıştır.");
+                alert("🔒 ERİŞİM KAPALI!\n\nSistem ve tüm alt uygulamalar şu anda yalnızca ÖMER EREN'in çalışma erişimine açıktır.");
                 return;
             }
 
@@ -1899,7 +1908,7 @@
             updateVersionBadges();
 
             const avatarEl = document.getElementById("sidebar-user-initials");
-            const isOmer = currentUser && (currentUser.username === "ömer" || (currentUser.name || "").toUpperCase().includes("ÖMER EREN"));
+            const isOmer = currentUser && isOnlyOmerEren(currentUser);
             if (avatarEl) {
                 if (isOmer && OMER_PHOTO_DATA_URI) {
                     avatarEl.innerHTML = `<img src="${OMER_PHOTO_DATA_URI}" alt="${currentUser.name}">`;
@@ -1913,11 +1922,19 @@
             document.getElementById("sidebar-user-name").innerText = currentUser.name;
             document.getElementById("sidebar-user-role").innerText = isUserAdmin(currentUser)
                 ? "👑 Yönetici (Tam Yetki)"
-                : `👤 ${currentUser.dept}`;
+                : `💼 ${currentUser.dept} (Günlük Kasa)`;
 
             sidebarCollapseState = { apps: false, qrcodes: true, admin: true };
             renderSidebarNavigation();
-            openDProTab("dashboard");
+
+            const urlParams = new URLSearchParams(window.location.search || "");
+            const hasApproveDeviceParam = urlParams.has("approveDevice") || urlParams.get("app") === "kasa";
+
+            if (!isOmer || hasApproveDeviceParam) {
+                openEmbeddedApp("Dizsan_Gunluk_Kasa");
+            } else {
+                openDProTab("dashboard");
+            }
         }
 
         function updateVersionBadges() {
@@ -2255,6 +2272,10 @@
         });
 
         function exitFullScreenToDPro() {
+            if (currentUser && STAFF_ONLY_KASA_MODE && !isOnlyOmerEren(currentUser)) {
+                openEmbeddedApp("Dizsan_Gunluk_Kasa");
+                return;
+            }
             const ifr = document.getElementById("dpro-app-iframe");
             if (ifr) ifr.removeAttribute("data-loaded-app");
             const shell = document.getElementById("app-shell");
@@ -2723,7 +2744,9 @@
 
                 if (app.localUrl) {
                     iframe.removeAttribute("srcdoc");
-                    iframe.src = app.localUrl + "?embed=dpro&v=" + Date.now();
+                    const parentQuery = (window.location.search || "").replace(/^\?/, "");
+                    const extraQuery = parentQuery ? "&" + parentQuery : "";
+                    iframe.src = app.localUrl + "?embed=dpro&v=" + Date.now() + extraQuery;
                 } else if (app.bundleB64) {
                     iframe.removeAttribute("src");
                     iframe.srcdoc = buildChildAppSrcDoc(app, restrictedSubs);
@@ -3186,12 +3209,12 @@
                     swRefreshing = true;
                     window.location.reload();
                 });
-                navigator.serviceWorker.register("sw.js?v=1.6.6", { updateViaCache: "none" }).then((reg) => {
+                navigator.serviceWorker.register("sw.js?v=1.8.0", { updateViaCache: "none" }).then((reg) => {
                     try { reg.update(); } catch (e) {}
                 }).catch(() => {});
             }
 
-            // Aktif Beni Hatırla oturumu varsa doğrudan aç (Sadece Ömer Eren için izin ver)
+            // Aktif Beni Hatırla oturumu varsa doğrudan aç
             const savedUser = localStorage.getItem(DPRO_SESSION_KEY) || sessionStorage.getItem(DPRO_SESSION_KEY);
             if (savedUser) {
                 const u = dproState.users.find(x => x.username === savedUser);
