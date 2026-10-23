@@ -1,8 +1,8 @@
 {
-  "version": "1.1.3",
-  "updatedAt": "23.10.2026 14:46:55",
-  "updatedAtMs": 1792756015807,
-  "stateRevision": 46,
+  "version": "1.1.4",
+  "updatedAt": "23.10.2026 16:12:02",
+  "updatedAtMs": 1792761122010,
+  "stateRevision": 47,
   "users": [
     {
       "order": 0,
@@ -206,6 +206,33 @@
           },
           "createdBy": "ÖMER EREN",
           "createdAt": "23.10.2026 14:46:55"
+        },
+        {
+          "id": "ENT-1792761061351-250",
+          "updatedAtMs": 1792761061351,
+          "dateISO": "2026-10-19",
+          "section": "WIRE_IN",
+          "col1": "DİĞER ŞİRKETTEN GİRİŞ · DİZSAN LOJİSTİK → DİZSAN OTOMOTİV",
+          "desc": "DİZSAN LOJİSTİK ŞİRKETİNDEN 1.000,00 USD ($) BORÇ ALINDI (KUR: 50,00 -> 50.000,00 ₺ BANKA HAVALE/EFT)",
+          "dueDate": "",
+          "amount": 50000,
+          "code": "ŞİRKETLER ARASI",
+          "ocrMeta": null,
+          "intercompanyMeta": {
+            "isIntercompany": true,
+            "direction": "IN",
+            "channel": "BANK",
+            "ownerCompany": "DİZSAN OTOMOTİV",
+            "counterparty": "DİZSAN LOJİSTİK",
+            "borrowerCompany": "DİZSAN OTOMOTİV",
+            "lenderCompany": "DİZSAN LOJİSTİK",
+            "currency": "USD",
+            "fxAmount": 1000,
+            "fxRate": 50,
+            "tlAmount": 50000
+          },
+          "createdBy": "ÖMER EREN",
+          "createdAt": "23.10.2026 16:11:01"
         }
       ],
       "tcmbSlotKey": "2026-10-19_HISTORICAL"
@@ -577,6 +604,12 @@
   },
   "auditLogs": [
     {
+      "timestamp": "23.10.2026 16:11:01",
+      "user": "ÖMER EREN",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Gelen Havale] \"DİĞER ŞİRKETTEN GİRİŞ · DİZSAN LOJİSTİK → DİZSAN OTOMOTİV - DİZSAN LOJİSTİK ŞİRKETİNDEN 1.000,00 USD ($) BORÇ ALINDI (KUR: 50,00 -> 50.000,00 ₺ BANKA HAVALE/EFT)\" (50.000,00 ₺) eklendi."
+    },
+    {
       "timestamp": "23.10.2026 14:46:55",
       "user": "ÖMER EREN",
       "category": "MANUEL GİRİŞ",
@@ -683,6 +716,18 @@
       "user": "ÖMER EREN",
       "category": "BELGE TARAMA (AI/OCR)",
       "detail": "Belge tarandı (Akaryakıt / İstasyon Fişi): İşyeri=ATASOY AKARYAKIT, Tutar=20.000,00 ₺, Kart=****3232"
+    },
+    {
+      "timestamp": "23.10.2026 16:12:02",
+      "user": "ÖMER EREN",
+      "category": "OTURUM",
+      "detail": "ÖMER EREN sisteme giriş yaptı."
+    },
+    {
+      "timestamp": "23.10.2026 16:11:54",
+      "user": "Sistem",
+      "category": "SİSTEM",
+      "detail": "Dizsan Günlük Kasa Formu %100 manuel giriş modunda (0,00 TL başlangıç ile) hazırlandı."
     }
   ],
   "lastActiveDateISO": "2026-10-19",

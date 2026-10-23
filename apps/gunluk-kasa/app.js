@@ -1641,7 +1641,7 @@ function renderSidebarIntercompanyWidget() {
 window.renderSidebarIntercompanyWidget = renderSidebarIntercompanyWidget;
 
 function renderIntercompanyTabSection() {
-    const cardsGrid = document.getElementById("ic-net-summary-cards-grid");
+    const cardsGrid = document.getElementById("intercompany-net-summary-cards") || document.getElementById("ic-net-summary-cards-grid");
     const tbody = document.getElementById("tbody-intercompany-ledger");
     if (!cardsGrid && !tbody) return;
 
@@ -1707,7 +1707,7 @@ function renderIntercompanyTabSection() {
         });
 
         if (filteredRows.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:18px; color:var(--text-muted);">Kayıtlı şirketler arası borç/alacak hareketi bulunamadı.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:18px; color:var(--text-muted);">Kayıtlı şirketler arası borç/alacak hareketi bulunamadı.</td></tr>`;
         } else {
             tbody.innerHTML = filteredRows.map(r => {
                 const isIn = r.direction === "IN";
@@ -1716,25 +1716,25 @@ function renderIntercompanyTabSection() {
                     : `<span class="badge badge-danger"><i class="fa-solid fa-arrow-up-long"></i> DİĞER ŞİRKETE ÇIKIŞ</span>`;
                 const cInfo = getCurrencyDisplayInfo(r.currency);
                 const channelBadge = r.channel === "BANK"
-                    ? `<span class="badge badge-info"><i class="fa-solid fa-building-columns"></i> Banka / Havale</span>`
-                    : `<span class="badge badge-warning"><i class="fa-solid fa-vault"></i> Nakit Kasa</span>`;
-                const relationSummary = `<strong style="color:#fda4af;">${escapeHtml(r.borrowerCompany)}</strong> <i class="fa-solid fa-arrow-right" style="color:#94a3b8; font-size:0.68rem;"></i> <strong style="color:#6ee7b7;">${escapeHtml(r.lenderCompany)}</strong>'e Borçlandı`;
+                    ? `<span class="badge badge-info" style="margin-top:3px; display:inline-block;"><i class="fa-solid fa-building-columns"></i> Banka / Havale</span>`
+                    : `<span class="badge badge-warning" style="margin-top:3px; display:inline-block;"><i class="fa-solid fa-vault"></i> Nakit Kasa</span>`;
+                const rateSub = (r.currency !== "TRY" && r.fxRate > 0)
+                    ? `<small style="display:block; font-size:0.64rem; color:var(--text-muted);">Kur: ${formatNumberTR(r.fxRate)} ₺</small>`
+                    : "";
 
                 return `
                     <tr>
                         <td><strong>${escapeHtml(formatDateToTR(r.dateISO))}</strong></td>
-                        <td>${dirBadge}</td>
-                        <td>${relationSummary}</td>
+                        <td>${dirBadge}<br>${channelBadge}</td>
+                        <td><strong style="color:#fda4af;"><i class="fa-solid fa-circle-arrow-right"></i> ${escapeHtml(r.borrowerCompany)}</strong></td>
+                        <td><strong style="color:#6ee7b7;"><i class="fa-solid fa-building-shield"></i> ${escapeHtml(r.lenderCompany)}</strong></td>
                         <td class="amount-cell" style="font-weight:900; color:${cInfo.badgeColor}; font-size:0.86rem;">
                             ${escapeHtml(formatIntercompanyAmount(r.fxAmount, r.currency))}
-                        </td>
-                        <td class="amount-cell" style="color:var(--text-secondary);">
-                            ${r.currency === "TRY" ? "1,00 (TL)" : (r.fxRate > 0 ? `${formatNumberTR(r.fxRate)} ₺` : "-")}
+                            ${rateSub}
                         </td>
                         <td class="amount-cell" style="font-weight:800; color:${isIn ? "#34d399" : "#fb7185"};">
                             ${isIn ? "+" : "-"}${formatMoneyTR(r.tlAmount)}
                         </td>
-                        <td>${channelBadge}</td>
                         <td>${escapeHtml(r.desc)}</td>
                         <td>
                             <span class="badge badge-info" style="font-size:0.67rem;"><i class="fa-solid fa-user-check"></i> ${escapeHtml(r.createdBy)}</span>
@@ -2605,7 +2605,9 @@ const DIZSAN_GROUP_COMPANIES = [
     "DİZSAN OTOMOTİV",
     "DİZSAN LOJİSTİK",
     "KM SOLAR",
-    "DSMOT"
+    "DSMOT",
+    "HASAN EREN",
+    "ÖMER EREN"
 ];
 
 const INTERCOMPANY_CURRENCIES = [
@@ -3201,11 +3203,17 @@ function handleEntrySectionChange(sectionVal) {
         const showIc = isIntercompany || mainCatNow === "ŞİRKETLER ARASI BORÇ / ALACAK";
         grpIc.style.display = showIc ? "block" : "none";
         if (showIc) {
-            const lblCounter = document.getElementById("lbl-ic-counterparty");
+            const lblCounter = document.getElementById("lbl-entry-ic-counterparty") || document.getElementById("lbl-ic-counterparty");
+            const lblOwner = document.getElementById("lbl-entry-ic-owner");
             if (lblCounter) {
                 lblCounter.textContent = flow === "GELIR"
-                    ? "Borç Alınan / Gönderen Şirket Adı (Alacaklı Şirket)"
-                    : "Borç Verilen / Ödeme Yapılan Şirket Adı";
+                    ? "Borç Alınan Şirket / Kişi Adı *"
+                    : "Borç Verilen / Ödeme Yapılan Şirket / Kişi Adı *";
+            }
+            if (lblOwner) {
+                lblOwner.textContent = flow === "GELIR"
+                    ? "Giriş Yapılan (Borçlu) Şirketimiz / Kişi"
+                    : "Çıkış Yapılan (Alacaklı) Şirketimiz / Kişi";
             }
             handleIntercompanyCurrencyChange(document.getElementById("entry-ic-currency")?.value || "USD");
         }
@@ -3276,7 +3284,7 @@ window.openIntercompanyQuickModal = openIntercompanyQuickModal;
 
 function handleIntercompanyCurrencyChange(currCode) {
     const code = String(currCode || document.getElementById("entry-ic-currency")?.value || "USD").toUpperCase();
-    const rateGrp = document.getElementById("group-ic-fx-rate");
+    const rateGrp = document.getElementById("group-entry-ic-rate") || document.getElementById("group-ic-fx-rate");
     const rateEl = document.getElementById("entry-ic-fx-rate");
     const dayObj = ensureDayObject(uiState.selectedDateISO);
 
@@ -3342,7 +3350,7 @@ function handleIntercompanyFieldChange() {
     const channelLabel = channel === "BANK" ? "BANKA HAVALE/EFT" : "NAKİT KASA";
     const dispAmt = fxAmt > 0 ? formatIntercompanyAmount(fxAmt, currency) : `0,00 ${currency === "TRY" ? "TL" : currency}`;
 
-    const bannerEl = document.getElementById("ic-live-preview-banner");
+    const bannerEl = document.getElementById("entry-ic-summary-preview") || document.getElementById("ic-live-preview-banner");
     if (bannerEl) {
         bannerEl.innerHTML = `<i class="fa-solid fa-scale-balanced"></i> <strong>Otomatik Borç/Alacak Özeti:</strong> Bu işlem kaydedildiğinde Sol Bardaki <em>Şirketler Arası Borç / Alacak</em> tablosuna <strong style="color:#fda4af;">"${escapeHtml(borrower)} → ${escapeHtml(lender)}'e ${escapeHtml(dispAmt)} BORÇLU"</strong> olarak işlenecektir (${escapeHtml(channelLabel)}).`;
     }
