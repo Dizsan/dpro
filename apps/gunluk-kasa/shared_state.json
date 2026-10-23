@@ -1,8 +1,8 @@
 {
   "version": "1.2.7",
-  "updatedAt": "23.10.2026 23:17:31",
-  "updatedAtMs": 1792786651460,
-  "stateRevision": 89,
+  "updatedAt": "23.10.2026 23:17:33",
+  "updatedAtMs": 1792786653425,
+  "stateRevision": 90,
   "users": [
     {
       "order": 0,
@@ -251,23 +251,15 @@
       "controllerApproved": false,
       "isLocked": false,
       "entries": []
-    },
-    "2026-10-31": {
-      "dateISO": "2026-10-31",
-      "euroRate": "--",
-      "usdRate": "--",
-      "prevInOverride": null,
-      "prevOutOverride": null,
-      "carryoverOverride": null,
-      "carryoverLabel": "30/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
-      "cashierName": "GÖKHAN ÖZBULUT",
-      "controllerName": "RAFET CANBEK",
-      "controllerApproved": false,
-      "isLocked": false,
-      "entries": []
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "23.10.2026 23:17:33",
+      "user": "ÖMER EREN",
+      "category": "OTURUM",
+      "detail": "ÖMER EREN çıkış yaptı."
+    },
     {
       "timestamp": "23.10.2026 23:17:31",
       "user": "ÖMER EREN",
