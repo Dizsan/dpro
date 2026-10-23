@@ -14,7 +14,7 @@
  * ==========================================================================
  */
 
-const CURRENT_APP_VERSION = "1.2.0";
+const CURRENT_APP_VERSION = "1.2.1";
 window.CURRENT_APP_VERSION = CURRENT_APP_VERSION;
 
 const OLD_DEMO_STORAGE_KEY = "dizsan_gunluk_kasa_state_v1";
@@ -435,6 +435,11 @@ function addAuditLog(category, detail) {
 }
 
 // ==================== 6. ZİNCİRLEME KASA DEVRİ VE GÜNLÜK HESAPLAMA MOTORU ====================
+function formatCarryoverDynamicLabel(prevISO, carryoverVal) {
+    const signStr = Number(carryoverVal) < 0 ? " - " : " + ";
+    return `${formatDateSlashTR(prevISO)} TARİHLİ KASA DEVRİ (${signStr}) BAKİYESİ`;
+}
+
 function ensureDayObject(dateISO) {
     const iso = parseAnyDateToISO(dateISO);
     if (!appState.days) appState.days = {};
@@ -461,8 +466,28 @@ function ensureDayObject(dateISO) {
     return appState.days[iso];
 }
 
+function ensureContinuousDailyCarryoverChain(upToISO = null) {
+    if (!appState.days || typeof appState.days !== "object") appState.days = {};
+    const today = todayISO();
+    const datesWithEntries = Object.keys(appState.days)
+        .filter(d => Array.isArray(appState.days[d]?.entries) && appState.days[d].entries.length > 0)
+        .sort();
+    const allExisting = Object.keys(appState.days).sort();
+    const minISO = datesWithEntries.length > 0 ? datesWithEntries[0] : (allExisting[0] || today);
+    const maxISO = [today, upToISO || today, ...(datesWithEntries.length ? [datesWithEntries[datesWithEntries.length - 1]] : [])].filter(Boolean).sort().pop();
+
+    let cursor = minISO;
+    let guard = 0;
+    while (cursor <= maxISO && guard < 1500) {
+        ensureDayObject(cursor);
+        cursor = addDaysISO(cursor, 1);
+        guard++;
+    }
+}
+
 function calculateDayMetrics(targetDateISO) {
     const targetISO = parseAnyDateToISO(targetDateISO);
+    ensureContinuousDailyCarryoverChain(targetISO);
     ensureDayObject(targetISO);
 
     const recordedDates = Object.keys(appState.days || {}).sort();
@@ -1008,16 +1033,14 @@ async function loadStateFromStorageAndServer() {
 
     if (merged) {
         appState = merged;
+        ensureContinuousDailyCarryoverChain(todayISO());
         saveStateLocally();
 
-        // Eğer aktif günde hiç kayıt yoksa ama başka bir günde (örn. fiş tarihi 17.10.2026) kayıt varsa otomatik o güne odaklan
-        const currentDayEntries = appState.days?.[uiState.selectedDateISO]?.entries || [];
-        if (currentDayEntries.length === 0) {
-            const activeDateWithData = findLatestDateWithEntries(appState);
-            if (activeDateWithData) {
-                uiState.selectedDateISO = activeDateWithData;
-            }
+        // Kasa her gün bir önceki günden otomatik devrederek ilerlediği için varsayılan olarak bugünün (todayISO) kasasını aç
+        if (!uiState.selectedDateISO) {
+            uiState.selectedDateISO = todayISO();
         }
+        ensureDayObject(uiState.selectedDateISO);
 
         const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
         if (isLocal) {
@@ -1095,15 +1118,13 @@ async function pollKasaCloudState(isManual = false) {
 
         if (newEntryArrived || afterRev > beforeRev || afterMs > beforeMs || beforeIds.size !== afterIds.size) {
             appState = nextState;
+            ensureContinuousDailyCarryoverChain(uiState.selectedDateISO || todayISO());
             saveStateLocally();
 
-            // Yeni gelen kaydın olduğu tarihe (veya kayıt bulunan aktif tarihe) geçiş yap
+            // Yalnızca karşı cihazdan yeni bir kayıt eklendiyse o kaydın tarihine odaklan; aksi halde kullanıcının seçili gününü (veya bugünü) koru
             const remoteActiveDate = ghCandidate?.lastActiveDateISO || findLatestDateWithEntries(appState);
             if (newEntryArrived && remoteActiveDate && appState.days?.[remoteActiveDate]?.entries?.length > 0) {
                 uiState.selectedDateISO = remoteActiveDate;
-            } else if ((appState.days?.[uiState.selectedDateISO]?.entries || []).length === 0) {
-                const fallbackDate = findLatestDateWithEntries(appState);
-                if (fallbackDate) uiState.selectedDateISO = fallbackDate;
             }
 
             if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
@@ -1390,20 +1411,75 @@ function renderDailyFormSection() {
 
     const tbodyClean = document.getElementById("tbody-clean-entries");
     if (tbodyClean) {
+        const carryVal = Number(current.carryover) || 0;
+        const carryIsNeg = carryVal < 0;
+        const carrySign = carryVal > 0 ? "+" : "";
+        const carryColor = carryIsNeg ? "#fb7185" : "#38bdf8";
+        const carryBadge = carryIsNeg
+            ? `<span class="badge badge-danger"><i class="fa-solid fa-rotate"></i> DEVİR (-)</span>`
+            : `<span class="badge badge-info"><i class="fa-solid fa-rotate"></i> DEVİR (+)</span>`;
+        const carryDescLabel = formatCarryoverDynamicLabel(prevISO, carryVal);
+
+        const autoCarryInRowHtml = `
+            <tr style="background:rgba(56,189,248,0.06); border-bottom:1px solid rgba(56,189,248,0.2);">
+                <td>${carryBadge}</td>
+                <td><strong style="color:#7dd3fc;">Önceki Gün Otomatik Kasa Devri</strong></td>
+                <td><strong>${escapeHtml(formatDateToTR(prevISO))} DEVRİ</strong></td>
+                <td>
+                    <strong style="color:#e0f2fe;"><i class="fa-solid fa-clock-rotate-left" style="color:#38bdf8;"></i> ${escapeHtml(carryDescLabel)}</strong>
+                    <span class="badge badge-info" style="font-size:0.60rem; margin-left:4px;">Otomatik Zincir</span>
+                </td>
+                <td>
+                    <span class="badge badge-info" style="font-size:0.64rem;"><i class="fa-solid fa-arrows-spin"></i> Otomatik Devir</span>
+                </td>
+                <td class="amount-cell" style="color:${carryColor}; font-weight:900;">${carrySign}${formatNumberTR(carryVal)} ₺</td>
+                <td style="text-align:right;">
+                    <button type="button" class="btn btn-xs" onclick="jumpToDateISO('${escapeHtml(prevISO)}')" title="${escapeHtml(formatDateToTR(prevISO))} Kasasına Git">
+                        <i class="fa-solid fa-arrow-left"></i> ${escapeHtml(formatDateToTR(prevISO).slice(0, 5))}
+                    </button>
+                </td>
+            </tr>
+        `;
+
+        const netCloseVal = Number(current.netClosing) || 0;
+        const netIsNeg = netCloseVal < 0;
+        const netSign = netCloseVal > 0 ? "+" : "";
+        const netColor = netIsNeg ? "#fb7185" : "#fbbf24";
+        const autoNextDayTransferRowHtml = `
+            <tr style="background:rgba(245,158,11,0.07); border-top:1.5px solid rgba(251,191,36,0.3);">
+                <td><span class="badge badge-warning"><i class="fa-solid fa-share-from-square"></i> YARINA (${netIsNeg ? "-" : "+"})</span></td>
+                <td><strong style="color:#fde68a;">Bir Sonraki Güne Otomatik Devir</strong></td>
+                <td><strong>→ ${escapeHtml(formatDateToTR(nextISO))} DEVRİ</strong></td>
+                <td>
+                    <strong style="color:#fef3c7;"><i class="fa-solid fa-arrow-right-to-bracket" style="color:#fbbf24;"></i> ${escapeHtml(formatDateSlashTR(iso))} GÜN SONU → ${escapeHtml(formatDateSlashTR(nextISO))} GÜNÜNE DEVREDEN BAKİYE (${netIsNeg ? " - " : " + "})</strong>
+                </td>
+                <td>
+                    <span class="badge badge-warning" style="font-size:0.64rem;"><i class="fa-solid fa-check-double"></i> Ertesi Güne Aktarılır</span>
+                </td>
+                <td class="amount-cell" style="color:${netColor}; font-weight:900; font-size:0.9rem;">${netSign}${formatNumberTR(netCloseVal)} ₺</td>
+                <td style="text-align:right;">
+                    <button type="button" class="btn btn-xs" onclick="jumpToDateISO('${escapeHtml(nextISO)}')" title="${escapeHtml(formatDateToTR(nextISO))} Kasasına Git">
+                        ${escapeHtml(formatDateToTR(nextISO).slice(0, 5))} <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+
+        let entriesRowsHtml = "";
         if (entries.length === 0) {
             const otherActiveDays = Object.keys(appState.days || {})
                 .filter(d => d !== iso && Array.isArray(appState.days[d]?.entries) && appState.days[d].entries.length > 0)
                 .sort()
                 .reverse();
             const otherDaysHint = otherActiveDays.length > 0
-                ? `<div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:6px; justify-content:center; align-items:center;">
-                    <span style="font-size:0.75rem; color:#38bdf8; font-weight:700;"><i class="fa-solid fa-calendar-check"></i> Kayıt Bulunan Günler:</span>
+                ? `<div style="margin-top:6px; display:flex; flex-wrap:wrap; gap:6px; justify-content:center; align-items:center;">
+                    <span style="font-size:0.72rem; color:#38bdf8; font-weight:700;"><i class="fa-solid fa-calendar-check"></i> Hareket Girilen Günler:</span>
                     ${otherActiveDays.map(d => `<button type="button" class="btn btn-xs btn-primary" onclick="jumpToDateISO('${escapeHtml(d)}')"><i class="fa-solid fa-arrow-right"></i> ${escapeHtml(formatDateToTR(d))} (${appState.days[d].entries.length} Kayıt)</button>`).join("")}
                    </div>`
                 : "";
-            tbodyClean.innerHTML = `<tr><td colspan="7" class="empty-row-placeholder">Bu tarihte (${escapeHtml(formatDateToTR(iso))}) henüz gelir veya gider kaydı eklenmedi. Üstteki "Ekle" düğmesine basarak kayıt ekleyebilirsiniz.${otherDaysHint}</td></tr>`;
+            entriesRowsHtml = `<tr><td colspan="7" class="empty-row-placeholder" style="padding:10px;">Bu tarihte (${escapeHtml(formatDateToTR(iso))}) yeni hareket girilmedi; önceki gün bakiyesi (<strong>${carrySign}${formatMoneyTR(carryVal)}</strong>) otomatik olarak <strong>${escapeHtml(formatDateToTR(nextISO))}</strong> gününe devreder.${otherDaysHint}</td></tr>`;
         } else {
-            tbodyClean.innerHTML = entries.map(e => {
+            entriesRowsHtml = entries.map(e => {
                 const isGelir = isGelirSection(e.section);
                 const flowBadge = isGelir
                     ? `<span class="badge badge-success"><i class="fa-solid fa-arrow-down-long"></i> GELİR</span>`
@@ -1439,6 +1515,8 @@ function renderDailyFormSection() {
                 `;
             }).join("");
         }
+
+        tbodyClean.innerHTML = autoCarryInRowHtml + entriesRowsHtml + autoNextDayTransferRowHtml;
     }
 
     const badgeToday = document.getElementById("nav-badge-today-items");
@@ -1809,11 +1887,48 @@ const TR_DAY_NAMES = [
 
 const STORAGE_KEY_KASA_PLATES = "dizsan_kasa_vehicle_plates_v1";
 const DEFAULT_COMPANY_VEHICLE_PLATES = [
-    "19DS750",
+    "19AK404",
     "19AAJ501",
+    "19DS134",
+    "19DS645",
+    "19DS224",
+    "19DS750",
     "34TE6263",
-    "19DS134"
+    "34FEH141",
+    "19DS560",
+    "19DC555",
+    "19DS233",
+    "19DS393",
+    "19DS762"
 ];
+
+function parseVehicleKmInput(raw) {
+    if (raw === null || raw === undefined) return 0;
+    const digits = String(raw).replace(/[^0-9]/g, "");
+    return digits ? (Number(digits) || 0) : 0;
+}
+
+function formatKmTR(val) {
+    const n = parseVehicleKmInput(val);
+    if (n <= 0) return "";
+    return n.toLocaleString("tr-TR");
+}
+
+function isStrictFuelPurchase(mainVal, subVal, docType, textHint = "") {
+    if (String(docType || "").toUpperCase() === "FUEL") return true;
+    const sUp = String(subVal || "").toUpperCase();
+    const mUp = String(mainVal || "").toUpperCase();
+    const tUp = String(textHint || "").toUpperCase();
+    const fuelRegex = /YAKIT|BENZ[Iİ1]N|KUR[SŞ5]UNSUZ|MOTOR[Iİ1]N|MAZOT|\bLPG\b|OTOGAZ|ADBLUE|AKARYAKIT/;
+    if (fuelRegex.test(sUp) || fuelRegex.test(tUp)) return true;
+    if (mUp.includes("YAKIT") && !/OTOPARK|YIKAMA|HGS|OGS|BAKIM|SERV[Iİ1]S|LAST[Iİ1]K|MUAYENE|S[Iİ1]GORTA|MTV/.test(sUp)) {
+        return Boolean(sUp);
+    }
+    return false;
+}
+window.parseVehicleKmInput = parseVehicleKmInput;
+window.formatKmTR = formatKmTR;
+window.isStrictFuelPurchase = isStrictFuelPurchase;
 
 function normalizeVehiclePlateString(raw) {
     if (!raw) return "";
@@ -1911,6 +2026,19 @@ function updateVehiclePlateVisibilityAndPopulate(preferredPlate = "") {
     const shouldShow = (flow === "GIDER") && (isFuelOrVehicleCategorySelected(mainVal, subVal) || ocrDocType === "FUEL" || ocrDocType === "PARKING" || ocrDocType === "HGS");
     grpPlate.style.display = shouldShow ? "block" : "none";
 
+    const kmBox = document.getElementById("entry-km-box");
+    const kmLbl = document.getElementById("lbl-entry-km-req");
+    const isFuelMustKm = (flow === "GIDER") && isStrictFuelPurchase(mainVal, subVal, ocrDocType);
+    if (kmBox) {
+        kmBox.style.display = shouldShow ? "flex" : "none";
+        kmBox.style.borderColor = isFuelMustKm ? "rgba(251,191,36,0.65)" : "rgba(148,163,184,0.35)";
+    }
+    if (kmLbl) {
+        kmLbl.innerHTML = isFuelMustKm
+            ? `<i class="fa-solid fa-gauge-high"></i> Araç Güncel KM Bilgisi (Bütün Yakıt Alımlarında Zorunlu) *`
+            : `<i class="fa-solid fa-gauge-high"></i> Araç KM Bilgisi (Yakıt Alımlarında Zorunlu)`;
+    }
+
     const plates = getAvailableVehiclePlates();
     const currentOcrPlate = normalizeVehiclePlateString(document.getElementById("ocr-edit-plate")?.value || "");
     const rawCandidate = preferredPlate || (selEl.value === "__MANUAL__" ? "" : selEl.value) || currentOcrPlate;
@@ -1998,6 +2126,49 @@ function handleVehiclePlateSelectChange(plateVal) {
     }
 }
 window.handleVehiclePlateSelectChange = handleVehiclePlateSelectChange;
+
+function applyKmToEntryDescription(kmVal) {
+    const descEl = document.getElementById("entry-desc");
+    const kmFormatted = formatKmTR(kmVal);
+    if (!descEl || !kmFormatted) return;
+    const curDesc = descEl.value.trim();
+    if (!curDesc) {
+        descEl.value = `KM: ${kmFormatted}`;
+    } else if (/\bKM\s*:\s*[0-9.,]+/i.test(curDesc)) {
+        descEl.value = curDesc.replace(/\bKM\s*:\s*[0-9.,]+/i, `KM: ${kmFormatted}`);
+    } else if (/PLAKA\s*:\s*[0-9A-Z]+/i.test(curDesc)) {
+        descEl.value = curDesc.replace(/(PLAKA\s*:\s*[0-9A-Z]+)/i, `$1 · KM: ${kmFormatted}`);
+    } else {
+        descEl.value = `KM: ${kmFormatted} · ${curDesc}`;
+    }
+}
+
+function handleVehicleKmInputLive(rawVal) {
+    const kmNum = parseVehicleKmInput(rawVal);
+    const fmt = formatKmTR(kmNum);
+    const entryKmInp = document.getElementById("entry-vehicle-km-input");
+    if (entryKmInp && entryKmInp.value !== fmt) {
+        entryKmInp.value = fmt;
+    }
+    const ocrKmInp = document.getElementById("ocr-edit-km");
+    if (ocrKmInp && ocrKmInp.value !== fmt) {
+        ocrKmInp.value = fmt;
+    }
+    if (kmNum >= 10) {
+        applyKmToEntryDescription(kmNum);
+    }
+    if (document.getElementById("ai-scan-result-box")?.style.display === "block") {
+        syncEditableOcrFieldsToForm(true);
+    }
+}
+window.handleVehicleKmInputLive = handleVehicleKmInputLive;
+
+function handleBottomManualKmLive(inpEl) {
+    if (!inpEl) return;
+    const kmNum = parseVehicleKmInput(inpEl.value);
+    inpEl.value = formatKmTR(kmNum);
+}
+window.handleBottomManualKmLive = handleBottomManualKmLive;
 
 function handleManualPlateInputLive(rawVal) {
     const norm = normalizeVehiclePlateString(rawVal);
@@ -2121,17 +2292,36 @@ function submitBottomManualEntry() {
     let desc = normalizeSpacedPlatesInText((document.getElementById("bottom-manual-desc")?.value || "").trim().toUpperCase());
     const amount = parseMoneyInputTR(document.getElementById("bottom-manual-amount")?.value || 0);
 
-    const isFuel = /YAKIT|LPG|ARAÇ/i.test(catRaw);
+    const isFuel = /YAKIT|LPG|MAZOT|MOTORİN|BENZİN|ARAÇ/i.test(catRaw);
     let chosenPlate = "";
+    let chosenKm = 0;
     if (isFuel) {
         const pSel = document.getElementById("bottom-manual-plate")?.value || "";
         const pCustom = (document.getElementById("bottom-manual-plate-custom")?.value || "").trim();
         chosenPlate = normalizeVehiclePlateString(pSel === "__MANUAL__" ? pCustom : pSel);
-        if (chosenPlate) {
-            saveVehiclePlateToRegistry(chosenPlate);
-            if (!desc) {
-                desc = `PLAKA: ${chosenPlate} · ${defaultCol1.split("/").pop().trim()}`;
-            } else if (!desc.includes(chosenPlate) && !desc.includes(chosenPlate.replace(/\s+/g, ""))) {
+        chosenKm = parseVehicleKmInput(document.getElementById("bottom-manual-km")?.value || "");
+
+        if (!chosenPlate) {
+            alert("Yakıt alımlarında lütfen listeden Araç Plakasını seçiniz veya elle yazınız!");
+            document.getElementById("bottom-manual-plate")?.focus();
+            return;
+        }
+        if (!chosenKm || chosenKm <= 0) {
+            alert("Bütün yakıt alımlarında (Mazot, Benzin, LPG/Otogaz, AdBlue) lütfen 'Araç KM Bilgisi' kutusuna aracın kilometresini giriniz!");
+            document.getElementById("bottom-manual-km")?.focus();
+            return;
+        }
+
+        saveVehiclePlateToRegistry(chosenPlate);
+        const kmStr = formatKmTR(chosenKm);
+        const defaultFuelTitle = defaultCol1.split("/").pop().trim();
+        if (!desc) {
+            desc = `PLAKA: ${chosenPlate} · KM: ${kmStr} · ${defaultFuelTitle}`;
+        } else {
+            if (!desc.includes(`KM:`)) {
+                desc = `KM: ${kmStr} · ${desc}`;
+            }
+            if (!desc.includes(chosenPlate)) {
                 desc = `PLAKA: ${chosenPlate} · ${desc}`;
             }
         }
@@ -2156,7 +2346,7 @@ function submitBottomManualEntry() {
         dueDate: "",
         amount,
         code: "",
-        ocrMeta: chosenPlate ? { plate: chosenPlate, docType: "FUEL", hasReceiptImg: false, hasPosImg: false } : null,
+        ocrMeta: (chosenPlate || chosenKm > 0) ? { plate: chosenPlate, km: chosenKm, docType: "FUEL", hasReceiptImg: false, hasPosImg: false } : null,
         intercompanyMeta: null,
         createdBy: currentUser ? currentUser.name : "Sistem",
         createdAt: formatDateTimeTR()
@@ -2169,9 +2359,11 @@ function submitBottomManualEntry() {
     const descEl = document.getElementById("bottom-manual-desc");
     const amtEl = document.getElementById("bottom-manual-amount");
     const custPlateEl = document.getElementById("bottom-manual-plate-custom");
+    const kmEl = document.getElementById("bottom-manual-km");
     if (col1El) col1El.value = "";
     if (descEl) descEl.value = "";
     if (amtEl) amtEl.value = "";
+    if (kmEl) kmEl.value = "";
     if (custPlateEl) { custPlateEl.value = ""; custPlateEl.style.display = "none"; }
 
     appState.lastActiveDateISO = targetISO;
@@ -2310,13 +2502,18 @@ function classifyEntryForReporting(entry, dateISO) {
         }
     }
 
-    // Plaka & Litre (Her zaman boşluksuz format: 19DS750, 19AAJ501, 34TE6263)
+    // Plaka, KM & Litre (Her zaman boşluksuz format: 19AK404, 19DS750, 19AAJ501, 34TE6263)
     let plate = meta.plate ? normalizeVehiclePlateString(meta.plate) : "";
     if (!plate) {
         const pm = combinedUpper.match(/PLAKA\s*:\s*([0-9]{2}\s*[A-Z]{1,3}\s*[0-9]{2,4})/) || combinedUpper.match(/\b(0[1-9]|[1-7][0-9]|8[01])\s*([A-Z]{1,3})\s*([0-9]{2,4})\b/);
         if (pm) {
             plate = pm[1] && pm[2] && pm[3] ? `${pm[1]}${pm[2]}${pm[3]}` : normalizeVehiclePlateString(pm[1]);
         }
+    }
+    let km = parseVehicleKmInput(meta.km || 0);
+    if (!km) {
+        const kmMatch = combinedUpper.match(/\bKM\s*[:.\-]?\s*([0-9]{1,3}(?:[.,][0-9]{3})+|[0-9]{2,7})\b/);
+        if (kmMatch) km = parseVehicleKmInput(kmMatch[1]);
     }
     let liters = Number(meta.liters) || 0;
     if (!liters) {
@@ -2354,6 +2551,7 @@ function classifyEntryForReporting(entry, dateISO) {
         cardLast4,
         cardLabel,
         plate,
+        km,
         liters,
         fuelType: meta.fuelType || (isFuel ? subCat : ""),
         isFuel,
@@ -2485,10 +2683,11 @@ function renderReportsSection() {
 
             if (it.plate || it.isFuel) {
                 const pKey = it.plate || "PLAKA BELİRTİLMEMİŞ";
-                const curPlate = plateMap.get(pKey) || { plate: pKey, types: new Set(), count: 0, liters: 0, total: 0 };
+                const curPlate = plateMap.get(pKey) || { plate: pKey, types: new Set(), count: 0, liters: 0, total: 0, lastKm: 0 };
                 curPlate.count++;
                 curPlate.liters += it.liters;
                 curPlate.total += it.amount;
+                if (it.km > curPlate.lastKm) curPlate.lastKm = it.km;
                 if (it.fuelType) curPlate.types.add(it.fuelType);
                 plateMap.set(pKey, curPlate);
             }
@@ -2633,9 +2832,10 @@ function renderReportsSection() {
         } else {
             tbodyPlates.innerHTML = sortedPlates.map(p => {
                 const fuelStr = Array.from(p.types).join(", ") || "YAKIT / ARAÇ GİDERİ";
+                const kmBadge = p.lastKm > 0 ? ` <span class="badge badge-info" style="font-size:0.63rem;">Son KM: ${formatKmTR(p.lastKm)}</span>` : "";
                 return `
                     <tr>
-                        <td><span class="badge badge-warning" style="font-size:0.74rem;"><i class="fa-solid fa-car"></i> ${escapeHtml(p.plate)}</span></td>
+                        <td><span class="badge badge-warning" style="font-size:0.74rem;"><i class="fa-solid fa-car"></i> ${escapeHtml(p.plate)}</span>${kmBadge}</td>
                         <td>${escapeHtml(fuelStr)}</td>
                         <td style="text-align:center;"><span class="badge badge-info">${p.count}</span></td>
                         <td class="amount-cell" style="font-weight:700; color:#2dd4bf;">${p.liters > 0 ? `${formatNumberTR(p.liters)} Lt` : "-"}</td>
@@ -3188,7 +3388,7 @@ function renderA4SheetSection() {
     const posCcList = (dayObj.entries || []).filter(e => e.section === "POS_CC");
     const wireInList = (dayObj.entries || []).filter(e => e.section === "WIRE_IN");
 
-    const carryDesc = dayObj.carryoverLabel || `${formatDateSlashTR(current.carrySourceDateISO)} TARİHLİ KASA DEVRİ ( + ) BAKİYESİ`;
+    const carryDesc = formatCarryoverDynamicLabel(current.carrySourceDateISO, current.carryover);
 
     const leftRows = [
         { col1: "KASA DEVRİ", desc: carryDesc, amount: current.carryover },
@@ -6355,13 +6555,14 @@ function renderEditableOcrResultPanel(rec, pos, engineLabel = "Apple Vision Neur
                         </div>
                     </div>
                     <div>
-                        <label style="display:block; color:#34d399; font-size:0.62rem; font-weight:700;">Araç Plakası (Listeden Seç / Yaz)</label>
-                        <div style="display:grid; grid-template-columns:1.1fr 0.9fr; gap:4px;">
+                        <label style="display:block; color:#34d399; font-size:0.62rem; font-weight:700;">Araç Plakası &amp; KM Bilgisi (Yakıtta Zorunlu *)</label>
+                        <div style="display:grid; grid-template-columns:1fr 0.75fr 0.85fr; gap:4px;">
                             <select id="ocr-plate-quick-select" style="${inpStyle}" onchange="handleVehiclePlateSelectChange(this.value)">
                                 <option value="">-- Plaka Seç --</option>
                                 ${getAvailableVehiclePlates().map(p => `<option value="${escapeHtml(p)}" ${normalizeVehiclePlateString(rec.plate) === p ? "selected" : ""}>🚗 ${escapeHtml(p)}</option>`).join("")}
                             </select>
-                            <input type="text" id="ocr-edit-plate" value="${escapeHtml(normalizeVehiclePlateString(rec.plate || ""))}" placeholder="Örn: 19DS750" style="${inpStyle}" oninput="this.value = normalizeVehiclePlateString(this.value); syncEditableOcrFieldsToForm(true)">
+                            <input type="text" id="ocr-edit-plate" value="${escapeHtml(normalizeVehiclePlateString(rec.plate || ""))}" placeholder="Örn: 19AK404" style="${inpStyle}" oninput="this.value = normalizeVehiclePlateString(this.value); syncEditableOcrFieldsToForm(true)">
+                            <input type="text" inputmode="numeric" id="ocr-edit-km" value="${escapeHtml(formatKmTR(rec.km || 0))}" placeholder="Araç KM *" style="${(rec.docType === "FUEL" && !rec.km) ? warnStyle : inpStyle}" oninput="handleVehicleKmInputLive(this.value)">
                         </div>
                     </div>
                     <div>
@@ -6437,6 +6638,7 @@ function syncEditableOcrFieldsToForm(updateMainFormFields = true) {
         docType: valStr("ocr-edit-doc-type") || "OTHER",
         userNote: normalizeSpacedPlatesInText(valStr("ocr-manual-user-note")),
         plate: normalizeVehiclePlateString(valStr("ocr-edit-plate")),
+        km: parseVehicleKmInput(document.getElementById("ocr-edit-km")?.value || document.getElementById("entry-vehicle-km-input")?.value || ""),
         station: valStr("ocr-edit-station"),
         location: valStr("ocr-edit-location"),
         date: valStr("ocr-edit-rec-date"),
@@ -6479,6 +6681,21 @@ function syncEditableOcrFieldsToForm(updateMainFormFields = true) {
     } else {
         hasWarning = true;
         checks.push({ ok: false, text: `KULLANICI GİRİŞİ BEKLENİYOR: Lütfen yukarıdaki 'Alt Kategori Seçimi' kutusundan uygun alt kategoriyi elle seçiniz.` });
+    }
+
+    // 0B. Yakıt Alımlarında Araç Plakası ve KM Bilgisi Kontrolü
+    const mainCatNow = (document.getElementById("entry-main-cat")?.value || "").trim();
+    if (isStrictFuelPurchase(mainCatNow, selectedSubCat, rec.docType)) {
+        if (!rec.plate) {
+            hasWarning = true;
+            checks.push({ ok: false, text: `YAKIT PLAKA BİLGİSİ EKSİK: Lütfen listeden araç plakasını seçiniz veya elle giriniz.` });
+        }
+        if (!rec.km || rec.km <= 0) {
+            hasWarning = true;
+            checks.push({ ok: false, text: `YAKIT KM BİLGİSİ ZORUNLU: Bütün yakıt alımlarında lütfen aracın güncel KM (Kilometre) bilgisini giriniz.` });
+        } else {
+            checks.push({ ok: true, text: `Araç KM bilgisi girildi: ${formatKmTR(rec.km)} KM` });
+        }
     }
 
     // 1. Tutar Karşılaştırması
@@ -6591,6 +6808,7 @@ function syncEditableOcrFieldsToForm(updateMainFormFields = true) {
         }
         if (rec.userNote) descParts.push(rec.userNote);
         if (rec.plate) descParts.push(`PLAKA: ${rec.plate}`);
+        if (rec.km > 0) descParts.push(`KM: ${formatKmTR(rec.km)}`);
         if (rec.station) descParts.push(rec.station);
         else if (pos.merchantName) descParts.push(pos.merchantName);
         if (rec.fuelType && !descParts.includes(rec.fuelType)) descParts.push(rec.fuelType);
@@ -6689,6 +6907,8 @@ function openEntryModal(defaultSection = "CASH_IN") {
     document.getElementById("entry-code").value = "";
     const fxAmtEl = document.getElementById("entry-ic-fx-amount");
     if (fxAmtEl) fxAmtEl.value = "";
+    const kmInpEl = document.getElementById("entry-vehicle-km-input");
+    if (kmInpEl) kmInpEl.value = "";
     resetAiScannerState();
 
     handleFlowTypeChange(defaultFlow, defaultSection);
@@ -6760,6 +6980,14 @@ function openEditEntryModal(entryId) {
     document.getElementById("entry-col1").value = entry.col1 || "";
     document.getElementById("entry-due-date").value = entry.dueDate ? formatDateToTR(entry.dueDate) : "";
     document.getElementById("entry-desc").value = entry.desc || "";
+    const kmInpEditEl = document.getElementById("entry-vehicle-km-input");
+    if (kmInpEditEl) {
+        const exKm = entry.ocrMeta?.km || (() => {
+            const mKm = String(entry.desc || "").match(/\bKM\s*[:.\-]?\s*([0-9.,]+)/i);
+            return mKm ? parseVehicleKmInput(mKm[1]) : 0;
+        })();
+        kmInpEditEl.value = exKm > 0 ? formatKmTR(exKm) : "";
+    }
     const amtNum = Number(entry.amount) || 0;
     document.getElementById("entry-amount").value = amtNum % 1 === 0 ? amtNum.toLocaleString("tr-TR") : formatNumberTR(amtNum);
     document.getElementById("entry-code").value = entry.code || "";
@@ -6890,14 +7118,55 @@ function handleSaveEntry(e) {
     const manualPlateInpVal = (document.getElementById("entry-new-plate-input")?.value || "").trim();
     const effectivePlateRaw = (rawPlateSel && rawPlateSel !== "__MANUAL__") ? rawPlateSel : (manualPlateInpVal || ocrMeta?.plate || "");
     const selectedPlateVal = normalizeVehiclePlateString(effectivePlateRaw);
+
+    // Araç KM bilgisini al (Form kutusu, OCR kutusu veya açıklama içinden)
+    const rawKmInp = document.getElementById("entry-vehicle-km-input")?.value || document.getElementById("ocr-edit-km")?.value || ocrMeta?.km || "";
+    let vehicleKmNum = parseVehicleKmInput(rawKmInp);
+    if (!vehicleKmNum && desc) {
+        const descKmM = desc.match(/\bKM\s*[:.\-]?\s*([0-9.,]+)/i);
+        if (descKmM) vehicleKmNum = parseVehicleKmInput(descKmM[1]);
+    }
+
+    const isExpenseEntry = !isGelirSection(section);
+    const isFuelExpense = isExpenseEntry && isStrictFuelPurchase(mainCat, subCat, ocrMeta?.docType, `${col1} ${desc}`);
+
+    if (isFuelExpense) {
+        if (!selectedPlateVal) {
+            alert("Bütün yakıt alımlarında lütfen listeden Araç Plakasını seçiniz veya en alttan elle plaka giriniz!");
+            const pEl = document.getElementById("entry-plate-select") || document.getElementById("ocr-edit-plate");
+            if (pEl) pEl.focus();
+            return;
+        }
+        if (!vehicleKmNum || vehicleKmNum <= 0) {
+            alert("Bütün yakıt alımlarında (Mazot, Benzin, LPG/Otogaz, AdBlue) lütfen 'Araç KM Bilgisi' kutusuna aracın güncel kilometresini giriniz!");
+            const kmFocusEl = document.getElementById("entry-vehicle-km-input") || document.getElementById("ocr-edit-km");
+            if (kmFocusEl) kmFocusEl.focus();
+            return;
+        }
+    }
+
     if (selectedPlateVal) {
         saveVehiclePlateToRegistry(selectedPlateVal);
-        if (ocrMeta) ocrMeta.plate = selectedPlateVal;
+        if (!ocrMeta) ocrMeta = { docType: isFuelExpense ? "FUEL" : "OTHER", hasReceiptImg: false, hasPosImg: false };
+        ocrMeta.plate = selectedPlateVal;
         if (desc && !desc.toUpperCase().includes(selectedPlateVal) && !desc.toUpperCase().includes(selectedPlateVal.replace(/\s+/g, ""))) {
             desc = `PLAKA: ${selectedPlateVal} · ${desc}`;
         }
         const manualInp = document.getElementById("entry-new-plate-input");
         if (manualInp) manualInp.value = "";
+    }
+
+    if (vehicleKmNum > 0) {
+        if (!ocrMeta) ocrMeta = { docType: isFuelExpense ? "FUEL" : "OTHER", hasReceiptImg: false, hasPosImg: false };
+        ocrMeta.km = vehicleKmNum;
+        const kmFmt = formatKmTR(vehicleKmNum);
+        if (desc && !/\bKM\s*:/i.test(desc)) {
+            if (/PLAKA\s*:\s*[0-9A-Z]+/i.test(desc)) {
+                desc = desc.replace(/(PLAKA\s*:\s*[0-9A-Z]+)/i, `$1 · KM: ${kmFmt}`);
+            } else {
+                desc = `KM: ${kmFmt} · ${desc}`;
+            }
+        }
     }
 
     // Eğer belge tarandıysa ve kullanıcıdan Alt Kategori seçmesi istendiyse kontrol et

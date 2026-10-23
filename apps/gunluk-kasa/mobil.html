@@ -290,9 +290,12 @@
                                             </td>
                                             <td style="padding:8px 6px;">
                                                 <div id="bottom-manual-plate-wrap" style="margin-bottom:4px;">
-                                                    <select id="bottom-manual-plate" class="form-control" style="font-size:0.73rem; font-weight:800; padding:4px 6px; border-color:rgba(52,211,153,0.55); color:#34d399;" onchange="handleBottomManualPlateChange(this.value)">
-                                                    </select>
-                                                    <input type="text" id="bottom-manual-plate-custom" class="form-control" style="display:none; margin-top:4px; font-size:0.73rem; font-weight:800; padding:4px 6px; text-transform:uppercase;" placeholder="Plakayı elle yazın (Örn: 19ABC123)" oninput="this.value = normalizeVehiclePlateString(this.value)">
+                                                    <div style="display:grid; grid-template-columns:1.25fr 0.75fr; gap:4px;">
+                                                        <select id="bottom-manual-plate" class="form-control" style="font-size:0.73rem; font-weight:800; padding:4px 6px; border-color:rgba(52,211,153,0.55); color:#34d399;" onchange="handleBottomManualPlateChange(this.value)">
+                                                        </select>
+                                                        <input type="text" inputmode="numeric" id="bottom-manual-km" class="form-control" style="font-size:0.73rem; font-weight:800; padding:4px 6px; border-color:rgba(251,191,36,0.65); color:#fde68a;" placeholder="Araç KM *" title="Bütün yakıt alımlarında güncel araç KM bilgisi zorunludur" oninput="handleBottomManualKmLive(this)">
+                                                    </div>
+                                                    <input type="text" id="bottom-manual-plate-custom" class="form-control" style="display:none; margin-top:4px; font-size:0.73rem; font-weight:800; padding:4px 6px; text-transform:uppercase;" placeholder="Plakayı elle yazın (Örn: 19AK404)" oninput="this.value = normalizeVehiclePlateString(this.value)">
                                                 </div>
                                                 <input type="text" id="bottom-manual-col1" class="form-control" style="font-size:0.73rem; padding:4px 6px;" placeholder="Cari / Firma / Kart (İsteğe bağlı)">
                                             </td>
@@ -1059,10 +1062,17 @@
                         <!-- EN ALTTA ELLE PLAKA GİRİŞ KUTUSU (Listeden "En Altta Elle Giriş" seçilince veya doğrudan yazmak için) -->
                         <div id="entry-manual-plate-box" style="margin-top:8px; padding-top:7px; border-top:1px dashed rgba(52,211,153,0.35); display:flex; align-items:center; gap:6px;">
                             <span style="font-size:0.68rem; font-weight:800; color:#fde68a; white-space:nowrap;"><i class="fa-solid fa-keyboard"></i> Elle Plaka Girişi:</span>
-                            <input type="text" id="entry-new-plate-input" class="form-control" placeholder="Plakayı elle yazın (Örn: 19ABC123)" style="text-transform:uppercase; font-weight:800; font-size:0.76rem; padding:5px 8px;" oninput="handleManualPlateInputLive(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault(); addNewCompanyVehiclePlate();}">
+                            <input type="text" id="entry-new-plate-input" class="form-control" placeholder="Plakayı elle yazın (Örn: 19AK404)" style="text-transform:uppercase; font-weight:800; font-size:0.76rem; padding:5px 8px;" oninput="handleManualPlateInputLive(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault(); addNewCompanyVehiclePlate();}">
                             <button type="button" class="btn btn-xs btn-success" style="white-space:nowrap; padding:6px 10px;" onclick="addNewCompanyVehiclePlate()" title="Yazılan plakayı listeye de kaydet">
                                 <i class="fa-solid fa-check"></i> Listeye Kaydet
                             </button>
+                        </div>
+                        <!-- BÜTÜN YAKIT ALIMLARINDA ZORUNLU ARAÇ KM BİLGİSİ KUTUSU -->
+                        <div id="entry-km-box" style="margin-top:8px; padding:7px 10px; border-radius:8px; background:rgba(245,158,11,0.12); border:1px solid rgba(251,191,36,0.55); display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+                            <label for="entry-vehicle-km-input" id="lbl-entry-km-req" style="margin:0; font-size:0.72rem; font-weight:800; color:#fbbf24; white-space:nowrap;">
+                                <i class="fa-solid fa-gauge-high"></i> Araç Güncel KM Bilgisi (Bütün Yakıt Alımlarında Zorunlu) *
+                            </label>
+                            <input type="text" inputmode="numeric" id="entry-vehicle-km-input" class="form-control" placeholder="Güncel KM giriniz (Örn: 145.250)" style="max-width:255px; font-weight:800; font-size:0.78rem; padding:5px 8px; border-color:rgba(251,191,36,0.65); color:#fde68a;" oninput="handleVehicleKmInputLive(this.value)">
                         </div>
                     </div>
 
@@ -1310,8 +1320,8 @@
 
     <!-- SCRIPTS -->
     <script src="auto-date-helper.js"></script>
-    <script src="app.js?v=1.2.0"></script>
-    <script src="dizsan-back-navigation.js?v=1.2.0"></script>
-    <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.2.0"></script>
+    <script src="app.js?v=1.2.1"></script>
+    <script src="dizsan-back-navigation.js?v=1.2.1"></script>
+    <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.2.1"></script>
 </body>
 </html>

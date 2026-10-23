@@ -1,8 +1,8 @@
 {
-  "version": "1.1.7",
+  "version": "1.2.1",
   "updatedAt": "23.10.2026 16:30:03",
   "updatedAtMs": 1792762203295,
-  "stateRevision": 51,
+  "stateRevision": 52,
   "users": [
     {
       "order": 0,
@@ -747,8 +747,23 @@
       "detail": "Dizsan Günlük Kasa Formu %100 manuel giriş modunda (0,00 TL başlangıç ile) hazırlandı."
     }
   ],
-  "lastActiveDateISO": "2026-10-19",
+  "lastActiveDateISO": "2026-10-23",
   "lastFullResetMs": 0,
   "deletedEntryIds": [],
-  "clearedDays": {}
+  "clearedDays": {},
+  "vehiclePlates": [
+    "19AK404",
+    "19AAJ501",
+    "19DS134",
+    "19DS645",
+    "19DS224",
+    "19DS750",
+    "34TE6263",
+    "34FEH141",
+    "19DS560",
+    "19DC555",
+    "19DS233",
+    "19DS393",
+    "19DS762"
+  ]
 }
