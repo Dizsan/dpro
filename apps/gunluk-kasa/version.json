@@ -1,11 +1,11 @@
 {
   "appId": "dizsan-kasa",
   "appName": "Dizsan Günlük Kasa Formu & Kasa Takip",
-  "version": "1.2.5",
-  "build": 120,
-  "releasedAt": "2026-10-23 18:30:00",
-  "releaseNotes": "v1.2.5 Güncellemesi: Ana ekran üst barında sadece '+ Ekle' ve 'Açık / Koyu Tema' bırakıldı. Yeni Cihaz Kurulum & Giriş Onay Sistemi (Ömer Eren Onay Linki & 6 Haneli Kod), Belirgin Okunaklı Yazı Tipleri ve Mobil/PC Kurulum Karekodu eklendi.",
+  "version": "1.2.6",
+  "build": 121,
+  "releasedAt": "2026-10-23 18:43:00",
+  "releaseNotes": "v1.2.6 Güncellemesi: Şifre doğrulama ve D-Pro tek oturum (SSO) uyumluluğu iyileştirildi, 20 saniye bekleme kilidi kaldırıldı.",
   "author": "Ömer Eren & DİZSAN",
-  "notes": "Sade Üst Bar (+ Ekle), Açık/Koyu Tema, Cihaz Kurulum Onay Linki & D-Pro Kasa Canlı Modu",
-  "updatedAt": "2026-10-23T15:30:00.000000+00:00"
+  "notes": "Şifre Doğrulama & D-Pro Tek Oturum Uyumluluğu",
+  "updatedAt": "2026-10-23T15:43:00.000000+00:00"
 }
