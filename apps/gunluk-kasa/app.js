@@ -14,8 +14,10 @@
  * ==========================================================================
  */
 
-const CURRENT_APP_VERSION = "1.2.1";
+const CURRENT_APP_VERSION = "1.2.2";
 window.CURRENT_APP_VERSION = CURRENT_APP_VERSION;
+// 23.10.2026 17:15 öncesi yapılan tüm demo/test kayıtlarını tüm cihazların önbelleğinden kalıcı olarak temizleyen milat eşiği
+const PRODUCTION_CUTOFF_RESET_MS = 1792762500000;
 
 const OLD_DEMO_STORAGE_KEY = "dizsan_gunluk_kasa_state_v1";
 const STORAGE_KEY_KASA_STATE = "dizsan_gunluk_kasa_manual_v2";
@@ -667,14 +669,37 @@ function stripOcrImagesFromEntry(ent) {
     return ent;
 }
 
+function isPreProductionDemoLog(lg) {
+    if (!lg || !lg.timestamp) return true;
+    const m = String(lg.timestamp).trim().match(/^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2}):(\d{2})/);
+    if (!m) return false;
+    const isoCmp = `${m[3]}-${m[2]}-${m[1]} ${m[4]}:${m[5]}:${m[6]}`;
+    return isoCmp < "2026-10-23 17:15:00";
+}
+
 function stripOcrImagesFromState(st) {
     if (!st || !st.days || typeof st.days !== "object") return st;
-    for (const dObj of Object.values(st.days)) {
+    for (const [dKey, dObj] of Object.entries(st.days)) {
         if (dObj && Array.isArray(dObj.entries)) {
-            for (const ent of dObj.entries) {
+            dObj.entries = dObj.entries.filter(ent => {
+                if (!ent || !ent.id) return false;
+                let entMs = Number(ent.updatedAtMs) || 0;
+                if (!entMs) {
+                    const m = String(ent.id).match(/^ENT-(\d{10,15})/);
+                    if (m) entMs = Number(m[1]) || 0;
+                }
+                if (entMs > 0 && entMs < PRODUCTION_CUTOFF_RESET_MS) return false;
                 stripOcrImagesFromEntry(ent);
-            }
+                return true;
+            });
         }
+        // Demo döneminden kalan (2026-10-23 öncesi ve 2026-10-31 gibi test günleri) boş günleri temizle
+        if ((dKey < "2026-10-23" || dKey === "2026-10-31") && (!dObj?.entries || dObj.entries.length === 0)) {
+            delete st.days[dKey];
+        }
+    }
+    if (Array.isArray(st.auditLogs)) {
+        st.auditLogs = st.auditLogs.filter(lg => !isPreProductionDemoLog(lg));
     }
     return st;
 }
@@ -706,7 +731,7 @@ function mergeKasaStates(stateA, stateB) {
 
     const resetMsA = Number(stateA.lastFullResetMs) || 0;
     const resetMsB = Number(stateB.lastFullResetMs) || 0;
-    const maxResetMs = Math.max(resetMsA, resetMsB);
+    const maxResetMs = Math.max(PRODUCTION_CUTOFF_RESET_MS, resetMsA, resetMsB);
 
     const deletedSet = new Set([
         ...(Array.isArray(stateA.deletedEntryIds) ? stateA.deletedEntryIds : []),
@@ -778,14 +803,17 @@ function mergeKasaStates(stateA, stateB) {
         collectEntries(dayP?.entries);
 
         baseDay.entries = Array.from(entryMap.values());
+        if ((dKey < "2026-10-23" || dKey === "2026-10-31") && baseDay.entries.length === 0) {
+            continue;
+        }
         mergedDays[dKey] = baseDay;
     }
 
-    // Merge audit logs
+    // Merge audit logs (demo dönemi logları hariç)
     const logSeen = new Set();
     const mergedLogs = [];
     for (const lg of [...(primary.auditLogs || []), ...(secondary.auditLogs || [])]) {
-        if (!lg) continue;
+        if (!lg || isPreProductionDemoLog(lg)) continue;
         const k = `${lg.timestamp}|${lg.category}|${lg.detail}`;
         if (!logSeen.has(k)) {
             logSeen.add(k);

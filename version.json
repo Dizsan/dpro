@@ -1,6 +1,6 @@
 {
-  "version": "1.7.6",
-  "updatedAt": "2026-10-23T14:10:00Z",
-  "notes": "v1.7.6 — Dizsan Günlük Kasa v1.2.1 (13 Araç Plaka Listesi, Tüm Yakıt Alımlarında KM Zorunluluğu ve +/- Kesintisiz Günlük Kasa Devri)",
+  "version": "1.7.7",
+  "updatedAt": "2026-10-23T14:15:00Z",
+  "notes": "v1.7.7 — Dizsan Günlük Kasa v1.2.2 (Demo Kayıtları Sıfırlandı — Gerçek Kullanıma Hazır 0,00 TL Başlangıç)",
   "mandatory": true
 }

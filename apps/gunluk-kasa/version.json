@@ -1,11 +1,11 @@
 {
   "appId": "dizsan-kasa",
   "appName": "Dizsan Günlük Kasa Formu & Kasa Takip",
-  "version": "1.2.1",
-  "build": 116,
-  "releasedAt": "2026-10-23 17:10:00",
-  "releaseNotes": "v1.2.1 Güncellemesi: 1) 13 araçlık tam plaka listesi (19AK404, 19AAJ501, 19DS134, 19DS645, 19DS224, 19DS750, 34TE6263, 34FEH141, 19DS560, 19DC555, 19DS233, 19DS393, 19DS762) boşluksuz olarak tanımlandı, 2) Sadece mazotta değil bütün yakıt alımlarında (Mazot, Benzin, LPG, AdBlue) Araç KM Bilgisi zorunlu hale getirildi, 3) Kasa her gün artı/eksi (+/-) bakılmaksızın bir önceki günden otomatik devir alıp bir sonraki güne kesintisiz devrederek ilerler.",
+  "version": "1.2.2",
+  "build": 117,
+  "releasedAt": "2026-10-23 17:15:00",
+  "releaseNotes": "v1.2.2 Güncellemesi: Demo/test için yapılan tüm geçmiş girişler komple sıfırlandı (0,00 TL). Yarından itibaren gerçek kasa girişlerine tertemiz başlangıç için hazırlandı.",
   "author": "Ömer Eren & DİZSAN",
-  "notes": "13 araç plakası + Tüm yakıt alımlarında KM zorunluluğu + Artı/eksi bakılmaksızın kesintisiz günlük otomatik kasa devri",
-  "updatedAt": "2026-10-23T14:10:00.000000+00:00"
+  "notes": "Demo kayıtları komple sıfırlandı — Gerçek kullanıma hazır temiz başlangıç (0,00 TL)",
+  "updatedAt": "2026-10-23T14:15:00.000000+00:00"
 }
