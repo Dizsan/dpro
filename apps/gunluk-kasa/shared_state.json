@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "23.10.2026 23:29:45",
-  "updatedAtMs": 1792787385953,
-  "stateRevision": 100,
+  "updatedAt": "24.10.2026 00:30:51",
+  "updatedAtMs": 1792791051453,
+  "stateRevision": 101,
   "users": [
     {
       "order": 0,
@@ -157,8 +157,8 @@
     },
     "2026-10-24": {
       "dateISO": "2026-10-24",
-      "euroRate": "55,7566",
-      "usdRate": "49,7436",
+      "euroRate": "55,7896",
+      "usdRate": "49,7424",
       "prevInOverride": null,
       "prevOutOverride": null,
       "carryoverOverride": null,
@@ -167,7 +167,8 @@
       "controllerName": "RAFET CANBEK",
       "controllerApproved": false,
       "isLocked": false,
-      "entries": []
+      "entries": [],
+      "tcmbSlotKey": "2026-10-24_BEFORE_1630"
     },
     "2026-10-25": {
       "dateISO": "2026-10-25",
@@ -255,6 +256,12 @@
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "24.10.2026 00:30:51",
+      "user": "ÖMER EREN",
+      "category": "OTURUM",
+      "detail": "ÖMER EREN sisteme giriş yaptı."
+    },
     {
       "timestamp": "23.10.2026 23:29:45",
       "user": "ÖMER EREN",
