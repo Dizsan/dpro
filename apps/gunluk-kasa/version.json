@@ -1,11 +1,11 @@
 {
   "appId": "dizsan-kasa",
   "appName": "Dizsan Günlük Kasa Formu & Kasa Takip",
-  "version": "1.1.7",
-  "build": 112,
-  "releasedAt": "2026-10-23 16:41:00",
-  "releaseNotes": "v1.1.7 Güncellemesi: 1) Kapsamlı Raporlama & Analiz Merkezi eklendi (Dönem seçimi: Bugün/Son 7 Gün/Bu Ay/Bu Yıl/Tüm Zamanlar/Tarih Aralığı, 6'lı Yönetici KPI kartları, ŞAHSİ/OFİS/ATÖLYE harcama özet şeridi, Kategori & Alt Kategori gider dağılımı, Şirket Kredi Kartları harcama raporu, Araç Plakası & Yakıt Litre/Tutar raporu, İşyeri/İstasyon bazlı ödeme özeti, Excel .xls ve WhatsApp rapor çıktısı), 2) Tarama sonrası fotoğraf verisinin otomatik imhası (sıfır veri şişmesi).",
+  "version": "1.1.8",
+  "build": 113,
+  "releasedAt": "2026-10-23 16:48:00",
+  "releaseNotes": "v1.1.8 Güncellemesi: 1) Yakıt / Araç Gideri seçildiğinde otomatik açılan Araç Plakası Seçim Listesi (19 DS 750, 19 AAJ 501, 34 TE 6263, 19 DS 134 + geçmiş kayıt plakaları + Yeni Plaka Ekleme), 2) Raporlama ekranında 'Sadece Yakıt / Akaryakıt' seçildiğinde otomatik açılan Araç Plakası Filtresi, 3) Belge tarama ekranında kayıtlı plakadan tek tıkla seçim listesi.",
   "author": "Ömer Eren & DİZSAN",
-  "notes": "Kapsamlı Raporlama & Analiz Merkezi + Tarama Sonrası Fotoğraf İmhası",
-  "updatedAt": "2026-10-23T13:41:00.000000+00:00"
+  "notes": "Yakıt seçilince otomatik açılan Araç Plakası Listesi (Kayıt + Tarama + Raporlama)",
+  "updatedAt": "2026-10-23T13:48:00.000000+00:00"
 }

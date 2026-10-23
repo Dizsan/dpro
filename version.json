@@ -1,6 +1,6 @@
 {
-  "version": "1.7.2",
-  "updatedAt": "2026-10-23T13:41:00Z",
-  "notes": "v1.7.2 — Dizsan Günlük Kasa v1.1.7 (Kapsamlı Raporlama & Analiz Merkezi, Kategori/Kart/Plaka/Yakıt/Şahsi-Ofis-Atölye Raporları, Excel & WhatsApp Raporlama)",
+  "version": "1.7.3",
+  "updatedAt": "2026-10-23T13:48:00Z",
+  "notes": "v1.7.3 — Dizsan Günlük Kasa v1.1.8 (Yakıt Seçildiğinde Otomatik Açılan Araç Plakası Listesi & Raporlama Plaka Filtresi)",
   "mandatory": true
 }

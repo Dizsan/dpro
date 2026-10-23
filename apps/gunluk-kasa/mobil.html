@@ -387,13 +387,21 @@
                                 </div>
                                 <div>
                                     <label style="display:block; font-size:0.66rem; color:var(--text-muted); font-weight:700; margin-bottom:3px;">Alan / Alt Kategori Filtresi</label>
-                                    <select id="rep-filter-area" class="form-control" onchange="renderReportsSection()">
+                                    <select id="rep-filter-area" class="form-control" onchange="handleReportAreaFilterChange(this.value)">
                                         <option value="ALL">Tüm Kategoriler (Şahsi + Ofis + Atölye + Araç vb.)</option>
+                                        <option value="FUEL">⛽ Sadece Yakıt / Akaryakıt (Plaka Listesi Açılır)</option>
                                         <option value="ŞAHSİ">Sadece ŞAHSİ Harcamalar</option>
                                         <option value="OFİS">Sadece OFİS Harcamaları</option>
                                         <option value="ATÖLYE">Sadece ATÖLYE Harcamaları</option>
-                                        <option value="FUEL">Sadece Yakıt / Akaryakıt (Benzin / Motorin / LPG)</option>
                                         <option value="TDR">Sadece TDR (Tedarik / Parça) Kalemleri</option>
+                                    </select>
+                                </div>
+                                <div id="rep-filter-plate-wrap" style="display:none; padding:6px 8px; border-radius:8px; background:rgba(16,185,129,0.12); border:1px solid rgba(52,211,153,0.45);">
+                                    <label style="display:block; font-size:0.66rem; color:#34d399; font-weight:800; margin-bottom:3px;">
+                                        <i class="fa-solid fa-car"></i> Araç Plakası Seçimi (Otomatik Liste)
+                                    </label>
+                                    <select id="rep-filter-plate" class="form-control" onchange="renderReportsSection()">
+                                        <option value="ALL">Tüm Araç Plakaları</option>
                                     </select>
                                 </div>
                                 <div>
@@ -990,6 +998,30 @@
                         </div>
                     </div>
 
+                    <!-- 3B. YAKIT / ARAÇ SEÇİLDİĞİNDE OTOMATİK AÇILAN KAYITLI PLAKA LİSTESİ -->
+                    <div id="group-entry-vehicle-plate" style="display:none; padding:10px 12px; border-radius:10px; background:linear-gradient(145deg, rgba(16,185,129,0.12), rgba(14,165,233,0.08)); border:1px solid rgba(52,211,153,0.45); margin-bottom:10px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:6px; flex-wrap:wrap;">
+                            <label for="entry-plate-select" style="color:#34d399; font-weight:800; font-size:0.76rem; margin:0;">
+                                <i class="fa-solid fa-car-side"></i> Araç Plakası Seçimi (Yakıt / Araç Gideri İçin Otomatik Liste)
+                            </label>
+                            <span style="font-size:0.63rem; color:#a7f3d0;">Listeden seçin veya yeni plaka ekleyin</span>
+                        </div>
+                        <div class="form-grid-2" style="gap:8px; align-items:center;">
+                            <div>
+                                <select id="entry-plate-select" class="form-control" onchange="handleVehiclePlateSelectChange(this.value)">
+                                    <option value="">-- LİSTEDEN ARAÇ PLAKASI SEÇİNİZ --</option>
+                                </select>
+                            </div>
+                            <div style="display:flex; gap:5px;">
+                                <input type="text" id="entry-new-plate-input" class="form-control" placeholder="Yeni Plaka (Örn: 19 ABC 123)" style="text-transform:uppercase; font-weight:700;" onkeydown="if(event.key==='Enter'){event.preventDefault(); addNewCompanyVehiclePlate();}">
+                                <button type="button" class="btn btn-xs btn-success" style="white-space:nowrap; padding:6px 10px;" onclick="addNewCompanyVehiclePlate()" title="Yeni plakayı kalıcı olarak listeye ekle">
+                                    <i class="fa-solid fa-plus"></i> Plaka Ekle
+                                </button>
+                            </div>
+                        </div>
+                        <div id="entry-plate-quick-chips" style="display:flex; gap:5px; flex-wrap:wrap; margin-top:7px;"></div>
+                    </div>
+
                     <!-- 4. CARİ / BANKA (OTOMATİK DOLAR VEYA SERBEST YAZILABİLİR) VE VADE TARİHİ -->
                     <div class="form-grid-2" id="entry-row-party-due">
                         <div class="form-group" id="group-entry-col1">
@@ -1234,8 +1266,8 @@
 
     <!-- SCRIPTS -->
     <script src="auto-date-helper.js"></script>
-    <script src="app.js?v=1.1.7"></script>
-    <script src="dizsan-back-navigation.js?v=1.1.7"></script>
-    <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.1.7"></script>
+    <script src="app.js?v=1.1.8"></script>
+    <script src="dizsan-back-navigation.js?v=1.1.8"></script>
+    <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.1.8"></script>
 </body>
 </html>
