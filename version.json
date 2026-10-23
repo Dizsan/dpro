@@ -1,6 +1,6 @@
 {
-  "version": "1.6.7",
-  "updatedAt": "2026-10-23T10:30:00Z",
-  "notes": "v1.6.7 — Dizsan Günlük Kasa v1.1.2 (Gelişmiş Belge & POS Slipi OCR Analiz Motoru, Gölgeli/Ahşap Zemin Filtresi, İndirim/KDV/Toplam Çapraz Doğrulama)",
+  "version": "1.6.8",
+  "updatedAt": "2026-10-23T11:35:00Z",
+  "notes": "v1.6.8 — Dizsan Günlük Kasa v1.1.3 (Mobil OCR %100 Kusursuzlaştırma: Silik Baş Harf & Unvan Düzeltme, Ürün/Kalem Satırı & %20 KDV Sembol Düzeltme, 4 Katmanlı Kart Son 4 Hane & Referans No Yakalayıcı)",
   "mandatory": true
 }

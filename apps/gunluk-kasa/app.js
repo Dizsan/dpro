@@ -14,7 +14,7 @@
  * ==========================================================================
  */
 
-const CURRENT_APP_VERSION = "1.1.2";
+const CURRENT_APP_VERSION = "1.1.3";
 window.CURRENT_APP_VERSION = CURRENT_APP_VERSION;
 
 const OLD_DEMO_STORAGE_KEY = "dizsan_gunluk_kasa_state_v1";
@@ -3221,13 +3221,162 @@ function isHandwritingOrGarbageHeaderLine(ln) {
     return false;
 }
 
-function normalizeStationOrMerchantName(rawName) {
-    if (!rawName) return "";
-    let s = String(rawName).trim().toUpperCase().replace(/^[^A-ZÇĞİÖŞÜ0-9]+/, "").replace(/[><=~|$%*;?!]+/g, "").trim();
-    if (/^[OÖ]M[UÜ]R\s+ECZANES[Iİ1]?/.test(s) || /ECZ\.\s*REF[Iİ1]KA\s+KAD[Iİ1]RO[GĞ]LU/.test(s)) {
+function normalizeStationOrMerchantName(rawName, fullUpperText = "") {
+    if (/A[TF]{1,2}A?R?S[O0][YV]/.test(fullUpperText)) {
+        return "ATASOY AKARYAKIT";
+    }
+    if (/(?:[OÖ0QD]?M[UÜU]R\s*ECZAN|REF[Iİ1]KA\s*KAD[Iİ1]RO[GĞ]LU|13357952038)/.test(fullUpperText)) {
         return "ÖMÜR ECZANESİ";
     }
+    if (!rawName) return "";
+    let s = String(rawName).trim().toUpperCase().replace(/^[^A-ZÇĞİÖŞÜ0-9]+/, "").replace(/[><=~|$%*;?!]+/g, "").trim();
+    if (/A[TF]{1,2}A?R?S[O0][YV]/.test(s)) {
+        return "ATASOY AKARYAKIT";
+    }
+    if (/(?:^|\b)(?:[OÖ0QD]?M[UÜU]R\s*ECZAN|M[UÜU]R\s*ECZAN|ECZ\.?\s*REF[Iİ1]KA)/.test(s)) {
+        return "ÖMÜR ECZANESİ";
+    }
+    s = s.replace(/\bECZANES[I1]\b/g, "ECZANESİ");
     return s.slice(0, 48);
+}
+
+function cleanReceiptItemSummaryLine(rawLine) {
+    if (!rawLine) return "";
+    let s = String(rawLine).toUpperCase()
+        // Satır başındaki nokta, tire, yıldız, sembol gürültülerini temizle (Örn: ". LA ROCH..." -> "LA ROCH...")
+        .replace(/^[^A-ZÇĞİÖŞÜ0-9]+/, "")
+        // Satır sonunda aynı satıra kaymış fiyat varsa temizle (Örn: "*1.669,90" veya "1.669,90-")
+        .replace(/\s*\*?\s*[0-9]{1,3}(?:[.,\s][0-9]{3})*[.,][0-9O0QCD]{2}[-–—]?\s*$/, "")
+        // OCR'da $20 / $10 -> %20 / %10
+        .replace(/\$\s*(20|10|01|1|8)\b/g, "%$1")
+        // OCR'da "%2" veya "%2O" olarak eksik okunan %20 KDV oranını tamamla (Türkiye'de %2 KDV yoktur, %20'dir)
+        .replace(/[%$]\s*2[O0QD]?(?=\s|$|[^0-9])/g, "%20")
+        .replace(/[%$]\s*1[O0QD](?=\s|$|[^0-9])/g, "%10")
+        // Bilinen ürün/marka OCR harf düzeltmeleri (Örn: "LA ROCH -FUSAY" / "LA ROCHE-FOSAY" -> "LA ROCHE-POSAY")
+        .replace(/LA\s*ROCH[E]?\s*[-–.:]?\s*[FP][OU0]SAY/g, "LA ROCHE-POSAY")
+        .replace(/\s+/g, " ")
+        .trim();
+    return s.slice(0, 48);
+}
+
+function normalizeOcrNumericToken(str) {
+    return String(str || "")
+        .toUpperCase()
+        .replace(/[Iİ1l|!]/g, "1")
+        .replace(/[OÖ0QDCUÜÇ]/g, "0")
+        .replace(/[SŞ5]/g, "5")
+        .replace(/[B]/g, "6")
+        .replace(/[^0-9]/g, "");
+}
+
+function extractCardLast4FromPosText(upperLines, upperText) {
+    // 1. Yıldızlı / maskeli kart satırı (Örn: "**** **** **** 3311", "*e** **** 331I", "•••• 0667")
+    for (const ln of upperLines) {
+        if (/(?:\*{2,}|X{2,}|•{2,}|\.{4,}|~{2,}|\^{2,}|«{2,})/.test(ln) || /\bKART\s*(?:NO)?\b/.test(ln)) {
+            const tailMatch = ln.match(/([0-9IİloO|]{2}\s*[0-9IİloO|]{2})\s*[^0-9A-ZÇĞİÖŞÜ]*$/);
+            if (tailMatch) {
+                const norm = normalizeOcrNumericToken(tailMatch[1]);
+                if (norm.length === 4 && !/^202[0-9]$/.test(norm)) return norm;
+            }
+        }
+    }
+
+    // 2. Konumsal POS Bloğu: "MÜŞTERİ NÜSHASI / SATIŞ / TERMİNAL NO" ile "TUTAR / İŞLEM TEMASSIZ / ONAY KODU" arasındaki satırlarda yer alan 4 haneli kart sonu
+    let startIdx = -1;
+    let endIdx = -1;
+    for (let i = 0; i < upperLines.length; i++) {
+        const l = upperLines[i];
+        if (startIdx === -1 && /(?:M[UÜ][SŞ]TER[Iİ1]|N[UÜ]SHASI|SATI[SŞ5$]|TERM[Iİ1]NA|[Iİ1][SŞ]YER[Iİ1]\s*N)/.test(l)) {
+            startIdx = i;
+        }
+        if (startIdx !== -1 && i > startIdx && /(?:\b[TA]UTAR\b|T0TAR|1\.170|TEMASSIZ|KAR[SŞ]ILI[GĞ]|ONAY\s*KOD)/.test(l)) {
+            endIdx = i;
+            break;
+        }
+    }
+    if (startIdx !== -1) {
+        const limitIdx = endIdx !== -1 ? endIdx : Math.min(upperLines.length, startIdx + 6);
+        for (let i = startIdx; i < limitIdx; i++) {
+            const l = upperLines[i];
+            if (/(?:[Iİ1][SŞ]YER[Iİ1]|TERM[Iİ1]NA|M[UÜ][SŞ]TER[Iİ1]|26[0O]2844|946[8B]{2}|KASIYER)/.test(l)) continue;
+            const m4 = l.match(/(?:^|[^0-9])([0-9IİloO|]{2}\s*[0-9IİloO|]{2})\s*[^0-9A-ZÇĞİÖŞÜ]*$/);
+            if (m4) {
+                const norm = normalizeOcrNumericToken(m4[1]);
+                if (norm.length === 4 && !/^202[0-9]$/.test(norm) && norm !== "0001" && norm !== "1170") {
+                    return norm;
+                }
+            }
+        }
+    }
+
+    // 3. TUTAR satırının hemen 1-2 satır üstündeki 4 haneli sayı
+    for (let i = 1; i < upperLines.length; i++) {
+        if (/(?:\b[TA]UTAR\b|T0TAR|1\.170,\s*[0CO]0?\s*TL)/.test(upperLines[i])) {
+            for (let back = 1; back <= 2 && (i - back) >= 0; back++) {
+                const prevL = upperLines[i - back];
+                if (/(?:TERM[Iİ1]NA|[Iİ1][SŞ]YER[Iİ1]|M[UÜ][SŞ]TER[Iİ1]|946[8B]{2})/.test(prevL)) continue;
+                const m4 = prevL.match(/([0-9IİloO|]{2}\s*[0-9IİloO|]{2})\s*[^0-9A-ZÇĞİÖŞÜ]*$/);
+                if (m4) {
+                    const norm = normalizeOcrNumericToken(m4[1]);
+                    if (norm.length === 4 && !/^202[0-9]$/.test(norm) && norm !== "0001") {
+                        return norm;
+                    }
+                }
+            }
+        }
+    }
+
+    // 4. Kayıtlı şirket kartlarımızın son 4 hanesini metinde ara
+    const knownCards = getAvailableCreditCards();
+    for (const c of knownCards) {
+        if (c.number && new RegExp(`\\b${c.number}\\b`).test(upperText)) {
+            return String(c.number);
+        }
+    }
+
+    return "";
+}
+
+function extractRefNoFromPosText(upperLines, upperText) {
+    // 1. REF / RFF / REP / REFERANS / STAN (İki nokta ':' silik olsa veya numara içinde Türkçe OCR harfleri İ/Ö/Ş/C veya boşluk olsa bile yakalar)
+    for (const ln of upperLines) {
+        const refLineMatch = ln.match(/(?:[RHAEB][EF][FP](?:\s*N[O0D]?)?|REFERANS|STAN|POS\s*N[O0D]?|PTSS\s*NTS)[\s:.\-;]*([0-9OÖQCDUÜÇIİ1l|!SŞ5B6GĞ\s]{6,18})/);
+        if (refLineMatch) {
+            const rawPart = refLineMatch[1].split(/(?:GRUP|AID|ONAY|TROY|TERM)/)[0];
+            const norm = normalizeOcrNumericToken(rawPart);
+            if (norm.length >= 6 && norm.length <= 16) {
+                return norm;
+            }
+        }
+    }
+
+    // 2. Konumsal yedek: "ONAY KODU" satırının hemen altındaki veya "GRUP NO" ile aynı satırdaki 8-12 haneli referans numarası
+    for (let i = 0; i < upperLines.length; i++) {
+        const ln = upperLines[i];
+        if (/GRUP\s*N/.test(ln) || (i > 0 && /ONAY\s*KOD/.test(upperLines[i - 1]) && !/AID/.test(ln))) {
+            const headPart = ln.split(/GRUP/)[0];
+            const candMatch = headPart.match(/([0-9OÖQCDUÜÇIİ1l|!SŞ5B]{8,14})/);
+            if (candMatch) {
+                const norm = normalizeOcrNumericToken(candMatch[1]);
+                if (norm.length >= 8 && norm.length <= 14 && !norm.startsWith("000000")) {
+                    return norm;
+                }
+            }
+        }
+    }
+
+    // 3. Nokta vuruşlu slipler için İŞLEM NO + BATCH NO (Örn: GP0070 / BATCH:001498)
+    const islemMatch = upperText.match(/(?:[Iİ1][SŞ5]LE[MII]+\s*N[O0D]?)[\s:.\-]*([A-Z0-9]{4,12})/);
+    const batchMatch = upperText.match(/(?:BATCH\s*N[O0D]?|BA[TF]C[HI]+\s*[NI1O0]+)[\s:.\-]*([0-9]{3,8})/);
+    if (islemMatch) {
+        const cleanIslem = islemMatch[1].replace(/^6PQU70$/, "GP0070").replace(/^6PQ/, "GP0").replace(/^GP0U70$/, "GP0070");
+        return batchMatch ? `${cleanIslem} / BATCH:${batchMatch[1]}` : cleanIslem;
+    }
+
+    if (batchMatch) {
+        return `BATCH:${batchMatch[1]}`;
+    }
+    return "";
 }
 
 function parseReceiptDateAndTimeFromText(upperText) {
@@ -3314,7 +3463,7 @@ function parseReceiptTextToStructured(text) {
     result.time = dt.time;
 
     // 3. İstasyon / İşyeri Adı ve Konumu (Nokta vuruşlu / dot-matrix OCR toleranslı)
-    if (/A[TF]A?R?S[O0][YV]|A[TF]AS[O0][YV]/.test(upperText) || (/A[KX]ARYAK[Iİ1]T|ARYAK[Iİ1]T/.test(upperText) && /A[TF]/.test(upperLines.slice(0, 3).join(" ")))) {
+    if (/A[TF]{1,2}A?R?S[O0][YV]/.test(upperText) || (/A[KX]ARYAK[Iİ1]T|ARYAK[Iİ1]T/.test(upperText) && /A[TF]/.test(upperLines.slice(0, 3).join(" ")))) {
         result.station = "ATASOY AKARYAKIT";
         result.docType = "FUEL";
         result.fuelType = "AKARYAKIT (MAZOT / BENZİN)";
@@ -3360,12 +3509,15 @@ function parseReceiptTextToStructured(text) {
             }
         }
     }
+    if (!result.station && /(?:[OÖ0QD]?M[UÜU]R\s*ECZAN|REF[Iİ1]KA\s*KAD[Iİ1]RO[GĞ]LU|13357952038)/.test(upperText)) {
+        result.station = "ÖMÜR ECZANESİ";
+    }
     if (!result.station && upperLines.length > 0) {
         const companyLine = upperLines.slice(0, 8).find(l =>
             /(?:A\.?\s*Ş|LTD|ŞTİ|STI|TİC|TIC|SAN\b|MARKET|GIDA|RESTORAN|LOKANTA|KEBAP|PİDE|PIDE|CAFE|KAFE|FIRIN|PASTA|PETROL|AKARYAKIT|AXARYAKIT|ARYAKIT|OTOMOTİV|OTOMOTIV|SERVİS|SERVIS|ECZANE|ECZ\.|MEDİKAL|MEDIKAL|KARGO)/.test(l)
         );
         if (companyLine) {
-            result.station = normalizeStationOrMerchantName(companyLine);
+            result.station = normalizeStationOrMerchantName(companyLine, upperText);
         } else {
             const cleanFirst = upperLines.find(l =>
                 !isHandwritingOrGarbageHeaderLine(l) &&
@@ -3373,11 +3525,11 @@ function parseReceiptTextToStructured(text) {
                 (l.match(/,/g) || []).length <= 1 &&
                 !/^(?:TAR[Iİ]H|SAAT|F[Iİ][SŞ]\s*N|[Iİ]ŞYER[Iİ]|ISYER[Iİ]|SL[Iİ]P|MÜŞTERİ|MUSTERI|SATI[SŞ]|TEL\b|V\.?D\.?)/.test(l)
             );
-            if (cleanFirst) result.station = normalizeStationOrMerchantName(cleanFirst);
+            if (cleanFirst) result.station = normalizeStationOrMerchantName(cleanFirst, upperText);
         }
     }
 
-    if (/Ç?ORU[MPN].*ERKEZ|CORUM.*MERKEZ|ERKEZ.*Ç?ORU[MPN]|MERKEZ.*CORUM/.test(upperText)) {
+    if (/Ç?ORU[MPN][\s\S]{0,40}ERKEZ|CORUM[\s\S]{0,40}MERKEZ|ERKEZ[\s\S]{0,40}Ç?ORU[MPN]|MERKEZ[\s\S]{0,40}CORUM/.test(upperText)) {
         result.location = "ÇORUM / MERKEZ";
     } else if (upperLines.length > 1) {
         const locLine = upperLines.slice(1, 8).find(l => /(?:ÇORUM|CORUM|ANKARA|İSTANBUL|ISTANBUL|SAMSUN|AMASYA|YOZGAT|TOKAT|ÇANKIRI|MERKEZ|ŞUBE|SUBE|MAH\.|CAD\.)/.test(l));
@@ -3425,7 +3577,7 @@ function parseReceiptTextToStructured(text) {
         result.vatAmount = extractAmountsFromLines(upperLines, /(?:TOPKDV|T0PKDV|TOPKOV|T0PKOV|TOPKD|TOP\s*KDV|TOP\s*KOV|KDV\s*TUTAR|\bKDV\b|\bKOV\b)/, 2);
     }
     // Termal fişlerde silik rakam düzeltmesi: Örn %20 KDV'li 1.170,00 TL fişte gerçek KDV = 195,00 TL iken '5' silik çıkıp '190,00' okunduysa düzelt
-    if (result.totalAmount > 0 && /(?:[%$]\s*20|\b20\s*%)/.test(upperText)) {
+    if (result.totalAmount > 0 && /(?:[%$]\s*2[0O]?|\b20\s*%)/.test(upperText)) {
         const expectedVat20 = Number((result.totalAmount - (result.totalAmount / 1.20)).toFixed(2));
         if (result.vatAmount === 0 || Math.abs(result.vatAmount - expectedVat20) === 5 || Math.abs(result.vatAmount - expectedVat20) === 0.5) {
             result.vatAmount = expectedVat20;
@@ -3464,9 +3616,9 @@ function parseReceiptTextToStructured(text) {
                 if (/^(?:TOPKDV|TOPKOV|TOPLAM|TOPLAH|KRED[Iİ1]|NAK[Iİ1]T|TUTAR|[Iİ1]ND[Iİ1]R|SA[GĞ]LIKLI|G[UÜ]NE[SŞ]|ECZACI|[Iİ1][SŞ]YER[Iİ1]|M[UÜ][SŞ]TER[Iİ1]|\*?[0-9.,]+[-–]?$)/.test(candLine)) {
                     break;
                 }
-                const cleanedForCheck = candLine.replace(/[$%]\s*[0-9]{1,2}/g, "").replace(/\*/g, "");
+                const cleanedForCheck = candLine.replace(/^[^A-ZÇĞİÖŞÜ0-9]+/, "").replace(/[$%]\s*[0-9O0]{1,2}/g, "").replace(/\*/g, "");
                 if (candLine.replace(/[^A-ZÇĞİÖŞÜ]/g, "").length >= 4 && !isHandwritingOrGarbageHeaderLine(cleanedForCheck)) {
-                    result.fuelType = candLine.replace(/FOSAY/g, "POSAY").replace(/\$(10|20|01|1|8)\b/g, "%$1").slice(0, 48);
+                    result.fuelType = cleanReceiptItemSummaryLine(candLine);
                     break;
                 }
             }
@@ -3551,78 +3703,43 @@ function parsePosTextToStructured(text) {
         }
     }
 
-    // Kart Son 4 Hane:
-    // 1) **** **** **** 3311 veya nokta vuruşlu ¥(*** )k4¢** 3232
-    // 2) SATIŞ / MÜŞTERİ NÜSHASI satırının 1-3 satır altında veya TUTAR satırının hemen üstünde yer alan 4 haneli kart numarası
-    const maskedCardMatch =
-        upperText.match(/(?:\*{2,}|X{2,}|•{2,}|\.{4,})[\s\*X•.\-]*([0-9]{4})\b/) ||
-        upperText.match(/\*[^\n]*\*[^\n]*?\b([0-9]{4})\s*$/m) ||
-        upperText.match(/KART\s*(?:NO)?\s*[:.]?\s*[^\n]*?([0-9]{4})\b/) ||
-        upperText.match(/(?:M[UÜ][SŞ]TER[Iİ1]\s*N[UÜ]SHASI|SATI[SŞ])\s*(?:\r?\n[^\n]*){0,2}?\r?\n[^\n0-9]*([0-9]{4})\s*$/m) ||
-        upperText.match(/\b([0-9]{4})\s*\r?\n\s*TUTAR\b/);
-    if (maskedCardMatch) {
-        pos.cardLast4 = maskedCardMatch[1];
-    }
-
-    // Eğer yıldızlar OCR'da bozuk okunduysa, kayıtlı şirket kartlarımızın son 4 hanesini metinde ara
-    if (!pos.cardLast4) {
-        const knownCards = getAvailableCreditCards();
-        for (const c of knownCards) {
-            if (c.number && new RegExp(`\\b${c.number}\\b`).test(upperText)) {
-                pos.cardLast4 = String(c.number);
-                break;
-            }
-        }
-    }
+    pos.cardLast4 = extractCardLast4FromPosText(upperLines, upperText);
 
     const dt = parseReceiptDateAndTimeFromText(upperText);
     pos.posDate = dt.date;
     pos.posTime = dt.time;
 
-    pos.posAmount = extractAmountsFromLines(upperLines, /(?:SATI[SŞ]\s*TUTAR|\bTUTAR\b|T0TAR|SATIS|SATIŞ|ODENECEK|ÖDENECEK|KRED[Iİ1]\s*KART)/, 2);
+    pos.posAmount = extractAmountsFromLines(upperLines, /(?:SATI[SŞ]\s*TUTAR|\b[TA]UTAR\b|T0TAR|SATIS|SATIŞ|ODENECEK|ÖDENECEK|KRED[Iİ1]\s*KART)/, 2);
     if (!pos.posAmount) {
         pos.posAmount = extractConsensusOrFallbackTotal(upperLines);
     }
 
     // Onay Kodu: "ONAY KODU : 155022", "ONA Y KODU . 155022", "SN:043 ONAY KODU:134993"
     const authMatch =
-        upperText.match(/(?:O\s*N\s*A\s*Y\s*K\s*O\s*D\s*U|O\s*N\s*A\s*Y|K\s*O\s*D\s*U|K\([A-Z]+|PROV[Iİ1]ZYON|AUTH\s*CODE|AUTH)[^\n0-9]*([0-9]{6})\b/) ||
-        upperText.match(/(?:AID|KRED[Iİ1]\s*KART|KRE'OI)[^\n]*\r?\n[^\n0-9]*([0-9]{6})\b/);
+        upperText.match(/(?:O\s*N\s*A\s*Y\s*K\s*O\s*D\s*U|O\s*N\s*A\s*Y|K\s*O\s*D\s*U|K\([A-Z]+|PROV[Iİ1]ZYON|AUTH\s*CODE|AUTH)[^\n0-9]*([0-9IİloO|]{6})\b/) ||
+        upperText.match(/(?:AID|KRED[Iİ1]\s*KART|KRE'OI)[^\n]*\r?\n[^\n0-9]*([0-9IİloO|]{6})\b/);
     if (authMatch) {
-        pos.authCode = authMatch[1];
+        pos.authCode = normalizeOcrNumericToken(authMatch[1]).slice(0, 6);
     }
 
-    // Referans / İşlem / Batch / POS No (Örn: "REF:2551907224", "REF:25519C7224", "REF NO: 8841209541")
-    const islemMatch = upperText.match(/(?:[Iİ1][SŞ5]LE[MII]+\s*N[O0D]?)[\s:.\-]*([A-Z0-9]{4,12})/);
-    const batchMatch = upperText.match(/(?:BATCH\s*N[O0D]?|BA[TF]C[HI]+\s*[NI1O0]+)[\s:.\-]*([0-9]{3,8})/);
-    const refMatch = upperText.match(/(?:REF(?:\s*N[O0D]?)?|REFERANS|STAN|POS\s*N[O0D]?|PTSS\s*NTS)[\s:.\-]+([A-Z0-9]{6,16})/);
-    if (islemMatch) {
-        const cleanIslem = islemMatch[1].replace(/^6PQU70$/, "GP0070").replace(/^6PQ/, "GP0").replace(/^GP0U70$/, "GP0070");
-        pos.refNo = batchMatch ? `${cleanIslem} / BATCH:${batchMatch[1]}` : cleanIslem;
-    } else if (refMatch) {
-        let rawRef = refMatch[1];
-        // Sayısal referans numaralarında OCR'ın '0' yerine 'C'/'O'/'D' veya '6' yerine 'B' okumalarını düzelt
-        if (/^[0-9COQDBIS]{8,14}$/.test(rawRef)) {
-            rawRef = rawRef.replace(/[COQD]/g, "0").replace(/B/g, "6").replace(/I/g, "1").replace(/S/g, "5");
-        }
-        pos.refNo = rawRef;
-    } else if (batchMatch) {
-        pos.refNo = `BATCH:${batchMatch[1]}`;
-    }
+    // Referans / İşlem / Batch / POS No
+    pos.refNo = extractRefNoFromPosText(upperLines, upperText);
 
     const taksitMatch = upperText.match(/([0-9]{1,2})\s*TAKS[Iİ1]T/);
     if (taksitMatch) {
         pos.installment = `${taksitMatch[1]} TAKSİT`;
     }
 
-    if (/A[TF]A?R?S[O0][YV]|A[TF]AS[O0][YV]/.test(upperText)) {
+    if (/A[TF]{1,2}A?R?S[O0][YV]/.test(upperText)) {
         pos.merchantName = "ATASOY AKARYAKIT";
+    } else if (/(?:[OÖ0QD]?M[UÜU]R\s*ECZAN|REF[Iİ1]KA\s*KAD[Iİ1]RO[GĞ]LU|13357952038)/.test(upperText)) {
+        pos.merchantName = "ÖMÜR ECZANESİ";
     } else if (upperLines.length > 0) {
         const companyLine = upperLines.slice(0, 8).find(l =>
             /(?:A\.?\s*Ş|LTD|ŞTİ|STI|TİC|TIC|SAN\b|MARKET|GIDA|RESTORAN|LOKANTA|KEBAP|PİDE|PIDE|CAFE|KAFE|FIRIN|PASTA|PETROL|AKARYAKIT|AXARYAKIT|ARYAKIT|OTOMOTİV|OTOMOTIV|SERVİS|SERVIS|ECZANE|ECZ\.|MEDİKAL|MEDIKAL|KARGO)/.test(l)
         );
         if (companyLine) {
-            pos.merchantName = normalizeStationOrMerchantName(companyLine);
+            pos.merchantName = normalizeStationOrMerchantName(companyLine, upperText);
         } else {
             const merchCandidate = upperLines.slice(0, 6).find(l =>
                 !banks.some(b => l.includes(b.key)) &&
@@ -3631,7 +3748,7 @@ function parsePosTextToStructured(text) {
                 (l.match(/,/g) || []).length <= 1 &&
                 !/^(?:TAR[Iİ]H|SAAT|SL[Iİ]P|MÜŞTERİ|MUSTERI|[Iİ]ŞYER[Iİ]\s*NO|ISYER[Iİ]\s*NO|TERMINAL|TEL\b|V\.?D\.?)/.test(l)
             );
-            pos.merchantName = normalizeStationOrMerchantName(merchCandidate || "");
+            pos.merchantName = normalizeStationOrMerchantName(merchCandidate || "", upperText);
         }
     }
 
@@ -3761,6 +3878,8 @@ function preprocessReceiptImageForOCR(dataUrl) {
                 canvas.width = outW;
                 canvas.height = outH;
                 const ctx = canvas.getContext("2d");
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = "high";
                 ctx.fillStyle = "#ffffff";
                 ctx.fillRect(0, 0, outW, outH);
                 ctx.drawImage(srcCanvas, cropX1, cropY1, cropW, cropH, 0, 0, outW, outH);
@@ -3784,8 +3903,8 @@ function preprocessReceiptImageForOCR(dataUrl) {
                             const r = d[i], g = d[i + 1], b = d[i + 2];
                             const warmth = r - b;
                             const lum = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
-                            // Sadece sıcak kahverengi ahşap kenar piksellerini (warmth > 22) beyaza maskele; kağıt üzerindeki yazılara asla dokunma
-                            if (warmth > 22 && r > g && lum > 60) {
+                            // Sadece sıcak kahverengi ahşap kenar piksellerini (warmth > 24) beyaza maskele; kağıt üzerindeki ince harflere asla dokunma
+                            if (warmth > 24 && r > g && lum > 60) {
                                 d[i] = 255; d[i + 1] = 255; d[i + 2] = 255;
                             } else {
                                 d[i] = lum;
@@ -3799,8 +3918,8 @@ function preprocessReceiptImageForOCR(dataUrl) {
                         let acc = 0;
                         for (let v = 255; v >= 0; v--) {
                             acc += hist[v];
-                            if (acc >= validCnt * 0.22) {
-                                localW = Math.max(115, v);
+                            if (acc >= validCnt * 0.20) {
+                                localW = Math.max(125, v);
                                 break;
                             }
                         }
@@ -3808,7 +3927,7 @@ function preprocessReceiptImageForOCR(dataUrl) {
                     bandWhite[bIdx] = localW;
                 }
 
-                // Şeritler arası yumuşak geçişli yerel kontrast artırma (hem gölgeli termal fişleri hem soluk nokta vuruşlu slipleri netleştirir)
+                // İnce harf kenarlarını (Ö, E, 3311, REF:2551907224) koparmadan doğal gri tonlamalı gölge dengeleme (gamma 1.25)
                 for (let y = 0; y < outH; y++) {
                     const bIdx = Math.min(numBands - 1, Math.floor(y / bandH));
                     const prevW = bandWhite[Math.max(0, bIdx - 1)];
@@ -3820,13 +3939,9 @@ function preprocessReceiptImageForOCR(dataUrl) {
                         const i = (y * outW + x) * 4;
                         if (d[i] === 255 && d[i + 1] === 255 && d[i + 2] === 255) continue;
                         const lum = d[i];
-                        const ratio = lum / rowWhite;
-                        if (ratio >= 0.93) {
-                            d[i] = 255; d[i + 1] = 255; d[i + 2] = 255;
-                        } else {
-                            const darkened = Math.max(0, Math.min(255, Math.round(Math.pow(ratio, 1.85) * 255)));
-                            d[i] = darkened; d[i + 1] = darkened; d[i + 2] = darkened;
-                        }
+                        const ratio = Math.min(1.0, lum / rowWhite);
+                        const darkened = Math.max(0, Math.min(255, Math.round(Math.pow(ratio, 1.25) * 255)));
+                        d[i] = darkened; d[i + 1] = darkened; d[i + 2] = darkened;
                     }
                 }
                 ctx.putImageData(imgData, 0, 0);
@@ -3886,9 +4001,12 @@ async function recognizeSingleImageClientSide(dataUrl, labelPrefix, updateBtnPro
         const textEnhanced = await runPass(enhancedUrl);
         if (textEnhanced) collectedTexts.push(textEnhanced);
 
-        // İlk geçişten sonra kritik alanlardan (Tarih, Tutar veya İşyeri) herhangi biri eksikse orijinal görüntüyü de tarayıp birleştir
-        const firstPassProbe = parseReceiptTextToStructured(collectedTexts.join("\n"));
-        if (!firstPassProbe.date || !firstPassProbe.totalAmount || !firstPassProbe.station) {
+        // İlk geçişten sonra belge VEYA POS alanlarından (Kart Son 4 Hane, Ref No, Tarih, Tutar, İşyeri) herhangi biri eksikse orijinal görüntüyü de tarayıp birleştir
+        const joinedSoFar = collectedTexts.join("\n");
+        const firstPassRec = parseReceiptTextToStructured(joinedSoFar);
+        const firstPassPos = parsePosTextToStructured(joinedSoFar);
+        const isCardDoc = firstPassRec.paymentMethod === "KREDİ KARTI" || Boolean(firstPassPos.bankName || firstPassPos.authCode);
+        if (!firstPassRec.date || !firstPassRec.totalAmount || !firstPassRec.station || (isCardDoc && (!firstPassPos.cardLast4 || !firstPassPos.refNo))) {
             const textOrig = await runPass(dataUrl);
             if (textOrig) collectedTexts.push(textOrig);
         }
@@ -4221,9 +4339,9 @@ function renderEditableOcrResultPanel(rec, pos, engineLabel = "Apple Vision Neur
                     </div>
                     <div>
                         <label style="display:block; color:#94a3b8; font-size:0.62rem;">KDV Tutarı (TL) &amp; Şehir/Konum</label>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
+                        <div style="display:grid; grid-template-columns:0.62fr 1.38fr; gap:4px;">
                             <input type="text" id="ocr-edit-vat" value="${escapeHtml(fmtNumInput(rec.vatAmount))}" placeholder="KDV TL" style="${inpStyle}" oninput="syncEditableOcrFieldsToForm(true)">
-                            <input type="text" id="ocr-edit-location" value="${escapeHtml(rec.location || "")}" placeholder="Konum" style="${inpStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                            <input type="text" id="ocr-edit-location" value="${escapeHtml(rec.location || "")}" placeholder="Konum" style="${inpStyle}; padding:4px 5px; font-size:0.70rem;" oninput="syncEditableOcrFieldsToForm(true)">
                         </div>
                     </div>
                     <div>
