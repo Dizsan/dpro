@@ -1,11 +1,11 @@
 {
   "appId": "dizsan-kasa",
   "appName": "Dizsan Günlük Kasa Formu & Kasa Takip",
-  "version": "1.1.6",
-  "build": 111,
-  "releasedAt": "2026-10-23 16:35:00",
-  "releaseNotes": "v1.1.6 Güncellemesi: 1) Belge tarama sonrası fotoğraf verisinin (Base64) otomatik imha edilmesi ve yalnızca okunan metin bilgilerinin saklanması (Yıllar boyu kullanımda veritabanı/localStorage/bulut şişmesi %100 önlendi), 2) Meroto Otomotiv üst satır koruma, V/MAX Kurşunsuz 95 Benzin ayrımı ve dikey 4360 Garanti el yazısı okuma.",
+  "version": "1.1.7",
+  "build": 112,
+  "releasedAt": "2026-10-23 16:41:00",
+  "releaseNotes": "v1.1.7 Güncellemesi: 1) Kapsamlı Raporlama & Analiz Merkezi eklendi (Dönem seçimi: Bugün/Son 7 Gün/Bu Ay/Bu Yıl/Tüm Zamanlar/Tarih Aralığı, 6'lı Yönetici KPI kartları, ŞAHSİ/OFİS/ATÖLYE harcama özet şeridi, Kategori & Alt Kategori gider dağılımı, Şirket Kredi Kartları harcama raporu, Araç Plakası & Yakıt Litre/Tutar raporu, İşyeri/İstasyon bazlı ödeme özeti, Excel .xls ve WhatsApp rapor çıktısı), 2) Tarama sonrası fotoğraf verisinin otomatik imhası (sıfır veri şişmesi).",
   "author": "Ömer Eren & DİZSAN",
-  "notes": "Tarama sonrası fotoğraf imhası (sıfır veri şişmesi) ve Meroto Otomotiv OCR düzeltmeleri",
-  "updatedAt": "2026-10-23T13:35:00.000000+00:00"
+  "notes": "Kapsamlı Raporlama & Analiz Merkezi + Tarama Sonrası Fotoğraf İmhası",
+  "updatedAt": "2026-10-23T13:41:00.000000+00:00"
 }

@@ -1,6 +1,6 @@
 {
-  "version": "1.7.1",
-  "updatedAt": "2026-10-23T13:35:00Z",
-  "notes": "v1.7.1 — Dizsan Günlük Kasa v1.1.6 (Tarama Sonrası Fotoğraf İmhası ile Sıfır Veri Şişmesi & Meroto Otomotiv OCR Güncellemesi)",
+  "version": "1.7.2",
+  "updatedAt": "2026-10-23T13:41:00Z",
+  "notes": "v1.7.2 — Dizsan Günlük Kasa v1.1.7 (Kapsamlı Raporlama & Analiz Merkezi, Kategori/Kart/Plaka/Yakıt/Şahsi-Ofis-Atölye Raporları, Excel & WhatsApp Raporlama)",
   "mandatory": true
 }

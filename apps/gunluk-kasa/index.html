@@ -122,6 +122,10 @@
                     <span class="nav-left"><i class="fa-solid fa-right-left" style="color:#fbbf24;"></i> <span>Şirketler Arası Borç / Alacak</span></span>
                     <span class="nav-badge" id="nav-badge-intercompany" style="background:rgba(245,158,11,0.22); color:#fbbf24;">0</span>
                 </button>
+                <button class="side-nav-btn" data-tab="reports" onclick="switchTab('reports')">
+                    <span class="nav-left"><i class="fa-solid fa-chart-pie" style="color:#34d399;"></i> <span>Raporlama &amp; Analiz</span></span>
+                    <span class="nav-badge" id="nav-badge-reports" style="background:rgba(16,185,129,0.22); color:#34d399;">📊</span>
+                </button>
                 <button class="side-nav-btn" data-tab="a4" onclick="switchTab('a4')">
                     <span class="nav-left"><i class="fa-solid fa-print"></i> <span>A4 Çıktı Önizleme</span></span>
                     <span class="nav-badge" style="background:rgba(245,158,11,0.2); color:#fbbf24;">A4</span>
@@ -212,6 +216,9 @@
                         </div>
 
                         <div class="clean-topbar-actions" style="display:flex; gap:6px; align-items:center;">
+                            <button type="button" class="btn btn-sm" style="background:rgba(16,185,129,0.16); border-color:rgba(52,211,153,0.45); color:#a7f3d0; font-weight:700;" onclick="switchTab('reports')" title="Kategori, Kredi Kartı, Plaka/Yakıt, Şahsi/Ofis/Atölye ve Dönemsel Raporları Aç">
+                                <i class="fa-solid fa-chart-pie" style="color:#34d399;"></i> <span>Raporlama</span>
+                            </button>
                             <button type="button" class="btn btn-sm perm-require-add" style="background:rgba(245,158,11,0.16); border-color:rgba(251,191,36,0.45); color:#fde68a; font-weight:700;" onclick="openIntercompanyQuickModal('GELIR')" title="Diğer şirketten nakit veya banka yoluyla borç/para girişi ekle">
                                 <i class="fa-solid fa-right-left" style="color:#fbbf24;"></i> <span>Şirketler Arası Giriş/Çıkış</span>
                             </button>
@@ -318,6 +325,227 @@
                                     </tr>
                                 </thead>
                                 <tbody id="tbody-intercompany-ledger"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======================================================================
+                     SEKME 1C: KAPSAMLI RAPORLAMA VE ANALİZ MERKEZİ
+                     ====================================================================== -->
+                <section id="tab-reports" class="tab-section">
+                    <!-- FİLTRE & DÖNEM BAR -->
+                    <div class="kasa-panel no-print" style="margin-bottom:12px; border-color:rgba(52,211,153,0.35);">
+                        <div class="kasa-panel-header" style="background:linear-gradient(90deg, rgba(16,185,129,0.16), rgba(14,165,233,0.10)); flex-wrap:wrap; gap:8px;">
+                            <div class="kasa-panel-title">
+                                <i class="fa-solid fa-chart-pie" style="color:#34d399;"></i>
+                                <span>KASA, KREDİ KARTI, PLAKA/YAKIT, KATEGORİ VE ŞAHSİ/OFİS/ATÖLYE RAPORLAMA MERKEZİ</span>
+                            </div>
+                            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                <button type="button" class="btn btn-xs btn-warning" onclick="printReportsSummary()">
+                                    <i class="fa-solid fa-print"></i> <span>Raporu Yazdır / PDF</span>
+                                </button>
+                                <button type="button" class="btn btn-xs btn-success" onclick="exportReportsExcel()">
+                                    <i class="fa-solid fa-file-excel"></i> <span>Excel (.xls) İndir</span>
+                                </button>
+                                <button type="button" class="btn btn-xs" onclick="shareReportsWhatsApp()">
+                                    <i class="fa-brands fa-whatsapp" style="color:#25D366;"></i> <span>WhatsApp Rapor Özeti</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div style="padding:12px;">
+                            <!-- Hızlı Dönem Butonları -->
+                            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+                                <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                                    <button type="button" class="btn btn-xs" id="rep-preset-TODAY" onclick="setReportPeriodPreset('TODAY')">Seçili Gün</button>
+                                    <button type="button" class="btn btn-xs" id="rep-preset-WEEK" onclick="setReportPeriodPreset('WEEK')">Son 7 Gün</button>
+                                    <button type="button" class="btn btn-xs" id="rep-preset-MONTH" onclick="setReportPeriodPreset('MONTH')">Bu Ay</button>
+                                    <button type="button" class="btn btn-xs" id="rep-preset-YEAR" onclick="setReportPeriodPreset('YEAR')">Bu Yıl</button>
+                                    <button type="button" class="btn btn-xs badge-info" id="rep-preset-ALL" onclick="setReportPeriodPreset('ALL')">Tüm Zamanlar</button>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                    <span style="font-size:0.72rem; color:var(--text-muted); font-weight:700;">Tarih Aralığı:</span>
+                                    <input type="text" id="rep-start-date" class="form-control" style="width:108px; text-align:center; font-weight:700; padding:4px 6px; font-size:0.75rem;" placeholder="GG.AA.YYYY" onchange="handleCustomReportDateChange()">
+                                    <span style="color:var(--text-muted);">—</span>
+                                    <input type="text" id="rep-end-date" class="form-control" style="width:108px; text-align:center; font-weight:700; padding:4px 6px; font-size:0.75rem;" placeholder="GG.AA.YYYY" onchange="handleCustomReportDateChange()">
+                                </div>
+                            </div>
+
+                            <!-- Detaylı Filtreler -->
+                            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:8px;">
+                                <div>
+                                    <label style="display:block; font-size:0.66rem; color:var(--text-muted); font-weight:700; margin-bottom:3px;">Kanal / Tablo Filtresi</label>
+                                    <select id="rep-filter-channel" class="form-control" onchange="renderReportsSection()">
+                                        <option value="ALL">Tüm Kanallar (Nakit + Kart + Banka + Çek)</option>
+                                        <option value="CASH">Sadece Nakit Kasa (Giriş &amp; Çıkış)</option>
+                                        <option value="CARI_CC">Sadece Şirket Kredi Kartı Harcamaları</option>
+                                        <option value="POS_CC">Sadece POS (Müşteri Kredi Kartı Tahsilat)</option>
+                                        <option value="WIRE">Sadece Banka Havale / EFT (Gelen &amp; Giden)</option>
+                                        <option value="CHECK">Sadece Çek / Senet İşlemleri</option>
+                                        <option value="INTERCOMPANY">Sadece Şirketler Arası Borç / Alacak</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display:block; font-size:0.66rem; color:var(--text-muted); font-weight:700; margin-bottom:3px;">Alan / Alt Kategori Filtresi</label>
+                                    <select id="rep-filter-area" class="form-control" onchange="renderReportsSection()">
+                                        <option value="ALL">Tüm Kategoriler (Şahsi + Ofis + Atölye + Araç vb.)</option>
+                                        <option value="ŞAHSİ">Sadece ŞAHSİ Harcamalar</option>
+                                        <option value="OFİS">Sadece OFİS Harcamaları</option>
+                                        <option value="ATÖLYE">Sadece ATÖLYE Harcamaları</option>
+                                        <option value="FUEL">Sadece Yakıt / Akaryakıt (Benzin / Motorin / LPG)</option>
+                                        <option value="TDR">Sadece TDR (Tedarik / Parça) Kalemleri</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display:block; font-size:0.66rem; color:var(--text-muted); font-weight:700; margin-bottom:3px;">Kredi Kartı Filtresi</label>
+                                    <select id="rep-filter-card" class="form-control" onchange="renderReportsSection()">
+                                        <option value="ALL">Tüm Kredi Kartları</option>
+                                        <option value="4360">GARANTİ BBVA •••• 4360</option>
+                                        <option value="6010">GARANTİ BBVA •••• 6010</option>
+                                        <option value="0667">AKBANK •••• 0667</option>
+                                        <option value="3311">YAPI KREDİ •••• 3311</option>
+                                        <option value="0122">QNB •••• 0122</option>
+                                        <option value="3290">HALKBANK •••• 3290</option>
+                                        <option value="7446">ZİRAAT •••• 7446</option>
+                                        <option value="7506">VAKIFBANK •••• 7506</option>
+                                        <option value="1829">İŞ BANKASI •••• 1829</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display:block; font-size:0.66rem; color:var(--text-muted); font-weight:700; margin-bottom:3px;">Kelime / Plaka / Firma Ara</label>
+                                    <input type="text" id="rep-filter-query" class="form-control" placeholder="Plaka (19 DS 750), firma veya açıklama..." oninput="renderReportsSection()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 6'LI YÖNETİCİ ÖZET KARTLARI (KPI) -->
+                    <div id="rep-kpi-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-bottom:12px;"></div>
+
+                    <!-- ŞAHSİ / OFİS / ATÖLYE HIZLI ÖZET ŞERİDİ -->
+                    <div id="rep-special-areas-strip" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px; margin-bottom:12px;"></div>
+
+                    <!-- 4 ANA KIRILIM TABLOSU (2x2 GRID) -->
+                    <div class="form-grid-2" style="gap:12px; margin-bottom:12px;">
+                        <!-- 1. Kategori & Alt Kategori Dağılımı -->
+                        <div class="kasa-panel">
+                            <div class="kasa-panel-header">
+                                <div class="kasa-panel-title">
+                                    <i class="fa-solid fa-layer-group" style="color:#fbbf24;"></i>
+                                    <span>1. KATEGORİ &amp; ALT KATEGORİ GİDER DAĞILIMI</span>
+                                </div>
+                            </div>
+                            <div class="kasa-table-wrap" style="max-height:340px; overflow-y:auto;">
+                                <table class="kasa-table">
+                                    <thead>
+                                        <tr>
+                                            <th>KATEGORİ / ALT KATEGORİ</th>
+                                            <th style="text-align:center; width:65px;">ADET</th>
+                                            <th style="text-align:right; width:105px;">KDV (₺)</th>
+                                            <th style="text-align:right; width:130px;">TOPLAM (₺)</th>
+                                            <th style="width:90px;">ORAN</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-rep-categories"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 2. Şirket Kredi Kartları Bazlı Harcama Raporu -->
+                        <div class="kasa-panel">
+                            <div class="kasa-panel-header">
+                                <div class="kasa-panel-title">
+                                    <i class="fa-solid fa-credit-card" style="color:#38bdf8;"></i>
+                                    <span>2. ŞİRKET KREDİ KARTLARI BAZLI HARCAMA RAPORU</span>
+                                </div>
+                            </div>
+                            <div class="kasa-table-wrap" style="max-height:340px; overflow-y:auto;">
+                                <table class="kasa-table">
+                                    <thead>
+                                        <tr>
+                                            <th>BANKA &amp; KART SON 4 HANE</th>
+                                            <th style="text-align:center; width:65px;">SLİP</th>
+                                            <th style="text-align:right; width:105px;">KDV (₺)</th>
+                                            <th style="text-align:right; width:130px;">TOPLAM (₺)</th>
+                                            <th style="width:90px;">PAY</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-rep-cards"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 3. Araç Plakası & Yakıt (Litre / Tutar) Raporu -->
+                        <div class="kasa-panel">
+                            <div class="kasa-panel-header">
+                                <div class="kasa-panel-title">
+                                    <i class="fa-solid fa-gas-pump" style="color:#34d399;"></i>
+                                    <span>3. ARAÇ PLAKASI &amp; YAKIT (LİTRE / BENZİN / MOTORİN / LPG) RAPORU</span>
+                                </div>
+                            </div>
+                            <div class="kasa-table-wrap" style="max-height:340px; overflow-y:auto;">
+                                <table class="kasa-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ARAÇ PLAKASI</th>
+                                            <th>YAKIT / İŞLEM TÜRÜ</th>
+                                            <th style="text-align:center; width:60px;">ADET</th>
+                                            <th style="text-align:right; width:95px;">TOPLAM LT</th>
+                                            <th style="text-align:right; width:125px;">TOPLAM (₺)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-rep-plates"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 4. İşyeri / İstasyon / Cari Bazlı Ödeme Özeti -->
+                        <div class="kasa-panel">
+                            <div class="kasa-panel-header">
+                                <div class="kasa-panel-title">
+                                    <i class="fa-solid fa-store" style="color:#c084fc;"></i>
+                                    <span>4. İŞYERİ / İSTASYON / CARİ BAZLI ÖDEME ÖZETİ</span>
+                                </div>
+                            </div>
+                            <div class="kasa-table-wrap" style="max-height:340px; overflow-y:auto;">
+                                <table class="kasa-table">
+                                    <thead>
+                                        <tr>
+                                            <th>İŞYERİ / FİRMA / CARİ ADI</th>
+                                            <th>KONUM / KANAL</th>
+                                            <th style="text-align:center; width:60px;">ADET</th>
+                                            <th style="text-align:right; width:100px;">KDV (₺)</th>
+                                            <th style="text-align:right; width:125px;">TOPLAM (₺)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-rep-merchants"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEÇİLİ DÖNEM TÜM HAREKETLER DETAY LİSTESİ -->
+                    <div class="kasa-panel">
+                        <div class="kasa-panel-header">
+                            <div class="kasa-panel-title">
+                                <i class="fa-solid fa-list-check" style="color:var(--dizsan-cyan);"></i>
+                                <span id="rep-detail-table-title">SEÇİLİ DÖNEM HAREKET DETAY LİSTESİ</span>
+                            </div>
+                        </div>
+                        <div class="kasa-table-wrap">
+                            <table class="kasa-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:95px;">TARİH</th>
+                                        <th style="width:125px;">KANAL / TÜR</th>
+                                        <th style="width:180px;">KATEGORİ / ALT KATEGORİ</th>
+                                        <th style="width:185px;">İŞYERİ / KART / CARİ</th>
+                                        <th>AÇIKLAMA &amp; PLAKA</th>
+                                        <th style="width:95px; text-align:right;">KDV (₺)</th>
+                                        <th style="width:130px; text-align:right;">TUTAR (₺)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-rep-entries"></tbody>
                             </table>
                         </div>
                     </div>
@@ -529,6 +757,10 @@
         <button class="mob-nav-item" data-tab="intercompany" onclick="switchTab('intercompany')">
             <i class="fa-solid fa-right-left"></i>
             <span>Şirket Borç</span>
+        </button>
+        <button class="mob-nav-item" data-tab="reports" onclick="switchTab('reports')">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>Raporlar</span>
         </button>
         <button class="mob-nav-item" data-tab="a4" onclick="switchTab('a4')">
             <i class="fa-solid fa-print"></i>
@@ -1002,8 +1234,8 @@
 
     <!-- SCRIPTS -->
     <script src="auto-date-helper.js"></script>
-    <script src="app.js?v=1.1.6"></script>
-    <script src="dizsan-back-navigation.js?v=1.1.6"></script>
-    <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.1.6"></script>
+    <script src="app.js?v=1.1.7"></script>
+    <script src="dizsan-back-navigation.js?v=1.1.7"></script>
+    <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.1.7"></script>
 </body>
 </html>

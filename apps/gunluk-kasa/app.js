@@ -14,7 +14,7 @@
  * ==========================================================================
  */
 
-const CURRENT_APP_VERSION = "1.1.6";
+const CURRENT_APP_VERSION = "1.1.7";
 window.CURRENT_APP_VERSION = CURRENT_APP_VERSION;
 
 const OLD_DEMO_STORAGE_KEY = "dizsan_gunluk_kasa_state_v1";
@@ -1797,6 +1797,615 @@ const TR_MONTH_SHORT = [
 const TR_DAY_NAMES = [
     "Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"
 ];
+
+// ==================== 10C. KAPSAMLI RAPORLAMA VE ANALİZ MERKEZİ ====================
+let activeReportPreset = "ALL";
+
+function setReportPeriodPreset(preset) {
+    activeReportPreset = preset;
+    const baseISO = uiState.selectedDateISO || todayISO();
+    const [y, m, d] = baseISO.split("-").map(Number);
+    const startEl = document.getElementById("rep-start-date");
+    const endEl = document.getElementById("rep-end-date");
+
+    if (preset === "TODAY") {
+        if (startEl) startEl.value = formatDateToTR(baseISO);
+        if (endEl) endEl.value = formatDateToTR(baseISO);
+    } else if (preset === "WEEK") {
+        const dt = new Date(y, m - 1, d);
+        dt.setDate(dt.getDate() - 6);
+        const startISO = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+        if (startEl) startEl.value = formatDateToTR(startISO);
+        if (endEl) endEl.value = formatDateToTR(baseISO);
+    } else if (preset === "MONTH") {
+        const startISO = `${y}-${String(m).padStart(2, "0")}-01`;
+        const lastDay = new Date(y, m, 0).getDate();
+        const endISO = `${y}-${String(m).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+        if (startEl) startEl.value = formatDateToTR(startISO);
+        if (endEl) endEl.value = formatDateToTR(endISO);
+    } else if (preset === "YEAR") {
+        if (startEl) startEl.value = `01.01.${y}`;
+        if (endEl) endEl.value = `31.12.${y}`;
+    } else {
+        if (startEl) startEl.value = "";
+        if (endEl) endEl.value = "";
+    }
+
+    ["TODAY", "WEEK", "MONTH", "YEAR", "ALL"].forEach(p => {
+        const btn = document.getElementById(`rep-preset-${p}`);
+        if (btn) btn.classList.toggle("badge-info", p === preset);
+    });
+
+    renderReportsSection();
+}
+window.setReportPeriodPreset = setReportPeriodPreset;
+
+function handleCustomReportDateChange() {
+    activeReportPreset = "CUSTOM";
+    ["TODAY", "WEEK", "MONTH", "YEAR", "ALL"].forEach(p => {
+        const btn = document.getElementById(`rep-preset-${p}`);
+        if (btn) btn.classList.remove("badge-info");
+    });
+    renderReportsSection();
+}
+window.handleCustomReportDateChange = handleCustomReportDateChange;
+
+function classifyEntryForReporting(entry, dateISO) {
+    const sec = entry.section || "CASH_OUT";
+    const isIncome = sec === "CASH_IN" || sec === "POS_CC" || sec === "WIRE_IN";
+    const col1 = (entry.col1 || "").trim();
+    const desc = (entry.desc || "").trim();
+    const combinedUpper = `${col1} ${desc}`.toUpperCase();
+    const meta = entry.ocrMeta || {};
+
+    // Ana Kategori & Alt Kategori çıkarımı
+    let mainCat = isIncome ? "GELİR / TAHSİLAT" : "GENEL GİDERLER";
+    let subCat = meta.selectedSubCat || "";
+
+    if (col1.includes("·")) {
+        const parts = col1.split("·").map(s => s.trim()).filter(Boolean);
+        if (parts.length >= 2) {
+            if (sec === "CARI_CC") {
+                mainCat = parts[1];
+                if (!subCat && parts[2]) subCat = parts[2];
+            } else {
+                mainCat = parts[0];
+                if (!subCat && parts[1]) subCat = parts[1];
+            }
+        }
+    } else if (col1) {
+        mainCat = col1;
+    }
+
+    if (!subCat) {
+        if (/\bŞAHSİ\b|\bSAHSI\b/.test(combinedUpper)) subCat = "ŞAHSİ";
+        else if (/\bOFİS\b|\bOFIS\b/.test(combinedUpper)) subCat = "OFİS";
+        else if (/\bATÖLYE\b|\bATOLYE\b/.test(combinedUpper)) subCat = "ATÖLYE";
+        else if (/KURŞUNSUZ|BENZİN/.test(combinedUpper)) subCat = "BENZİN (KURŞUNSUZ 95)";
+        else if (/MOTORİN|MAZOT/.test(combinedUpper)) subCat = "MOTORİN (MAZOT)";
+        else if (/\bLPG\b|OTOGAZ/.test(combinedUpper)) subCat = "LPG / OTOGAZ";
+        else if (/ECZANE|İLAÇ|MEDİKAL/.test(combinedUpper)) subCat = "ECZANE / SAĞLIK";
+        else subCat = SECTION_LABELS[sec] || "GENEL";
+    }
+
+    // Özel Alan (ŞAHSİ / OFİS / ATÖLYE) tespiti
+    let specialArea = "";
+    if (subCat === "ŞAHSİ" || /\bŞAHSİ\b|\bSAHSI\b/.test(combinedUpper)) specialArea = "ŞAHSİ";
+    else if (subCat === "OFİS" || /\bOFİS\b|\bOFIS\b/.test(combinedUpper)) specialArea = "OFİS";
+    else if (subCat === "ATÖLYE" || /\bATÖLYE\b|\bATOLYE\b/.test(combinedUpper)) specialArea = "ATÖLYE";
+
+    // Kredi Kartı Son 4 Hane & Etiket
+    let cardLast4 = meta.cardLast4 || "";
+    if (!cardLast4) {
+        const mCard = combinedUpper.match(/(?:••••|\*{4})\s*([0-9]{4})/) || combinedUpper.match(/KART\s*:\s*\*{0,4}([0-9]{4})/);
+        if (mCard) cardLast4 = mCard[1];
+    }
+    let cardLabel = "";
+    if (sec === "CARI_CC" || cardLast4) {
+        const regCard = getAvailableCreditCards().find(c => String(c.number) === String(cardLast4));
+        if (regCard) {
+            cardLabel = `${regCard.bank} •••• ${regCard.number} (${regCard.name})`;
+        } else if (col1.includes("••••")) {
+            cardLabel = col1.split("·")[0].trim();
+        } else if (cardLast4) {
+            cardLabel = `${meta.bankName || "KREDİ KARTI"} •••• ${cardLast4}`;
+        }
+    }
+
+    // Plaka & Litre
+    let plate = meta.plate || "";
+    if (!plate) {
+        const pm = combinedUpper.match(/PLAKA\s*:\s*([0-9]{2}\s*[A-Z]{1,3}\s*[0-9]{2,4})/) || combinedUpper.match(/\b(0[1-9]|[1-7][0-9]|8[01])\s+([A-Z]{1,3})\s+([0-9]{2,4})\b/);
+        if (pm) plate = pm[1] && pm[2] && pm[3] ? `${pm[1]} ${pm[2]} ${pm[3]}` : pm[1];
+    }
+    let liters = Number(meta.liters) || 0;
+    if (!liters) {
+        const lm = combinedUpper.match(/([0-9]{1,4}(?:[.,][0-9]{1,2})?)\s*LT\s*X/i);
+        if (lm) liters = parseMoneyInputTR(lm[1]);
+    }
+    const isFuel = Boolean(meta.docType === "FUEL" || liters > 0 || /YAKIT|BENZİN|MOTORİN|MAZOT|LPG|OTOGAZ|AKARYAKIT|PETROL/.test(combinedUpper));
+
+    // İşyeri / İstasyon / Cari
+    let merchant = meta.station || meta.merchantName || "";
+    if (!merchant) {
+        if (entry.intercompanyMeta?.isIntercompany) {
+            merchant = `${entry.intercompanyMeta.borrowerCompany} ↔ ${entry.intercompanyMeta.lenderCompany}`;
+        } else if (sec === "CARI_CC" && col1.includes("·")) {
+            merchant = col1.split("·").slice(1).join(" · ").trim();
+        } else {
+            merchant = col1 || "GENEL CARİ / İŞYERİ";
+        }
+    }
+
+    const vatAmount = Number(meta.vatAmount) || 0;
+    const isTdr = isTdrSupplyItem(entry);
+    const isIntercompany = Boolean(entry.intercompanyMeta && entry.intercompanyMeta.isIntercompany);
+
+    return {
+        entry,
+        dateISO,
+        sec,
+        isIncome,
+        amount: Number(entry.amount) || 0,
+        vatAmount,
+        mainCat,
+        subCat,
+        specialArea,
+        cardLast4,
+        cardLabel,
+        plate,
+        liters,
+        fuelType: meta.fuelType || (isFuel ? subCat : ""),
+        isFuel,
+        isTdr,
+        isIntercompany,
+        merchant,
+        location: meta.location || "",
+        combinedUpper
+    };
+}
+
+function collectFilteredReportData() {
+    const startRaw = (document.getElementById("rep-start-date")?.value || "").trim();
+    const endRaw = (document.getElementById("rep-end-date")?.value || "").trim();
+    const startISO = startRaw ? parseAnyDateToISO(startRaw) : "";
+    const endISO = endRaw ? parseAnyDateToISO(endRaw) : "";
+
+    const chFilter = document.getElementById("rep-filter-channel")?.value || "ALL";
+    const areaFilter = document.getElementById("rep-filter-area")?.value || "ALL";
+    const cardFilter = document.getElementById("rep-filter-card")?.value || "ALL";
+    const qFilter = normalizeTR(document.getElementById("rep-filter-query")?.value || "");
+
+    const allDates = Object.keys(appState.days || {}).sort();
+    const items = [];
+
+    for (const dISO of allDates) {
+        if (startISO && dISO < startISO) continue;
+        if (endISO && dISO > endISO) continue;
+        const dayEntries = appState.days[dISO]?.entries || [];
+        for (const ent of dayEntries) {
+            const item = classifyEntryForReporting(ent, dISO);
+
+            // Kanal Filtresi
+            if (chFilter === "CASH" && item.sec !== "CASH_IN" && item.sec !== "CASH_OUT") continue;
+            if (chFilter === "CARI_CC" && item.sec !== "CARI_CC") continue;
+            if (chFilter === "POS_CC" && item.sec !== "POS_CC") continue;
+            if (chFilter === "WIRE" && item.sec !== "WIRE_IN" && item.sec !== "WIRE_OUT") continue;
+            if (chFilter === "CHECK" && item.sec !== "CHECK_OUT" && item.sec !== "CHECK_CARI_BANK") continue;
+            if (chFilter === "INTERCOMPANY" && !item.isIntercompany) continue;
+
+            // Alan / Alt Kategori Filtresi
+            if (areaFilter === "ŞAHSİ" && item.specialArea !== "ŞAHSİ") continue;
+            if (areaFilter === "OFİS" && item.specialArea !== "OFİS") continue;
+            if (areaFilter === "ATÖLYE" && item.specialArea !== "ATÖLYE") continue;
+            if (areaFilter === "FUEL" && !item.isFuel) continue;
+            if (areaFilter === "TDR" && !item.isTdr) continue;
+
+            // Kart Filtresi
+            if (cardFilter !== "ALL" && item.cardLast4 !== cardFilter) continue;
+
+            // Arama Filtresi
+            if (qFilter) {
+                const hay = normalizeTR(`${formatDateToTR(dISO)} ${item.mainCat} ${item.subCat} ${item.merchant} ${item.plate} ${item.cardLabel} ${ent.desc || ""} ${ent.col1 || ""}`);
+                if (!hay.includes(qFilter)) continue;
+            }
+
+            items.push(item);
+        }
+    }
+
+    // Tarihe göre yeniden eskiye sırala
+    items.sort((a, b) => b.dateISO.localeCompare(a.dateISO));
+    return { items, startISO, endISO };
+}
+
+function renderReportsSection() {
+    const kpiGrid = document.getElementById("rep-kpi-grid");
+    if (!kpiGrid) return;
+
+    const { items, startISO, endISO } = collectFilteredReportData();
+
+    let cashInTotal = 0, cashInCount = 0;
+    let cashOutTotal = 0, cashOutCount = 0;
+    let ccSpendTotal = 0, ccSpendCount = 0;
+    let posInTotal = 0, posInCount = 0;
+    let wireInTotal = 0, wireOutTotal = 0;
+    let totalVat = 0;
+    let totalFuelLiters = 0, totalFuelSpend = 0;
+    let sahsiTotal = 0, sahsiCount = 0;
+    let ofisTotal = 0, ofisCount = 0;
+    let atolyeTotal = 0, atolyeCount = 0;
+
+    const catMap = new Map();
+    const cardMap = new Map();
+    const plateMap = new Map();
+    const merchMap = new Map();
+
+    for (const it of items) {
+        totalVat += it.vatAmount;
+
+        if (it.sec === "CASH_IN") { cashInTotal += it.amount; cashInCount++; }
+        else if (it.sec === "CASH_OUT") { cashOutTotal += it.amount; cashOutCount++; }
+        else if (it.sec === "CARI_CC") { ccSpendTotal += it.amount; ccSpendCount++; }
+        else if (it.sec === "POS_CC") { posInTotal += it.amount; posInCount++; }
+        else if (it.sec === "WIRE_IN") { wireInTotal += it.amount; }
+        else if (it.sec === "WIRE_OUT") { wireOutTotal += it.amount; }
+
+        if (it.specialArea === "ŞAHSİ") { sahsiTotal += it.amount; sahsiCount++; }
+        else if (it.specialArea === "OFİS") { ofisTotal += it.amount; ofisCount++; }
+        else if (it.specialArea === "ATÖLYE") { atolyeTotal += it.amount; atolyeCount++; }
+
+        if (it.isFuel) {
+            totalFuelLiters += it.liters;
+            totalFuelSpend += it.amount;
+        }
+
+        // Gider kırılımları (Nakit Çıkış, Kredi Kartı Harcama, Giden Havale, Çek Çıkış)
+        if (!it.isIncome) {
+            const catKey = `${it.mainCat} › ${it.subCat}`;
+            const curCat = catMap.get(catKey) || { label: catKey, count: 0, vat: 0, total: 0 };
+            curCat.count++;
+            curCat.vat += it.vatAmount;
+            curCat.total += it.amount;
+            catMap.set(catKey, curCat);
+
+            if (it.cardLabel) {
+                const curCard = cardMap.get(it.cardLabel) || { label: it.cardLabel, last4: it.cardLast4, count: 0, vat: 0, total: 0 };
+                curCard.count++;
+                curCard.vat += it.vatAmount;
+                curCard.total += it.amount;
+                cardMap.set(it.cardLabel, curCard);
+            }
+
+            if (it.plate || it.isFuel) {
+                const pKey = it.plate || "PLAKA BELİRTİLMEMİŞ";
+                const curPlate = plateMap.get(pKey) || { plate: pKey, types: new Set(), count: 0, liters: 0, total: 0 };
+                curPlate.count++;
+                curPlate.liters += it.liters;
+                curPlate.total += it.amount;
+                if (it.fuelType) curPlate.types.add(it.fuelType);
+                plateMap.set(pKey, curPlate);
+            }
+
+            const mKey = it.merchant || "GENEL İŞYERİ";
+            const curMerch = merchMap.get(mKey) || { name: mKey, loc: it.location || SECTION_LABELS[it.sec] || "", count: 0, vat: 0, total: 0 };
+            curMerch.count++;
+            curMerch.vat += it.vatAmount;
+            curMerch.total += it.amount;
+            merchMap.set(mKey, curMerch);
+        }
+    }
+
+    const totalExpenses = cashOutTotal + ccSpendTotal + wireOutTotal;
+
+    // 1. Üst KPI Kartları
+    kpiGrid.innerHTML = `
+        <div style="padding:10px 12px; border-radius:10px; background:rgba(16,185,129,0.09); border:1px solid rgba(16,185,129,0.3);">
+            <div style="font-size:0.68rem; color:#a7f3d0; font-weight:700;"><i class="fa-solid fa-arrow-down-long"></i> TOPLAM NAKİT GİRİŞ (+)</div>
+            <div style="font-size:1.08rem; font-weight:900; color:#34d399; margin-top:3px;">${formatMoneyTR(cashInTotal)}</div>
+            <div style="font-size:0.65rem; color:var(--text-muted); margin-top:2px;">${cashInCount} nakit giriş işlemi</div>
+        </div>
+        <div style="padding:10px 12px; border-radius:10px; background:rgba(244,63,94,0.09); border:1px solid rgba(244,63,94,0.3);">
+            <div style="font-size:0.68rem; color:#fecdd3; font-weight:700;"><i class="fa-solid fa-arrow-up-long"></i> TOPLAM NAKİT ÇIKIŞ (-)</div>
+            <div style="font-size:1.08rem; font-weight:900; color:#fb7185; margin-top:3px;">${formatMoneyTR(cashOutTotal)}</div>
+            <div style="font-size:0.65rem; color:var(--text-muted); margin-top:2px;">${cashOutCount} nakit ödeme işlemi</div>
+        </div>
+        <div style="padding:10px 12px; border-radius:10px; background:rgba(56,189,248,0.09); border:1px solid rgba(56,189,248,0.3);">
+            <div style="font-size:0.68rem; color:#bae6fd; font-weight:700;"><i class="fa-solid fa-credit-card"></i> ŞİRKET KREDİ KARTI GİDERİ</div>
+            <div style="font-size:1.08rem; font-weight:900; color:#38bdf8; margin-top:3px;">${formatMoneyTR(ccSpendTotal)}</div>
+            <div style="font-size:0.65rem; color:var(--text-muted); margin-top:2px;">${ccSpendCount} kredi kartı slipi / harcaması</div>
+        </div>
+        <div style="padding:10px 12px; border-radius:10px; background:rgba(245,158,11,0.09); border:1px solid rgba(245,158,11,0.3);">
+            <div style="font-size:0.68rem; color:#fde68a; font-weight:700;"><i class="fa-solid fa-Scale-balanced"></i> GENEL TOPLAM GİDER (NAKİT+KART+BANKA)</div>
+            <div style="font-size:1.08rem; font-weight:900; color:#fbbf24; margin-top:3px;">${formatMoneyTR(totalExpenses)}</div>
+            <div style="font-size:0.65rem; color:var(--text-muted); margin-top:2px;">Gelen Havale: ${formatMoneyTR(wireInTotal)} · Giden: ${formatMoneyTR(wireOutTotal)}</div>
+        </div>
+        <div style="padding:10px 12px; border-radius:10px; background:rgba(168,85,247,0.09); border:1px solid rgba(168,85,247,0.3);">
+            <div style="font-size:0.68rem; color:#e9d5ff; font-weight:700;"><i class="fa-solid fa-percent"></i> BELGELERDEN OKUNAN TOPLAM KDV</div>
+            <div style="font-size:1.08rem; font-weight:900; color:#c084fc; margin-top:3px;">${formatMoneyTR(totalVat)}</div>
+            <div style="font-size:0.65rem; color:var(--text-muted); margin-top:2px;">Taranan fiş/faturalardaki KDV toplamı</div>
+        </div>
+        <div style="padding:10px 12px; border-radius:10px; background:rgba(20,184,166,0.09); border:1px solid rgba(20,184,166,0.3);">
+            <div style="font-size:0.68rem; color:#99f6e4; font-weight:700;"><i class="fa-solid fa-gas-pump"></i> TOPLAM YAKIT TÜKETİMİ</div>
+            <div style="font-size:1.08rem; font-weight:900; color:#2dd4bf; margin-top:3px;">${formatNumberTR(totalFuelLiters)} Lt · ${formatMoneyTR(totalFuelSpend)}</div>
+            <div style="font-size:0.65rem; color:var(--text-muted); margin-top:2px;">Benzin + Motorin + LPG toplamı</div>
+        </div>
+    `;
+
+    // 2. ŞAHSİ / OFİS / ATÖLYE Özel Alan Şeridi
+    const specialStrip = document.getElementById("rep-special-areas-strip");
+    if (specialStrip) {
+        specialStrip.innerHTML = `
+            <div style="padding:9px 12px; border-radius:9px; background:rgba(244,63,94,0.08); border:1px solid rgba(244,63,94,0.28); display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="document.getElementById('rep-filter-area').value='ŞAHSİ'; renderReportsSection();" title="Sadece ŞAHSİ harcamaları filtrelemek için tıklayın">
+                <div>
+                    <div style="font-size:0.70rem; font-weight:800; color:#fda4af;"><i class="fa-solid fa-user"></i> ŞAHSİ HARCAMALAR TOPLAMI</div>
+                    <div style="font-size:0.64rem; color:var(--text-muted);">${sahsiCount} işlem kaydı</div>
+                </div>
+                <strong style="font-size:0.98rem; color:#fb7185;">${formatMoneyTR(sahsiTotal)}</strong>
+            </div>
+            <div style="padding:9px 12px; border-radius:9px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.28); display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="document.getElementById('rep-filter-area').value='OFİS'; renderReportsSection();" title="Sadece OFİS harcamalarını filtrelemek için tıklayın">
+                <div>
+                    <div style="font-size:0.70rem; font-weight:800; color:#bae6fd;"><i class="fa-solid fa-building"></i> OFİS HARCAMALARI TOPLAMI</div>
+                    <div style="font-size:0.64rem; color:var(--text-muted);">${ofisCount} işlem kaydı</div>
+                </div>
+                <strong style="font-size:0.98rem; color:#38bdf8;">${formatMoneyTR(ofisTotal)}</strong>
+            </div>
+            <div style="padding:9px 12px; border-radius:9px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.28); display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="document.getElementById('rep-filter-area').value='ATÖLYE'; renderReportsSection();" title="Sadece ATÖLYE harcamalarını filtrelemek için tıklayın">
+                <div>
+                    <div style="font-size:0.70rem; font-weight:800; color:#a7f3d0;"><i class="fa-solid fa-screwdriver-wrench"></i> ATÖLYE HARCAMALARI TOPLAMI</div>
+                    <div style="font-size:0.64rem; color:var(--text-muted);">${atolyeCount} işlem kaydı</div>
+                </div>
+                <strong style="font-size:0.98rem; color:#34d399;">${formatMoneyTR(atolyeTotal)}</strong>
+            </div>
+        `;
+    }
+
+    // Tablo 1: Kategori & Alt Kategori
+    const tbodyCats = document.getElementById("tbody-rep-categories");
+    if (tbodyCats) {
+        const sortedCats = Array.from(catMap.values()).sort((a, b) => b.total - a.total);
+        if (sortedCats.length === 0) {
+            tbodyCats.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:14px; color:var(--text-muted);">Seçili filtrede gider kaydı yok.</td></tr>`;
+        } else {
+            tbodyCats.innerHTML = sortedCats.map(c => {
+                const pct = totalExpenses > 0 ? Math.round((c.total / totalExpenses) * 100) : 0;
+                return `
+                    <tr>
+                        <td><strong>${escapeHtml(c.label)}</strong></td>
+                        <td style="text-align:center;"><span class="badge badge-info">${c.count}</span></td>
+                        <td class="amount-cell" style="color:var(--text-secondary);">${c.vat > 0 ? formatMoneyTR(c.vat) : "-"}</td>
+                        <td class="amount-cell" style="font-weight:800; color:#fbbf24;">${formatMoneyTR(c.total)}</td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:5px; font-size:0.68rem;">
+                                <div style="flex:1; height:6px; background:rgba(255,255,255,0.08); border-radius:4px; overflow:hidden;">
+                                    <div style="width:${pct}%; height:100%; background:#fbbf24;"></div>
+                                </div>
+                                <span>%${pct}</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+    }
+
+    // Tablo 2: Şirket Kredi Kartları
+    const tbodyCards = document.getElementById("tbody-rep-cards");
+    if (tbodyCards) {
+        const sortedCards = Array.from(cardMap.values()).sort((a, b) => b.total - a.total);
+        if (sortedCards.length === 0) {
+            tbodyCards.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:14px; color:var(--text-muted);">Seçili filtrede kredi kartı harcaması yok.</td></tr>`;
+        } else {
+            tbodyCards.innerHTML = sortedCards.map(c => {
+                const pct = ccSpendTotal > 0 ? Math.round((c.total / ccSpendTotal) * 100) : 100;
+                return `
+                    <tr>
+                        <td><strong><i class="fa-regular fa-credit-card" style="color:#38bdf8;"></i> ${escapeHtml(c.label)}</strong></td>
+                        <td style="text-align:center;"><span class="badge badge-info">${c.count}</span></td>
+                        <td class="amount-cell" style="color:var(--text-secondary);">${c.vat > 0 ? formatMoneyTR(c.vat) : "-"}</td>
+                        <td class="amount-cell" style="font-weight:800; color:#38bdf8;">${formatMoneyTR(c.total)}</td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:5px; font-size:0.68rem;">
+                                <div style="flex:1; height:6px; background:rgba(255,255,255,0.08); border-radius:4px; overflow:hidden;">
+                                    <div style="width:${pct}%; height:100%; background:#38bdf8;"></div>
+                                </div>
+                                <span>%${pct}</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+    }
+
+    // Tablo 3: Araç Plakası & Yakıt
+    const tbodyPlates = document.getElementById("tbody-rep-plates");
+    if (tbodyPlates) {
+        const sortedPlates = Array.from(plateMap.values()).sort((a, b) => b.total - a.total);
+        if (sortedPlates.length === 0) {
+            tbodyPlates.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:14px; color:var(--text-muted);">Seçili filtrede plaka / yakıt kaydı yok.</td></tr>`;
+        } else {
+            tbodyPlates.innerHTML = sortedPlates.map(p => {
+                const fuelStr = Array.from(p.types).join(", ") || "YAKIT / ARAÇ GİDERİ";
+                return `
+                    <tr>
+                        <td><span class="badge badge-warning" style="font-size:0.74rem;"><i class="fa-solid fa-car"></i> ${escapeHtml(p.plate)}</span></td>
+                        <td>${escapeHtml(fuelStr)}</td>
+                        <td style="text-align:center;"><span class="badge badge-info">${p.count}</span></td>
+                        <td class="amount-cell" style="font-weight:700; color:#2dd4bf;">${p.liters > 0 ? `${formatNumberTR(p.liters)} Lt` : "-"}</td>
+                        <td class="amount-cell" style="font-weight:800; color:#34d399;">${formatMoneyTR(p.total)}</td>
+                    </tr>
+                `;
+            }).join("");
+        }
+    }
+
+    // Tablo 4: İşyeri / İstasyon / Cari
+    const tbodyMerch = document.getElementById("tbody-rep-merchants");
+    if (tbodyMerch) {
+        const sortedMerch = Array.from(merchMap.values()).sort((a, b) => b.total - a.total);
+        if (sortedMerch.length === 0) {
+            tbodyMerch.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:14px; color:var(--text-muted);">Seçili filtrede işyeri / cari ödeme kaydı yok.</td></tr>`;
+        } else {
+            tbodyMerch.innerHTML = sortedMerch.map(m => `
+                <tr>
+                    <td><strong>${escapeHtml(m.name)}</strong></td>
+                    <td style="font-size:0.70rem; color:var(--text-muted);">${escapeHtml(m.loc)}</td>
+                    <td style="text-align:center;"><span class="badge badge-info">${m.count}</span></td>
+                    <td class="amount-cell" style="color:var(--text-secondary);">${m.vat > 0 ? formatMoneyTR(m.vat) : "-"}</td>
+                    <td class="amount-cell" style="font-weight:800; color:#c084fc;">${formatMoneyTR(m.total)}</td>
+                </tr>
+            `).join("");
+        }
+    }
+
+    // Detay Tablosu
+    const titleEl = document.getElementById("rep-detail-table-title");
+    if (titleEl) {
+        const rangeTxt = (startISO || endISO) ? `(${startISO ? formatDateToTR(startISO) : "..."} — ${endISO ? formatDateToTR(endISO) : "..."})` : "(TÜM TARİHLER)";
+        titleEl.textContent = `SEÇİLİ DÖNEM HAREKET DETAY LİSTESİ ${rangeTxt} — TOPLAM ${items.length} KAYIT`;
+    }
+
+    const tbodyEntries = document.getElementById("tbody-rep-entries");
+    if (tbodyEntries) {
+        if (items.length === 0) {
+            tbodyEntries.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:18px; color:var(--text-muted);">Seçili kriterlere uygun kasa/kart hareketi bulunamadı.</td></tr>`;
+        } else {
+            tbodyEntries.innerHTML = items.map(it => {
+                const badgeCls = it.isIncome ? "badge-success" : (it.sec === "CARI_CC" ? "badge-info" : "badge-danger");
+                const areaPill = it.specialArea
+                    ? ` <span class="badge badge-warning" style="font-size:0.62rem;">${escapeHtml(it.specialArea)}</span>`
+                    : "";
+                return `
+                    <tr>
+                        <td>
+                            <a href="javascript:void(0)" onclick="jumpToDateISO('${escapeHtml(it.dateISO)}'); switchTab('form');" style="color:var(--dizsan-cyan); font-weight:800; text-decoration:none;">
+                                ${escapeHtml(formatDateToTR(it.dateISO))}
+                            </a>
+                        </td>
+                        <td><span class="badge ${badgeCls}" style="font-size:0.65rem;">${escapeHtml(SECTION_LABELS[it.sec] || it.sec)}</span></td>
+                        <td><strong>${escapeHtml(it.mainCat)}</strong><br><small style="color:var(--text-muted);">${escapeHtml(it.subCat)}</small>${areaPill}</td>
+                        <td>
+                            <strong>${escapeHtml(it.merchant)}</strong>
+                            ${it.cardLabel ? `<br><small style="color:#38bdf8;"><i class="fa-regular fa-credit-card"></i> ${escapeHtml(it.cardLabel)}</small>` : ""}
+                        </td>
+                        <td>
+                            ${escapeHtml(it.entry.desc || "")}
+                            ${it.plate ? ` <span class="badge badge-warning" style="font-size:0.62rem;">${escapeHtml(it.plate)}</span>` : ""}
+                        </td>
+                        <td class="amount-cell" style="color:var(--text-secondary);">${it.vatAmount > 0 ? formatMoneyTR(it.vatAmount) : "-"}</td>
+                        <td class="amount-cell" style="font-weight:900; color:${it.isIncome ? "#34d399" : "#fb7185"};">
+                            ${it.isIncome ? "+" : "-"}${formatMoneyTR(it.amount)}
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+    }
+}
+window.renderReportsSection = renderReportsSection;
+
+function exportReportsExcel() {
+    const { items, startISO, endISO } = collectFilteredReportData();
+    const rangeLabel = (startISO || endISO) ? `${startISO ? formatDateToTR(startISO) : "Baslangic"}_${endISO ? formatDateToTR(endISO) : "Bugun"}` : "Tum_Zamanlar";
+
+    let rowsHtml = "";
+    let totalIn = 0, totalOut = 0, totalVat = 0;
+
+    for (const it of items) {
+        if (it.isIncome) totalIn += it.amount;
+        else totalOut += it.amount;
+        totalVat += it.vatAmount;
+
+        rowsHtml += `
+            <tr>
+                <td>${escapeHtml(formatDateToTR(it.dateISO))}</td>
+                <td>${escapeHtml(SECTION_LABELS[it.sec] || it.sec)}</td>
+                <td>${escapeHtml(it.mainCat)}</td>
+                <td>${escapeHtml(it.subCat)}</td>
+                <td>${escapeHtml(it.specialArea || "-")}</td>
+                <td>${escapeHtml(it.merchant)}</td>
+                <td>${escapeHtml(it.cardLabel || "-")}</td>
+                <td>${escapeHtml(it.plate || "-")}</td>
+                <td style="text-align:right;">${it.liters > 0 ? formatNumberTR(it.liters) : "-"}</td>
+                <td>${escapeHtml(it.entry.desc || "")}</td>
+                <td style="text-align:right;">${it.vatAmount > 0 ? formatNumberTR(it.vatAmount) : "0,00"}</td>
+                <td style="text-align:right; font-weight:bold;">${it.isIncome ? "+" : "-"}${formatNumberTR(it.amount)}</td>
+            </tr>
+        `;
+    }
+
+    const htmlDoc = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head><meta charset="UTF-8"></head>
+        <body>
+            <h3>DİZSAN GÜNLÜK KASA &amp; HARCAMA ANALİZ RAPORU (${escapeHtml(rangeLabel)})</h3>
+            <p><strong>Toplam Giriş (+):</strong> ${formatMoneyTR(totalIn)} | <strong>Toplam Çıkış/Harcama (-):</strong> ${formatMoneyTR(totalOut)} | <strong>Toplam KDV:</strong> ${formatMoneyTR(totalVat)}</p>
+            <table border="1" cellpadding="5" cellspacing="0">
+                <thead style="background:#0284c7; color:#ffffff; font-weight:bold;">
+                    <tr>
+                        <th>TARİH</th>
+                        <th>KANAL / TABLO</th>
+                        <th>ANA KATEGORİ</th>
+                        <th>ALT KATEGORİ</th>
+                        <th>ÖZEL ALAN (ŞAHSİ/OFİS/ATÖLYE)</th>
+                        <th>İŞYERİ / FİRMA / CARİ</th>
+                        <th>KREDİ KARTI</th>
+                        <th>ARAÇ PLAKASI</th>
+                        <th>YAKIT (LT)</th>
+                        <th>AÇIKLAMA</th>
+                        <th>KDV (TL)</th>
+                        <th>TUTAR (TL)</th>
+                    </tr>
+                </thead>
+                <tbody>${rowsHtml}</tbody>
+            </table>
+        </body>
+        </html>
+    `;
+
+    const blob = new Blob(["\ufeff", htmlDoc], { type: "application/vnd.ms-excel;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Dizsan_Kasa_Raporu_${rangeLabel}.xls`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+}
+window.exportReportsExcel = exportReportsExcel;
+
+function shareReportsWhatsApp() {
+    const { items, startISO, endISO } = collectFilteredReportData();
+    let cashIn = 0, cashOut = 0, ccOut = 0, vatSum = 0, sahsi = 0, ofis = 0, atolye = 0;
+    for (const it of items) {
+        vatSum += it.vatAmount;
+        if (it.sec === "CASH_IN") cashIn += it.amount;
+        else if (it.sec === "CASH_OUT") cashOut += it.amount;
+        else if (it.sec === "CARI_CC") ccOut += it.amount;
+        if (it.specialArea === "ŞAHSİ") sahsi += it.amount;
+        if (it.specialArea === "OFİS") ofis += it.amount;
+        if (it.specialArea === "ATÖLYE") atolye += it.amount;
+    }
+    const rangeTxt = (startISO || endISO) ? `${startISO ? formatDateToTR(startISO) : "..."} - ${endISO ? formatDateToTR(endISO) : "..."}` : "Tüm Zamanlar";
+    const lines = [
+        `📊 *DİZSAN KASA & HARCAMA RAPORU (${rangeTxt})*`,
+        `• Toplam Nakit Giriş: *${formatMoneyTR(cashIn)}*`,
+        `• Toplam Nakit Çıkış: *${formatMoneyTR(cashOut)}*`,
+        `• Şirket Kredi Kartı Harcaması: *${formatMoneyTR(ccOut)}*`,
+        `• Toplam Okunan KDV: *${formatMoneyTR(vatSum)}*`,
+        `• Özel Alanlar: Şahsi=${formatMoneyTR(sahsi)} | Ofis=${formatMoneyTR(ofis)} | Atölye=${formatMoneyTR(atolye)}`,
+        `• Toplam İşlem Adedi: ${items.length} kayıt`
+    ];
+    window.open(`https://wa.me/?text=${encodeURIComponent(lines.join("\n"))}`, "_blank");
+}
+window.shareReportsWhatsApp = shareReportsWhatsApp;
+
+function printReportsSummary() {
+    window.print();
+}
+window.printReportsSummary = printReportsSummary;
 
 function getCalState() {
     if (!uiState.calMode) {
@@ -6711,6 +7320,7 @@ function switchTab(tabId) {
     const titles = {
         form: ["GÜNLÜK KASA FORMU", "%100 Manuel Giriş — Nakit devir, günlük giriş/ödemeler, POS kredi kartı, cari kart, çek/senet ve havale"],
         intercompany: ["ŞİRKETLER ARASI BORÇ / ALACAK", "Günlük kasadaki şirketler arası döviz/TL giriş-çıkış hareketlerinden otomatik hesaplanan net borç/alacak özeti"],
+        reports: ["RAPORLAMA & ANALİZ MERKEZİ", "Kategori, Alt Kategori (Şahsi/Ofis/Atölye), Şirket Kredi Kartı, Araç Plakası/Yakıt ve İşyeri Bazlı Detaylı Raporlar"],
         a4: ["A4 ÇIKTI & KLASİK EXCEL FORMU", "Eski Excel Günlük Kasa Formunun birebir A4 kağıt önizlemesi ve tek sayfa baskı motoru"],
         archive: ["KASA ARŞİVİ & HAREKET ARAMA", "Manuel girilen tüm kasa, kart, çek ve havale kayıtlarında cari, plaka ve TDR tedarik arama"],
         admin: ["KULLANICI & YETKİ SINIRLAMASI YÖNETİMİ", "Görüntüleme, Ekleme, Değişiklik, Tam Yetki ve Erişime Kapalı (Hiçbiri) atamaları"]
@@ -6760,6 +7370,7 @@ function renderAll() {
     applyRolePermissionsToDOM();
     renderDailyFormSection();
     renderIntercompanyTabSection();
+    renderReportsSection();
     renderA4SheetSection();
     renderArchiveSection();
     renderAdminSection();
