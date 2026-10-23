@@ -1103,6 +1103,7 @@ function mergeKasaStates(stateA, stateB) {
         ...buildInitialState(),
         ...secondary,
         ...primary,
+        users: mergedUsers,
         version: CURRENT_APP_VERSION,
         updatedAtMs: Math.max(msA, msB),
         updatedAt: msA >= msB ? (stateA.updatedAt || formatDateTimeTR()) : (stateB.updatedAt || formatDateTimeTR()),
@@ -1191,6 +1192,7 @@ async function pushKasaToSingleGitHubRepo(apiUrl, shaKey, isRetry = false) {
 
     const putRes = await fetch(apiUrl, {
         method: "PUT",
+        keepalive: true,
         headers: {
             "Authorization": `token ${token}`,
             "Accept": "application/vnd.github.v3+json",
@@ -1241,6 +1243,7 @@ async function syncStateToServer() {
         if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
             await fetch("/api/kasa-state", {
                 method: "POST",
+                keepalive: true,
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(appState)
             });
@@ -1987,9 +1990,9 @@ function renderSidebarIntercompanyWidget() {
     let summaryCardsHtml = "";
     if (netSummaries.length === 0) {
         summaryCardsHtml = `
-            <div style="padding:8px; border-radius:8px; background:rgba(15,23,42,0.55); border:1px dashed rgba(168,85,247,0.35); font-size:0.65rem; color:#cbd5e1; text-align:center; line-height:1.4;">
+            <div style="padding:8px; border-radius:8px; background:var(--bg-card); border:1px dashed rgba(168,85,247,0.45); font-size:0.65rem; color:var(--text-secondary); text-align:center; line-height:1.4;">
                 Henüz şirketler arası açık borç/alacak kaydı yok.<br>
-                <span style="color:#c084fc; font-weight:700;">"+ Giriş"</span> ile diğer şirketten alınan döviz/TL borcu ekleyebilirsiniz.
+                <span style="color:#9333ea; font-weight:700;">"+ Giriş"</span> ile diğer şirketten alınan döviz/TL borcu ekleyebilirsiniz.
             </div>
         `;
     } else {
@@ -1999,18 +2002,18 @@ function renderSidebarIntercompanyWidget() {
                 ? s.datesTR[0]
                 : `${s.datesTR[0]} .. ${s.datesTR[s.datesTR.length - 1]} (${s.txCount} işlem)`;
             return `
-                <div onclick="switchTab('intercompany')" style="cursor:pointer; padding:7px 8px; border-radius:8px; margin-bottom:5px; background:rgba(15,23,42,0.72); border:1px solid rgba(168,85,247,0.38); transition:all 0.15s;" title="Detaylı Şirketler Arası Borç/Alacak tablosunu açmak için tıklayın">
+                <div onclick="switchTab('intercompany')" style="cursor:pointer; padding:7px 8px; border-radius:8px; margin-bottom:5px; background:var(--bg-card); border:1px solid rgba(168,85,247,0.45); transition:all 0.15s;" title="Detaylı Şirketler Arası Borç/Alacak tablosunu açmak için tıklayın">
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:4px; margin-bottom:3px;">
-                        <span style="font-size:0.62rem; font-weight:800; color:#fb7185;"><i class="fa-solid fa-circle-arrow-right"></i> ${escapeHtml(s.debtor)}</span>
+                        <span style="font-size:0.62rem; font-weight:800; color:var(--rose-danger);"><i class="fa-solid fa-circle-arrow-right"></i> ${escapeHtml(s.debtor)}</span>
                         <span style="font-size:0.58rem; padding:1px 5px; border-radius:4px; background:${cInfo.badgeBg}; border:1px solid ${cInfo.badgeBorder}; color:${cInfo.badgeColor}; font-weight:800;">${escapeHtml(cInfo.short)}</span>
                     </div>
-                    <div style="font-size:0.66rem; color:#f8fafc; line-height:1.35;">
+                    <div style="font-size:0.66rem; color:var(--text-primary); line-height:1.35;">
                         <strong>${escapeHtml(s.creditor)}</strong> şirketine
                         <strong style="color:${cInfo.badgeColor}; font-size:0.74rem; display:block; margin-top:1px;">${escapeHtml(formatIntercompanyAmount(s.netAmount, s.currency))} BORÇLU</strong>
                     </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; padding-top:3px; border-top:1px solid rgba(255,255,255,0.06); font-size:0.58rem; color:#94a3b8;">
-                        <span><i class="fa-regular fa-calendar" style="color:#c084fc;"></i> Tarih: <strong style="color:#e2e8f0;">${escapeHtml(dateBadgeText)}</strong></span>
-                        <span style="color:#38bdf8; font-weight:700;">Detay →</span>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; padding-top:3px; border-top:1px solid var(--border-subtle); font-size:0.58rem; color:var(--text-muted);">
+                        <span><i class="fa-regular fa-calendar" style="color:#9333ea;"></i> Tarih: <strong style="color:var(--text-primary);">${escapeHtml(dateBadgeText)}</strong></span>
+                        <span style="color:var(--dizsan-cyan); font-weight:700;">Detay →</span>
                     </div>
                 </div>
             `;
@@ -9586,6 +9589,7 @@ function openForgotPasswordModal() {
     const adminPinEl = document.getElementById("forgot-admin-pin");
     if (adminPinEl) adminPinEl.value = "";
     openModal("modal-forgot-password");
+    if (emailIn) setTimeout(() => emailIn.focus(), 50);
 }
 
 function sendPasswordResetCode() {
@@ -9627,6 +9631,31 @@ function verifyAndResetPassword() {
         closeModal("modal-forgot-password");
         alert("Şifreniz başarıyla güncellendi.");
     }
+    const expectedEmail = String(u.email || "").trim().toLowerCase();
+    if (!emailIn || emailIn !== expectedEmail) {
+        addAuditLog("GÜVENLİK UYARISI", `${u.name} için hatalı kurumsal e-posta (${emailIn || "boş"}) ile şifre sıfırlama denemesi engellendi.`);
+        alert("❌ Kurumsal e-posta adresi hatalı! E-posta adresi seçilen personelin kayıtlı kurumsal e-postası ile birebir eşleşmediği için şifre güncellenemedi.");
+        return;
+    }
+
+    const nowMs = Date.now();
+    u.pinStamp = hashPin(newPass);
+    u.pinUpdatedAtMs = nowMs;
+    delete u.password;
+    delete u.oldPin;
+    currentUser = u;
+    localStorage.setItem(STORAGE_KEY_KASA_REMEMBER, JSON.stringify({ username: u.username }));
+    localStorage.setItem(STORAGE_KEY_KASA_SESSION, JSON.stringify({ username: u.username, pinStamp: u.pinStamp }));
+    sessionStorage.removeItem(STORAGE_KEY_KASA_SESSION);
+    sessionStorage.removeItem(STORAGE_KEY_KASA_EXPLICIT_LOGOUT);
+
+    syncUserPasswordToDProStorage(u);
+
+    addAuditLog("ŞİFRE SIFIRLAMA", `${u.name} (${emailIn}) şifresini güncelledi ve giriş yaptı.`);
+    syncStateToServer();
+    closeModal("modal-forgot-password");
+    alert(`✅ ŞİFRENİZ GÜNCELLENDİ!\n\n• Personel: ${u.name}\n• E-Posta: ${emailIn}\n\nEski şifreniz silindi, yeni şifreniz kaydedildi ve giriş yapıldı.`);
+    applyAuthenticatedSession();
 }
 
 function openChangePasswordModal() {
@@ -9648,9 +9677,27 @@ function handleChangePasswordSubmit(e) {
         alert("Yeni şifreler eşleşmiyor veya en az 3 karakter olmalıdır!");
         return;
     }
+    const nowMs = Date.now();
     currentUser.pinStamp = hashPin(newP);
+    currentUser.pinUpdatedAtMs = nowMs;
+    delete currentUser.password;
+    delete currentUser.oldPin;
     const u = appState.users.find(x => x.username === currentUser.username);
-    if (u) u.pinStamp = currentUser.pinStamp;
+    if (u) {
+        u.pinStamp = currentUser.pinStamp;
+        u.pinUpdatedAtMs = nowMs;
+        delete u.password;
+        delete u.oldPin;
+    }
+
+    syncUserPasswordToDProStorage(currentUser);
+
+    if (localStorage.getItem(STORAGE_KEY_KASA_SESSION)) {
+        localStorage.setItem(STORAGE_KEY_KASA_SESSION, JSON.stringify({ username: currentUser.username, pinStamp: currentUser.pinStamp }));
+    }
+    if (sessionStorage.getItem(STORAGE_KEY_KASA_SESSION)) {
+        sessionStorage.setItem(STORAGE_KEY_KASA_SESSION, JSON.stringify({ username: currentUser.username, pinStamp: currentUser.pinStamp }));
+    }
 
     if (localStorage.getItem(STORAGE_KEY_KASA_SESSION)) {
         localStorage.setItem(STORAGE_KEY_KASA_SESSION, JSON.stringify({ username: currentUser.username, pinStamp: currentUser.pinStamp }));
@@ -9868,8 +9915,49 @@ window.addEventListener("DOMContentLoaded", async () => {
     document.addEventListener("visibilitychange", () => {
         if (!document.hidden) {
             pollKasaCloudState(false);
+        } else {
+            // Sekme/uygulama arka plana alındığında veya kapatılırken anlık yerel + bulut yedekleme
+            saveStateLocally();
+            recordLocalBackupSnapshot("Sekme Kapatma / Arka Plan Otomatik Yedek");
+            if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+                try {
+                    navigator.sendBeacon("/api/kasa-state", new Blob([JSON.stringify(appState)], { type: "application/json" }));
+                } catch (e) {}
+            }
+            pushStateToGitHubCloud().catch(() => {});
         }
     });
+
+    // Elektrik kesintisi / aniden kapatma / sekme kapatma anında otomatik Auto-Save
+    const emergencyFlushHandler = () => {
+        try {
+            saveStateLocally();
+            recordLocalBackupSnapshot("Acil Kapanış Auto-Save");
+            if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+                navigator.sendBeacon("/api/kasa-state", new Blob([JSON.stringify(appState)], { type: "application/json" }));
+            }
+            pushStateToGitHubCloud().catch(() => {});
+        } catch (e) {}
+    };
+    window.addEventListener("beforeunload", emergencyFlushHandler);
+    window.addEventListener("pagehide", emergencyFlushHandler);
+
+    // Her 5 dakikada bir otomatik Auto-Save ve GitHub Bulut Yedekleme
+    setInterval(() => {
+        try {
+            saveStateLocally();
+            recordLocalBackupSnapshot("5 Dakikalık Otomatik Auto-Save");
+            if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+                fetch("/api/kasa-state", {
+                    method: "POST",
+                    keepalive: true,
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(appState)
+                }).catch(() => {});
+            }
+            pushStateToGitHubCloud().catch(() => {});
+        } catch (e) {}
+    }, 5 * 60 * 1000);
 
     if ("serviceWorker" in navigator) {
         navigator.serviceWorker.register(`sw.js?v=${CURRENT_APP_VERSION}`).catch(() => {});

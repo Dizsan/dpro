@@ -32,7 +32,7 @@
 
 html[data-theme="light"] {
     --bg-main: #f1f5f9;
-    --bg-sidebar: #0f172a;
+    --bg-sidebar: #ffffff;
     --bg-surface: #ffffff;
     --bg-card: #ffffff;
     --bg-card-hover: #f8fafc;
@@ -1592,9 +1592,9 @@ html[data-theme="light"] .subtab-amount {
 .modal-backdrop {
     position: fixed;
     inset: 0;
-    z-index: 9000;
-    background: rgba(3, 7, 18, 0.78);
-    backdrop-filter: blur(6px);
+    z-index: 10050;
+    background: rgba(3, 7, 18, 0.82);
+    backdrop-filter: blur(8px);
     display: none;
     align-items: center;
     justify-content: center;
