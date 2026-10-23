@@ -1,8 +1,8 @@
 {
   "version": "1.2.9",
-  "updatedAt": "23.10.2026 23:25:36",
-  "updatedAtMs": 1792787136969,
-  "stateRevision": 96,
+  "updatedAt": "23.10.2026 23:25:45",
+  "updatedAtMs": 1792787145370,
+  "stateRevision": 97,
   "users": [
     {
       "order": 0,
@@ -10,7 +10,6 @@
       "username": "ömer",
       "email": "oeren@dizsan.com.tr",
       "pinStamp": "621976239-623787727-2631164839",
-      "pinUpdatedAtMs": 1792787040000,
       "dept": "Yönetim Kurulu / Sistem Yöneticisi",
       "rolePreset": "ADMIN",
       "permissions": {
@@ -20,7 +19,8 @@
         "delete": true,
         "lockDay": true,
         "manageUsers": true
-      }
+      },
+      "pinUpdatedAtMs": 1792787040000
     },
     {
       "order": 1,
@@ -252,9 +252,29 @@
       "controllerApproved": false,
       "isLocked": false,
       "entries": []
+    },
+    "2026-10-31": {
+      "dateISO": "2026-10-31",
+      "euroRate": "--",
+      "usdRate": "--",
+      "prevInOverride": null,
+      "prevOutOverride": null,
+      "carryoverOverride": null,
+      "carryoverLabel": "30/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
+      "cashierName": "GÖKHAN ÖZBULUT",
+      "controllerName": "RAFET CANBEK",
+      "controllerApproved": false,
+      "isLocked": false,
+      "entries": []
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "23.10.2026 23:25:45",
+      "user": "ÖMER EREN",
+      "category": "OTURUM",
+      "detail": "ÖMER EREN sisteme giriş yaptı."
+    },
     {
       "timestamp": "23.10.2026 23:25:36",
       "user": "ÖMER EREN",
