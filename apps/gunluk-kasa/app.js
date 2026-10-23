@@ -14,7 +14,7 @@
  * ==========================================================================
  */
 
-const CURRENT_APP_VERSION = "1.1.5";
+const CURRENT_APP_VERSION = "1.1.6";
 window.CURRENT_APP_VERSION = CURRENT_APP_VERSION;
 
 const OLD_DEMO_STORAGE_KEY = "dizsan_gunluk_kasa_state_v1";
@@ -622,6 +622,30 @@ function findLatestDateWithEntries(st) {
     return datesWithEntries.length > 0 ? datesWithEntries[datesWithEntries.length - 1] : null;
 }
 
+function stripOcrImagesFromEntry(ent) {
+    if (ent && ent.ocrMeta && typeof ent.ocrMeta === "object") {
+        delete ent.ocrMeta.receiptThumb;
+        delete ent.ocrMeta.posThumb;
+        delete ent.ocrMeta.receiptImage;
+        delete ent.ocrMeta.posImage;
+        ent.ocrMeta.hasReceiptImg = false;
+        ent.ocrMeta.hasPosImg = false;
+    }
+    return ent;
+}
+
+function stripOcrImagesFromState(st) {
+    if (!st || !st.days || typeof st.days !== "object") return st;
+    for (const dObj of Object.values(st.days)) {
+        if (dObj && Array.isArray(dObj.entries)) {
+            for (const ent of dObj.entries) {
+                stripOcrImagesFromEntry(ent);
+            }
+        }
+    }
+    return st;
+}
+
 function getAllEntryIdsSet(st) {
     const set = new Set();
     if (!st || !st.days || typeof st.days !== "object") return set;
@@ -705,12 +729,13 @@ function mergeKasaStates(stateA, stateB) {
                 if (dayClearMs > 0 && entMs > 0 && entMs < dayClearMs) continue;
 
                 const existing = entryMap.get(ent.id);
+                const cleanEnt = stripOcrImagesFromEntry(ent);
                 if (!existing) {
-                    entryMap.set(ent.id, ent);
+                    entryMap.set(ent.id, cleanEnt);
                 } else {
                     const exMs = Number(existing.updatedAtMs) || 0;
                     if (entMs >= exMs) {
-                        entryMap.set(ent.id, ent);
+                        entryMap.set(ent.id, cleanEnt);
                     }
                 }
             }
@@ -783,6 +808,7 @@ function setSyncBadge(mode) {
 
 function saveStateLocally() {
     try {
+        stripOcrImagesFromState(appState);
         localStorage.removeItem(OLD_DEMO_STORAGE_KEY);
         localStorage.setItem(STORAGE_KEY_KASA_STATE, JSON.stringify(appState));
     } catch (e) {}
@@ -1342,7 +1368,7 @@ function renderDailyFormSection() {
         : "";
 
     const renderOcrBadge = (entry) => entry.ocrMeta
-        ? ` <span class="badge badge-info" style="cursor:pointer; font-size:0.62rem;" onclick="openDocPreviewModal('${escapeHtml(entry.id)}')" title="Fiş ve POS Slipi detaylarını görmek için tıklayın"><i class="fa-solid fa-camera"></i> Fiş+Slip Ekli</span>`
+        ? ` <span class="badge badge-info" style="cursor:pointer; font-size:0.62rem;" onclick="openDocPreviewModal('${escapeHtml(entry.id)}')" title="Okunan Fiş ve POS Slipi bilgilerini görmek için tıklayın"><i class="fa-solid fa-file-lines"></i> Tarama Bilgisi</span>`
         : "";
 
     const renderIntercompanyBadge = (entry) => {
@@ -3453,9 +3479,9 @@ async function handleScanFileSelect(slot, inputEl) {
     const file = inputEl?.files?.[0];
     if (!file) return;
     try {
+        // Yalnızca anlık OCR okuma için geçici belleğe al; okuma biter bitmez fotoğraf otomatik silinir (veritabanında asla saklanmaz!)
         const fullDataUrl = await compressImageFileToDataUrl(file, 1600, 0.90);
-        const thumbDataUrl = await compressImageFileToDataUrl(file, 520, 0.72);
-        setScannedSlotImage(slot, fullDataUrl, thumbDataUrl, file.name);
+        setScannedSlotImage(slot, fullDataUrl, "", file.name);
         // Mobil/Web kullanımda fotoğraf seçildiği anda otomatik taramayı başlat
         setTimeout(() => {
             runReceiptAndPosAnalysis();
@@ -3465,27 +3491,65 @@ async function handleScanFileSelect(slot, inputEl) {
     }
 }
 
+function purgeScannedImagesAfterExtraction(hadReceipt, hadPos) {
+    // Tarama tamamlandıktan hemen sonra ağır fotoğraf verilerini (Base64) bellekten tamamen sil!
+    scannedReceiptDataUrl = "";
+    scannedReceiptThumbUrl = "";
+    scannedPosDataUrl = "";
+    scannedPosThumbUrl = "";
+
+    const recInp = document.getElementById("scan-receipt-input");
+    if (recInp) recInp.value = "";
+    const posInp = document.getElementById("scan-pos-input");
+    if (posInp) posInp.value = "";
+
+    if (hadReceipt) {
+        const img = document.getElementById("preview-img-receipt");
+        const lbl = document.getElementById("preview-lbl-receipt");
+        if (img) {
+            img.removeAttribute("src");
+            img.style.display = "none";
+        }
+        if (lbl) lbl.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#34d399;"></i> Bilgiler alındı (Fotoğraf silindi — veri şişmez)`;
+    }
+    if (hadPos) {
+        const img = document.getElementById("preview-img-pos");
+        const lbl = document.getElementById("preview-lbl-pos");
+        if (img) {
+            img.removeAttribute("src");
+            img.style.display = "none";
+        }
+        if (lbl) lbl.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#38bdf8;"></i> Bilgiler alındı (Fotoğraf silindi — veri şişmez)`;
+    }
+}
+
 function setScannedSlotImage(slot, fullDataUrl, thumbDataUrl, labelText = "Belge hazır") {
     if (slot === "receipt") {
         scannedReceiptDataUrl = fullDataUrl;
-        scannedReceiptThumbUrl = thumbDataUrl || fullDataUrl;
+        scannedReceiptThumbUrl = "";
         const wrap = document.getElementById("preview-wrap-receipt");
         const img = document.getElementById("preview-img-receipt");
         const lbl = document.getElementById("preview-lbl-receipt");
         const btnClr = document.getElementById("btn-clear-receipt-img");
         if (wrap) wrap.style.display = "flex";
-        if (img) img.src = scannedReceiptThumbUrl;
+        if (img) {
+            img.style.display = "block";
+            img.src = fullDataUrl;
+        }
         if (lbl) lbl.textContent = labelText;
         if (btnClr) btnClr.style.display = "inline-flex";
     } else {
         scannedPosDataUrl = fullDataUrl;
-        scannedPosThumbUrl = thumbDataUrl || fullDataUrl;
+        scannedPosThumbUrl = "";
         const wrap = document.getElementById("preview-wrap-pos");
         const img = document.getElementById("preview-img-pos");
         const lbl = document.getElementById("preview-lbl-pos");
         const btnClr = document.getElementById("btn-clear-pos-img");
         if (wrap) wrap.style.display = "flex";
-        if (img) img.src = scannedPosThumbUrl;
+        if (img) {
+            img.style.display = "block";
+            img.src = fullDataUrl;
+        }
         if (lbl) lbl.textContent = labelText;
         if (btnClr) btnClr.style.display = "inline-flex";
     }
@@ -5088,11 +5152,16 @@ async function runReceiptAndPosAnalysis() {
         }
 
         // Düzenlenebilir OCR paneli + Kullanıcıdan istenen manuel alanlar kutusunu oluştur
+        const hadReceiptImg = Boolean(scannedReceiptDataUrl);
+        const hadPosImg = Boolean(scannedPosDataUrl);
         renderEditableOcrResultPanel(rec, pos, ocrData.engine || "Mobil / Web Yerleşik Türkçe OCR");
         syncEditableOcrFieldsToForm(true);
 
+        // Bilgiler okunduktan hemen sonra fotoğrafı bellekten sil (Yıllar boyu kullanımda veriyi asla şişirmez!)
+        purgeScannedImagesAfterExtraction(hadReceiptImg, hadPosImg);
+
         const effectiveAmount = rec.totalAmount > 0 ? rec.totalAmount : pos.posAmount;
-        addAuditLog("BELGE TARAMA (AI/OCR)", `Belge tarandı (${docProfile.label}): İşyeri=${rec.station || "-"}, Tutar=${formatMoneyTR(effectiveAmount)}, Kart=****${pos.cardLast4 || "-"}`);
+        addAuditLog("BELGE TARAMA (AI/OCR)", `Belge tarandı (${docProfile.label}): İşyeri=${rec.station || "-"}, Tutar=${formatMoneyTR(effectiveAmount)}, Kart=****${pos.cardLast4 || "-"} (Fotoğraf silindi, yalnızca metin saklandı)`);
     } catch (err) {
         if (resBox) {
             resBox.style.display = "block";
@@ -5512,6 +5581,7 @@ function syncEditableOcrFieldsToForm(updateMainFormFields = true) {
     }
 
     const engineBadge = document.getElementById("ocr-engine-badge")?.textContent || "Apple Vision Neural OCR";
+    // ÖNEMLİ: Yıllar içinde veritabanının (localStorage ve bulut JSON) şişmemesi için fotoğraf (Base64) ASLA kaydedilmez, yalnızca okunan metin verileri saklanır!
     const ocrMetaObj = {
         engine: engineBadge,
         scannedAt: formatDateTimeTR(),
@@ -5519,10 +5589,8 @@ function syncEditableOcrFieldsToForm(updateMainFormFields = true) {
         ...pos,
         selectedSubCat,
         matchedCardLabel: matchedCardObj ? formatCreditCardValue(matchedCardObj) : "",
-        hasReceiptImg: Boolean(scannedReceiptThumbUrl),
-        hasPosImg: Boolean(scannedPosThumbUrl),
-        receiptThumb: scannedReceiptThumbUrl || "",
-        posThumb: scannedPosThumbUrl || ""
+        hasReceiptImg: false,
+        hasPosImg: false
     };
     const metaInp = document.getElementById("entry-ocr-meta");
     if (metaInp) metaInp.value = JSON.stringify(ocrMetaObj);
@@ -5545,7 +5613,7 @@ function openDocPreviewModal(entryId) {
     if (!bodyEl) return;
 
     bodyEl.innerHTML = `
-        <div style="padding:10px 12px; border-radius:9px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); margin-bottom:12px; font-size:0.76rem;">
+        <div style="padding:10px 12px; border-radius:9px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); margin-bottom:10px; font-size:0.76rem;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <div style="font-weight:800; color:var(--text-white);">${escapeHtml(foundEntry.col1 || "")} — ${escapeHtml(foundEntry.desc || "")}</div>
                 <button type="button" class="btn btn-xs btn-primary" onclick="closeModal('modal-doc-preview'); openEditEntryModal('${escapeHtml(foundEntry.id)}');">
@@ -5563,19 +5631,8 @@ function openDocPreviewModal(entryId) {
                 <div>POS Onay / Ref No: <strong style="color:var(--text-white);">${escapeHtml(m.authCode || "-")} / ${escapeHtml(m.refNo || "-")}</strong></div>
             </div>
         </div>
-        <div class="form-grid-2" style="gap:12px;">
-            ${m.receiptThumb ? `
-                <div style="text-align:center; background:rgba(0,0,0,0.25); padding:8px; border-radius:8px; border:1px solid var(--border-subtle);">
-                    <div style="font-size:0.72rem; font-weight:700; color:#34d399; margin-bottom:6px;"><i class="fa-solid fa-file-invoice"></i> 1. Taranan Belge Görseli</div>
-                    <img src="${m.receiptThumb}" alt="Belge Görseli" style="max-width:100%; max-height:340px; border-radius:6px; object-fit:contain;">
-                </div>
-            ` : ""}
-            ${m.posThumb ? `
-                <div style="text-align:center; background:rgba(0,0,0,0.25); padding:8px; border-radius:8px; border:1px solid var(--border-subtle);">
-                    <div style="font-size:0.72rem; font-weight:700; color:#38bdf8; margin-bottom:6px;"><i class="fa-solid fa-receipt"></i> 2. Kredi Kartı POS Slipi / Dekont Görseli</div>
-                    <img src="${m.posThumb}" alt="POS Slipi Görseli" style="max-width:100%; max-height:340px; border-radius:6px; object-fit:contain;">
-                </div>
-            ` : ""}
+        <div style="padding:8px 10px; border-radius:7px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.28); font-size:0.70rem; color:#a7f3d0;">
+            <i class="fa-solid fa-shield-halved"></i> <strong>Veri Tasarrufu Aktif:</strong> Yıllar içinde veritabanının şişmemesi için belge fotoğrafı tarama sonrasında otomatik imha edilmiş, yalnızca okunan metin bilgileri kaydedilmiştir.
         </div>
     `;
     openModal("modal-doc-preview");
@@ -5666,10 +5723,9 @@ function openEditEntryModal(entryId) {
     }
 
     if (entry.ocrMeta) {
+        stripOcrImagesFromEntry(entry);
         const metaInp = document.getElementById("entry-ocr-meta");
         if (metaInp) metaInp.value = JSON.stringify(entry.ocrMeta);
-        if (entry.ocrMeta.receiptThumb) setScannedSlotImage("receipt", entry.ocrMeta.receiptThumb, entry.ocrMeta.receiptThumb, "Kayıtlı Belge");
-        if (entry.ocrMeta.posThumb) setScannedSlotImage("pos", entry.ocrMeta.posThumb, entry.ocrMeta.posThumb, "Kayıtlı POS Slipi");
         renderEditableOcrResultPanel(entry.ocrMeta, entry.ocrMeta, entry.ocrMeta.engine || "Apple Vision Neural OCR");
         syncEditableOcrFieldsToForm(false);
     }

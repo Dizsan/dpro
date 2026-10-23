@@ -1,11 +1,11 @@
 {
   "appId": "dizsan-kasa",
   "appName": "Dizsan Günlük Kasa Formu & Kasa Takip",
-  "version": "1.1.5",
-  "build": 110,
-  "releasedAt": "2026-10-23 16:30:00",
-  "releaseNotes": "v1.1.5 Güncellemesi: 1) Fiş en üst satırının (MEROTO OTOMOTİV SAN. TİC. A.Ş.) kırpılmasını önleyen %0.2 kağıt sınırı + 45px üst güvenlik payı, 2) Mahalle/Cadde/Bulvar adres satırlarının (MİMRSİNAN MAH. ANKARA YOLU BLV.) işyeri adı olarak seçilmesini engelleyen adres filtresi, 3) Petrol Ofisi V/MAX KURŞUNSUZ 95 fişlerinin MOTORİN yerine doğru şekilde V/MAX KURŞUNSUZ 95 (BENZİN) olarak ayrıştırılması, 4) Fiş kenarına dikey (90°) yazılan el yazısı kart/banka notlarının (4360 GARANTİ) otomatik 90° döndürülerek okunması ve GARANTİ BBVA •••• 4360 kartının otomatik seçilmesi, 5) Şirketler arası listeye HASAN EREN ve ÖMER EREN eklendi.",
+  "version": "1.1.6",
+  "build": 111,
+  "releasedAt": "2026-10-23 16:35:00",
+  "releaseNotes": "v1.1.6 Güncellemesi: 1) Belge tarama sonrası fotoğraf verisinin (Base64) otomatik imha edilmesi ve yalnızca okunan metin bilgilerinin saklanması (Yıllar boyu kullanımda veritabanı/localStorage/bulut şişmesi %100 önlendi), 2) Meroto Otomotiv üst satır koruma, V/MAX Kurşunsuz 95 Benzin ayrımı ve dikey 4360 Garanti el yazısı okuma.",
   "author": "Ömer Eren & DİZSAN",
-  "notes": "Meroto Otomotiv (Üst satır koruma, V/MAX Kurşunsuz 95 Benzin ayrımı, dikey 4360 Garanti el yazısı okuma) ve Hasan Eren / Ömer Eren güncellemesi",
-  "updatedAt": "2026-10-23T13:30:00.000000+00:00"
+  "notes": "Tarama sonrası fotoğraf imhası (sıfır veri şişmesi) ve Meroto Otomotiv OCR düzeltmeleri",
+  "updatedAt": "2026-10-23T13:35:00.000000+00:00"
 }
