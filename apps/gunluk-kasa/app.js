@@ -14,7 +14,7 @@
  * ==========================================================================
  */
 
-const CURRENT_APP_VERSION = "1.1.9";
+const CURRENT_APP_VERSION = "1.2.0";
 window.CURRENT_APP_VERSION = CURRENT_APP_VERSION;
 
 const OLD_DEMO_STORAGE_KEY = "dizsan_gunluk_kasa_state_v1";
@@ -623,13 +623,21 @@ function findLatestDateWithEntries(st) {
 }
 
 function stripOcrImagesFromEntry(ent) {
-    if (ent && ent.ocrMeta && typeof ent.ocrMeta === "object") {
-        delete ent.ocrMeta.receiptThumb;
-        delete ent.ocrMeta.posThumb;
-        delete ent.ocrMeta.receiptImage;
-        delete ent.ocrMeta.posImage;
-        ent.ocrMeta.hasReceiptImg = false;
-        ent.ocrMeta.hasPosImg = false;
+    if (ent && typeof ent === "object") {
+        if (ent.desc) {
+            ent.desc = normalizeSpacedPlatesInText(ent.desc);
+        }
+        if (ent.ocrMeta && typeof ent.ocrMeta === "object") {
+            delete ent.ocrMeta.receiptThumb;
+            delete ent.ocrMeta.posThumb;
+            delete ent.ocrMeta.receiptImage;
+            delete ent.ocrMeta.posImage;
+            ent.ocrMeta.hasReceiptImg = false;
+            ent.ocrMeta.hasPosImg = false;
+            if (ent.ocrMeta.plate) {
+                ent.ocrMeta.plate = normalizeVehiclePlateString(ent.ocrMeta.plate);
+            }
+        }
     }
     return ent;
 }
@@ -1234,9 +1242,9 @@ function handleInlineQuickAdd(sectionKey) {
     const descEl = document.getElementById(`q-desc-${sectionKey}`) || document.getElementById(`inline-desc-${sectionKey}`);
     const amtEl = document.getElementById(`q-amt-${sectionKey}`) || document.getElementById(`inline-amt-${sectionKey}`);
 
-    const col1 = (col1El ? col1El.value : "").trim().toUpperCase();
+    const col1 = normalizeSpacedPlatesInText((col1El ? col1El.value : "").trim().toUpperCase());
     const dueDate = (dueEl ? dueEl.value : "").trim();
-    const desc = (descEl ? descEl.value : "").trim().toUpperCase();
+    const desc = normalizeSpacedPlatesInText((descEl ? descEl.value : "").trim().toUpperCase());
     const amount = parseMoneyInputTR(amtEl ? amtEl.value : 0);
 
     if (!desc || amount <= 0) {
@@ -1801,21 +1809,33 @@ const TR_DAY_NAMES = [
 
 const STORAGE_KEY_KASA_PLATES = "dizsan_kasa_vehicle_plates_v1";
 const DEFAULT_COMPANY_VEHICLE_PLATES = [
-    "19 DS 750",
-    "19 AAJ 501",
-    "34 TE 6263",
-    "19 DS 134"
+    "19DS750",
+    "19AAJ501",
+    "34TE6263",
+    "19DS134"
 ];
 
 function normalizeVehiclePlateString(raw) {
     if (!raw) return "";
+    // Tüm boşlukları ve sembolleri kaldırarak plakayı tamamen bitişik (boşluksuz) birleştir (Örn: "19 DS 750" -> "19DS750")
     const up = String(raw).toUpperCase().replace(/[^0-9A-ZÇĞİÖŞÜ]/g, "");
     const m = up.match(/^(0[1-9]|[1-7][0-9]|8[01])([A-Z]{1,3})([0-9]{2,4})$/);
     if (m) {
-        return `${m[1]} ${m[2]} ${m[3]}`;
+        return `${m[1]}${m[2]}${m[3]}`;
     }
-    return String(raw).toUpperCase().replace(/\s+/g, " ").trim();
+    return up;
 }
+
+function normalizeSpacedPlatesInText(str) {
+    if (!str) return "";
+    const bannedMid = ["TL", "LT", "NO", "KDV", "SAAT", "POS", "FIS", "FİŞ", "TOP", "AID", "REF", "VER", "KM", "MH", "CD", "USD", "EUR"];
+    return String(str).replace(/\b(0[1-9]|[1-7][0-9]|8[01])\s+([A-Z]{1,3})\s+([0-9]{2,4})\b/gi, (full, p1, p2, p3) => {
+        const midUp = String(p2).toUpperCase();
+        if (bannedMid.includes(midUp) || /^202[0-9]$/.test(p3)) return full;
+        return `${p1}${midUp}${p3}`;
+    });
+}
+window.normalizeSpacedPlatesInText = normalizeSpacedPlatesInText;
 
 function getAvailableVehiclePlates() {
     const set = new Set(DEFAULT_COMPANY_VEHICLE_PLATES.map(normalizeVehiclePlateString));
@@ -1836,7 +1856,7 @@ function getAvailableVehiclePlates() {
         });
     }
 
-    // Geçmiş kasa kayıtlarında geçen tüm plakaları da otomatik listeye dahil et
+    // Geçmiş kasa kayıtlarında geçen tüm plakaları da boşluksuz formatta otomatik listeye dahil et
     const bannedMid = ["TL", "LT", "NO", "KDV", "POS", "TOP", "REF", "USD", "EUR"];
     for (const dObj of Object.values(appState?.days || {})) {
         for (const ent of (dObj?.entries || [])) {
@@ -1847,7 +1867,7 @@ function getAvailableVehiclePlates() {
             const descUp = String(ent?.desc || "").toUpperCase();
             const pm = descUp.match(/\b(0[1-9]|[1-7][0-9]|8[01])\s*([A-Z]{1,3})\s*([0-9]{2,4})\b/);
             if (pm && !bannedMid.includes(pm[2]) && !/^202[0-9]$/.test(pm[3])) {
-                set.add(`${pm[1]} ${pm[2]} ${pm[3]}`);
+                set.add(`${pm[1]}${pm[2]}${pm[3]}`);
             }
         }
     }
@@ -1981,6 +2001,10 @@ window.handleVehiclePlateSelectChange = handleVehiclePlateSelectChange;
 
 function handleManualPlateInputLive(rawVal) {
     const norm = normalizeVehiclePlateString(rawVal);
+    const manualInp = document.getElementById("entry-new-plate-input");
+    if (manualInp && manualInp.value !== norm) {
+        manualInp.value = norm;
+    }
     const ocrPlateInp = document.getElementById("ocr-edit-plate");
     if (ocrPlateInp) {
         ocrPlateInp.value = norm;
@@ -2093,8 +2117,8 @@ function submitBottomManualEntry() {
 
     const catRaw = document.getElementById("bottom-manual-cat")?.value || "CASH_OUT|GENEL GİDERLER";
     const [sec, defaultCol1] = catRaw.split("|");
-    const customCol1 = (document.getElementById("bottom-manual-col1")?.value || "").trim().toUpperCase();
-    let desc = (document.getElementById("bottom-manual-desc")?.value || "").trim().toUpperCase();
+    const customCol1 = normalizeSpacedPlatesInText((document.getElementById("bottom-manual-col1")?.value || "").trim().toUpperCase());
+    let desc = normalizeSpacedPlatesInText((document.getElementById("bottom-manual-desc")?.value || "").trim().toUpperCase());
     const amount = parseMoneyInputTR(document.getElementById("bottom-manual-amount")?.value || 0);
 
     const isFuel = /YAKIT|LPG|ARAÇ/i.test(catRaw);
@@ -2286,12 +2310,12 @@ function classifyEntryForReporting(entry, dateISO) {
         }
     }
 
-    // Plaka & Litre
+    // Plaka & Litre (Her zaman boşluksuz format: 19DS750, 19AAJ501, 34TE6263)
     let plate = meta.plate ? normalizeVehiclePlateString(meta.plate) : "";
     if (!plate) {
         const pm = combinedUpper.match(/PLAKA\s*:\s*([0-9]{2}\s*[A-Z]{1,3}\s*[0-9]{2,4})/) || combinedUpper.match(/\b(0[1-9]|[1-7][0-9]|8[01])\s*([A-Z]{1,3})\s*([0-9]{2,4})\b/);
         if (pm) {
-            plate = pm[1] && pm[2] && pm[3] ? `${pm[1]} ${pm[2]} ${pm[3]}` : normalizeVehiclePlateString(pm[1]);
+            plate = pm[1] && pm[2] && pm[3] ? `${pm[1]}${pm[2]}${pm[3]}` : normalizeVehiclePlateString(pm[1]);
         }
     }
     let liters = Number(meta.liters) || 0;
@@ -2384,10 +2408,12 @@ function collectFilteredReportData() {
             // Kart Filtresi
             if (cardFilter !== "ALL" && item.cardLast4 !== cardFilter) continue;
 
-            // Arama Filtresi
+            // Arama Filtresi (Plaka aramalarında boşluklu veya boşluksuz yazsa da eşleşir)
             if (qFilter) {
                 const hay = normalizeTR(`${formatDateToTR(dISO)} ${item.mainCat} ${item.subCat} ${item.merchant} ${item.plate} ${item.cardLabel} ${ent.desc || ""} ${ent.col1 || ""}`);
-                if (!hay.includes(qFilter)) continue;
+                const qNoSpace = qFilter.replace(/\s+/g, "");
+                const hayNoSpace = hay.replace(/\s+/g, "");
+                if (!hay.includes(qFilter) && !hayNoSpace.includes(qNoSpace)) continue;
             }
 
             items.push(item);
@@ -5054,13 +5080,13 @@ function cleanAndExtractLocationFromText(upperLines, upperText) {
 }
 
 function extractPlateFromOcrText(upperLines, upperText) {
-    // 1. Açık "PLAKA: 19 ABC 123"
+    // 1. Açık "PLAKA: 19 ABC 123" -> Her zaman boşluksuz "19ABC123" döndürür
     const plateExplicit = upperText.match(/PLAKA\s*[:.\-]?\s*(0[1-9]|[1-7][0-9]|8[01])\s*([A-ZÇĞİÖŞÜ]{1,3})\s*([0-9]{2,4})/);
     if (plateExplicit) {
-        return `${plateExplicit[1]} ${plateExplicit[2]} ${plateExplicit[3]}`;
+        return `${plateExplicit[1]}${plateExplicit[2]}${plateExplicit[3]}`;
     }
 
-    // 2. El yazısı veya bitişik plaka: "LPG 34TE6263.", "SE A CE 34TE62." vb.
+    // 2. El yazısı veya bitişik plaka: "LPG 34TE6263.", "SE A CE 34TE62." vb. -> Boşluksuz "34TE6263"
     const bannedMid = ["TL", "LT", "NO", "KDV", "SAAT", "POS", "FIS", "FİŞ", "TOP", "AID", "REF", "VER", "KM", "MH", "CD"];
     for (const ln of upperLines) {
         // Bitişik veya boşluklu plaka adayları (son rakamlarda OCR harf karışıklığı G->6, I/İ->1, O->0 olabilir)
@@ -5079,7 +5105,7 @@ function extractPlateFromOcrText(upperLines, upperText) {
                 nums = "6263";
             }
             if (nums.length >= 2 && nums.length <= 4 && !/^202[0-9]$/.test(nums)) {
-                return `${city} ${letters} ${nums}`;
+                return `${city}${letters}${nums}`;
             }
         }
     }
@@ -5481,7 +5507,7 @@ function parseReceiptTextToStructured(text) {
         result.unitPrice = 43.39;
         result.fuelType = "LPG / OTOGAZ";
         result.docType = "FUEL";
-        if (!result.plate) result.plate = "34 TE 6263";
+        if (!result.plate) result.plate = "34TE6263";
     }
 
     // 6. Yakıt Türü (Önce KURŞUNSUZ / BENZİN kontrol edilmeli; çünkü Petrol Ofisi hem benzinde hem motorinde V/MAX markasını kullanır: "V/MAX KURŞUNSUZ 95")
@@ -6335,7 +6361,7 @@ function renderEditableOcrResultPanel(rec, pos, engineLabel = "Apple Vision Neur
                                 <option value="">-- Plaka Seç --</option>
                                 ${getAvailableVehiclePlates().map(p => `<option value="${escapeHtml(p)}" ${normalizeVehiclePlateString(rec.plate) === p ? "selected" : ""}>🚗 ${escapeHtml(p)}</option>`).join("")}
                             </select>
-                            <input type="text" id="ocr-edit-plate" value="${escapeHtml(rec.plate || "")}" placeholder="Örn: 19 DS 750" style="${inpStyle}" oninput="syncEditableOcrFieldsToForm(true)">
+                            <input type="text" id="ocr-edit-plate" value="${escapeHtml(normalizeVehiclePlateString(rec.plate || ""))}" placeholder="Örn: 19DS750" style="${inpStyle}" oninput="this.value = normalizeVehiclePlateString(this.value); syncEditableOcrFieldsToForm(true)">
                         </div>
                     </div>
                     <div>
@@ -6403,10 +6429,14 @@ function renderEditableOcrResultPanel(rec, pos, engineLabel = "Apple Vision Neur
 
 function syncEditableOcrFieldsToForm(updateMainFormFields = true) {
     const valStr = (id) => (document.getElementById(id)?.value || "").trim().toUpperCase();
+    const ocrPlateEl = document.getElementById("ocr-edit-plate");
+    if (ocrPlateEl && ocrPlateEl.value) {
+        ocrPlateEl.value = normalizeVehiclePlateString(ocrPlateEl.value);
+    }
     const rec = {
         docType: valStr("ocr-edit-doc-type") || "OTHER",
-        userNote: valStr("ocr-manual-user-note"),
-        plate: valStr("ocr-edit-plate"),
+        userNote: normalizeSpacedPlatesInText(valStr("ocr-manual-user-note")),
+        plate: normalizeVehiclePlateString(valStr("ocr-edit-plate")),
         station: valStr("ocr-edit-station"),
         location: valStr("ocr-edit-location"),
         date: valStr("ocr-edit-rec-date"),
@@ -6756,9 +6786,10 @@ function handleSaveEntry(e) {
     }
 
     const dueDate = document.getElementById("entry-due-date").value.trim();
-    let desc = document.getElementById("entry-desc").value.trim().toUpperCase();
+    let desc = normalizeSpacedPlatesInText(document.getElementById("entry-desc").value.trim().toUpperCase());
     let amount = parseMoneyInputTR(document.getElementById("entry-amount").value);
     let code = document.getElementById("entry-code").value.trim().toUpperCase();
+    col1 = normalizeSpacedPlatesInText(col1);
 
     const isIntercompany = rawSection === "INTERCOMPANY_IN" || rawSection === "INTERCOMPANY_OUT" || mainCat === "ŞİRKETLER ARASI BORÇ / ALACAK";
     let section = rawSection;

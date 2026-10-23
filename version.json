@@ -1,6 +1,6 @@
 {
-  "version": "1.7.4",
-  "updatedAt": "2026-10-23T13:53:00Z",
-  "notes": "v1.7.4 — Dizsan Günlük Kasa v1.1.9 (Plaka Listesi En Altta Elle Giriş & Tablo En Altında Hızlı Elle Giriş Satırı)",
+  "version": "1.7.5",
+  "updatedAt": "2026-10-23T13:59:00Z",
+  "notes": "v1.7.5 — Dizsan Günlük Kasa v1.2.0 (Boşluksuz Plaka Formatı & Otomatik Birleştirme)",
   "mandatory": true
 }
