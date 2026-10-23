@@ -24,7 +24,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <link rel="stylesheet" href="style.css?v=1.2.6">
+    <link rel="stylesheet" href="style.css?v=1.3.0">
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" defer></script>
 </head>
 <body>
@@ -1359,39 +1359,34 @@
         </div>
     </div>
 
-    <!-- ŞİFREMİ UNUTTUM MODALI (YÖNETİCİ ONAYLI GÜVENLİ SIFIRLAMA) -->
+    <!-- ŞİFREMİ UNUTTUM MODALI (KURUMSAL E-POSTA & DOĞRULAMA) -->
     <div id="modal-forgot-password" class="modal-backdrop">
-        <div class="modal-dialog" style="max-width:420px;">
+        <div class="modal-dialog" style="max-width:440px;">
             <div class="modal-header">
-                <h3><i class="fa-solid fa-unlock-keyhole" style="color:var(--amber-warn);"></i> <span>Yönetici Onaylı Şifre Sıfırlama</span></h3>
+                <h3><i class="fa-solid fa-key" style="color:var(--amber-warn);"></i> <span>Şifre Sıfırlama &amp; Doğrulama</span></h3>
                 <button class="btn btn-xs" onclick="closeModal('modal-forgot-password')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body">
-                <div id="forgot-step-1">
-                    <div style="padding:8px 10px; border-radius:8px; background:rgba(245,158,11,0.12); border:1px solid rgba(251,191,36,0.35); font-size:0.72rem; color:#fde68a; margin-bottom:10px;">
-                        <i class="fa-solid fa-shield-halved"></i> Güvenlik gereği personel şifre sıfırlama işlemi için <strong>Sistem Yöneticisi (Ömer Eren)</strong> onay şifresi gereklidir.
-                    </div>
-                    <div class="form-group">
-                        <label>Şifresi Sıfırlanacak Kullanıcı Adı veya Ad Soyad</label>
-                        <input type="text" id="forgot-username" class="form-control" placeholder="Örn: gokhan.ozbulut">
-                    </div>
-                    <div class="form-group">
-                        <label>Sistem Yöneticisi (Ömer Eren) Onay Şifresi *</label>
-                        <input type="password" id="forgot-admin-pin" class="form-control" placeholder="Yönetici şifresini giriniz">
-                    </div>
-                    <button type="button" class="btn btn-primary" style="width:100%;" onclick="sendPasswordResetCode()">Yönetici Onayı ile Devam Et</button>
+                <p style="font-size:0.84rem; color:var(--text-secondary); margin-bottom:14px; line-height:1.5;">
+                    Personel hesabınızı seçip kurumsal e-posta adresinizi doğrulayarak yeni şifrenizi belirleyebilirsiniz. İşlem güvenlik loglarına kaydedilir.
+                </p>
+                <div class="form-group">
+                    <label>Personel Seçin</label>
+                    <select id="forgot-kasa-user-select" class="form-control" onchange="syncKasaForgotEmail()"></select>
                 </div>
-                <div id="forgot-step-2" style="display:none;">
-                    <div id="forgot-code-display" style="padding:8px 10px; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); border-radius:8px; font-size:0.75rem; margin-bottom:10px;"></div>
-                    <div class="form-group">
-                        <label>Doğrulama Kodu</label>
-                        <input type="text" id="forgot-code-input" class="form-control" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Yeni Şifre (En az 4 karakter)</label>
-                        <input type="password" id="forgot-new-pass" class="form-control" placeholder="Yeni şifreyi belirleyiniz">
-                    </div>
-                    <button type="button" class="btn btn-primary" style="width:100%;" onclick="verifyAndResetPassword()">Şifreyi Güvenle Yenile</button>
+                <div class="form-group">
+                    <label>Kurumsal E-Posta Adresiniz</label>
+                    <input type="email" id="forgot-kasa-email" class="form-control" placeholder="oeren@dizsan.com.tr">
+                </div>
+                <div class="form-group">
+                    <label>Yeni Şifreniz</label>
+                    <input type="password" id="forgot-kasa-new-pass" class="form-control" placeholder="Yeni şifrenizi yazın">
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+                    <button type="button" class="btn" onclick="closeModal('modal-forgot-password')">Vazgeç</button>
+                    <button type="button" class="btn btn-primary" onclick="handleKasaForgotPasswordSubmit()">
+                        <i class="fa-solid fa-key"></i> Şifremi Güncelle
+                    </button>
                 </div>
             </div>
         </div>
@@ -1458,7 +1453,7 @@
 
     <!-- SCRIPTS -->
     <script src="auto-date-helper.js"></script>
-    <script src="app.js?v=1.2.6"></script>
+    <script src="app.js?v=1.3.0"></script>
     <script src="dizsan-back-navigation.js?v=1.2.5"></script>
     <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.2.5"></script>
 </body>

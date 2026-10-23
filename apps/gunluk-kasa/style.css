@@ -1905,6 +1905,197 @@ html[data-theme="light"] .user-chip {
     font-weight: 700;
 }
 
+#sidebar-intercompany-widget {
+    margin-bottom: 8px;
+    border-color: rgba(251, 191, 36, 0.35);
+    background: linear-gradient(160deg, rgba(245, 158, 11, 0.10), rgba(15, 23, 42, 0.88));
+}
+
+html[data-theme="light"] .sidebar {
+    background: #ffffff;
+    color: #0f172a;
+    border-right: 1px solid #cbd5e1;
+    box-shadow: 2px 0 12px rgba(15, 23, 42, 0.06);
+}
+
+html[data-theme="light"] .sidebar-brand {
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+html[data-theme="light"] .sidebar-brand-text h2 {
+    color: #0f172a;
+}
+
+html[data-theme="light"] .sidebar-brand-text span {
+    color: #475569;
+    font-weight: 600;
+}
+
+html[data-theme="light"] .nav-group-label {
+    color: #475569;
+}
+
+html[data-theme="light"] .side-nav-btn {
+    color: #1e293b;
+    font-weight: 700;
+}
+
+html[data-theme="light"] .side-nav-btn i {
+    color: #0284c7;
+}
+
+html[data-theme="light"] .side-nav-btn:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+html[data-theme="light"] .side-nav-btn.active {
+    background: #e0f2fe;
+    border-color: #38bdf8;
+    color: #0369a1;
+}
+
+html[data-theme="light"] .nav-badge {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+html[data-theme="light"] .sidebar-cal-widget,
+html[data-theme="light"] #sidebar-intercompany-widget {
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+html[data-theme="light"] .scw-title,
+html[data-theme="light"] #sidebar-intercompany-widget .scw-title {
+    color: #0369a1 !important;
+}
+
+html[data-theme="light"] .scw-collapse-btn {
+    background: #ffffff !important;
+    border-color: #94a3b8 !important;
+    color: #1e293b !important;
+}
+
+html[data-theme="light"] .scw-collapse-btn:hover {
+    background: #e0f2fe !important;
+    color: #0369a1 !important;
+    border-color: #0284c7 !important;
+}
+
+html[data-theme="light"] .scw-mode-tabs {
+    background: #e2e8f0;
+}
+
+html[data-theme="light"] .scw-mode-btn {
+    color: #334155;
+}
+
+html[data-theme="light"] .scw-mode-btn.active {
+    background: #0284c7;
+    color: #ffffff;
+}
+
+html[data-theme="light"] #sidebar-intercompany-widget .scw-mode-btn {
+    background: #ffffff !important;
+    color: #1e293b !important;
+    border-color: #94a3b8 !important;
+}
+
+html[data-theme="light"] .scw-nav-bar {
+    background: #e2e8f0;
+}
+
+html[data-theme="light"] .scw-nav-btn {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+
+html[data-theme="light"] .scw-nav-label {
+    color: #0f172a;
+}
+
+html[data-theme="light"] .scw-weekdays {
+    color: #475569;
+}
+
+html[data-theme="light"] .scw-day-cell {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    color: #1e293b;
+    font-weight: 700;
+}
+
+html[data-theme="light"] .scw-day-cell:hover {
+    background: #e0f2fe;
+    border-color: #0284c7;
+    color: #0369a1;
+}
+
+html[data-theme="light"] .scw-day-cell.is-today {
+    border-color: #d97706;
+    background: #fef3c7;
+    color: #92400e;
+}
+
+html[data-theme="light"] .scw-day-cell.is-selected {
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+    border-color: #0284c7;
+    color: #ffffff;
+}
+
+html[data-theme="light"] .scw-month-card {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+
+html[data-theme="light"] .scw-month-card div {
+    color: #0f172a !important;
+}
+
+html[data-theme="light"] .scw-flow-card {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+html[data-theme="light"] .scw-flow-head {
+    color: #0369a1 !important;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+html[data-theme="light"] .scw-flow-row {
+    color: #1e293b;
+    font-weight: 600;
+}
+
+html[data-theme="light"] .scw-flow-row.tomorrow-row {
+    color: #0f172a;
+    border-top-color: #cbd5e1;
+}
+
+html[data-theme="light"] .scw-flow-row strong {
+    font-weight: 800;
+}
+
+html[data-theme="light"] .sidebar-footer {
+    background: #f8fafc;
+    border-top: 1px solid #cbd5e1;
+}
+
+html[data-theme="light"] .user-mini-name {
+    color: #0f172a;
+}
+
+html[data-theme="light"] .user-mini-role {
+    color: #0284c7;
+}
+
 html[data-theme="light"] .badge-info {
     background: #e0f2fe;
     color: #0369a1;

@@ -14,7 +14,7 @@
  * ==========================================================================
  */
 
-const CURRENT_APP_VERSION = "1.2.6";
+const CURRENT_APP_VERSION = "1.3.0";
 window.CURRENT_APP_VERSION = CURRENT_APP_VERSION;
 // 23.10.2026 17:34 öncesi yapılan tüm demo/test kayıtlarını tüm cihazların önbelleğinden kalıcı olarak temizleyen milat eşiği
 const PRODUCTION_CUTOFF_RESET_MS = 1792766040000;
@@ -88,14 +88,8 @@ function verifyUserPin(user, inputVal) {
     const candidate = String(inputVal || "").trim();
     if (!candidate) return false;
     const candHash = hashPin(candidate);
-    const stored = user.pinStamp || DEFAULT_PIN_STAMP;
-    if (stored === candHash || stored === candidate) return true;
-    // Ömer Eren ve diğer kullanıcılar için hem kişisel şifreyi hem de varsayılan şifreyi (123456) kabul et
-    if (candHash === DEFAULT_PIN_STAMP || candidate === "123456") return true;
-    if (normalizeTR(user.username || "") === "ömer" || normalizeTR(user.name || "").includes("ömer eren")) {
-        if (candHash === "2697120930-1230232798-23831670") return true;
-    }
-    return false;
+    const stored = String(user.pinStamp || DEFAULT_PIN_STAMP).trim();
+    return stored === candHash;
 }
 
 // ==================== 2. ROL VE YETKİ MATRİSİ (RBAC) ====================
@@ -1098,6 +1092,45 @@ function mergeKasaStates(stateA, stateB) {
         if (revMs > 0 && revMs > reqMs) continue;
         mergedPendingDevices[devId] = chosenReq;
     }
+
+    // Kullanıcı şifrelerini (pinStamp) en güncel pinUpdatedAtMs değerine göre birleştir (yeni şifre oluşturulduğunda eski şifre asla geri gelmesin)
+    const baseUsersList = Array.isArray(primary.users) && primary.users.length
+        ? primary.users
+        : (Array.isArray(secondary.users) && secondary.users.length ? secondary.users : DEFAULT_USERS);
+    const secUsersList = Array.isArray(secondary.users) ? secondary.users : [];
+    const initialPinByUser = new Map(DEFAULT_USERS.map(du => [normalizeTR(du.username), du.pinStamp]));
+
+    const mergedUsers = baseUsersList.map(uP => {
+        if (!uP) return uP;
+        const uKey = normalizeTR(uP.username);
+        const uS = secUsersList.find(x => x && normalizeTR(x.username) === uKey);
+        if (!uS) return { ...uP };
+
+        const msP = Number(uP.pinUpdatedAtMs) || 0;
+        const msS = Number(uS.pinUpdatedAtMs) || 0;
+        let chosenPin = uP.pinStamp;
+        let chosenPinMs = Math.max(msP, msS);
+
+        if (msS > msP && uS.pinStamp) {
+            chosenPin = uS.pinStamp;
+        } else if (msP === 0 && msS === 0) {
+            const initPin = initialPinByUser.get(uKey) || DEFAULT_PIN_STAMP;
+            const sIsCustom = uS.pinStamp && uS.pinStamp !== DEFAULT_PIN_STAMP && uS.pinStamp !== initPin;
+            const pIsCustom = uP.pinStamp && uP.pinStamp !== DEFAULT_PIN_STAMP && uP.pinStamp !== initPin;
+            if (sIsCustom && !pIsCustom) {
+                chosenPin = uS.pinStamp;
+            }
+        }
+        const mergedUser = {
+            ...uS,
+            ...uP,
+            pinStamp: chosenPin
+        };
+        if (chosenPinMs > 0) mergedUser.pinUpdatedAtMs = chosenPinMs;
+        delete mergedUser.password;
+        delete mergedUser.oldPin;
+        return mergedUser;
+    });
 
     const resultState = {
         ...buildInitialState(),
@@ -8570,7 +8603,13 @@ function handleSaveUser(e) {
             existing.dept = dept;
             existing.rolePreset = isOmer ? "ADMIN" : rolePreset;
             existing.permissions = isOmer ? { ...ROLE_PRESETS.ADMIN.permissions } : permissions;
-            if (pass) existing.pinStamp = hashPin(pass);
+            if (pass) {
+                existing.pinStamp = hashPin(pass);
+                existing.pinUpdatedAtMs = Date.now();
+                delete existing.password;
+                delete existing.oldPin;
+                syncUserPasswordToDProStorage(existing);
+            }
             if (currentUser && currentUser.username === origUser) currentUser = existing;
             addAuditLog("KULLANICI GÜNCELLEME", `${existing.name} (@${existing.username}) bilgileri ve yetkileri güncellendi.`);
         }
@@ -9494,7 +9533,7 @@ function handleLogin(e) {
     if (!matched) {
         if (errEl) {
             errEl.style.display = "block";
-            errEl.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> Kullanıcı adı veya şifre hatalı! (Varsayılan şifre: <strong>123456</strong> veya kişisel şifreniz)`;
+            errEl.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> Kullanıcı adı veya şifre hatalı!`;
         }
         return;
     }
@@ -9584,52 +9623,74 @@ function handleLogout() {
 }
 
 function openForgotPasswordModal() {
-    document.getElementById("forgot-step-1").style.display = "block";
-    document.getElementById("forgot-step-2").style.display = "none";
-    const adminPinEl = document.getElementById("forgot-admin-pin");
-    if (adminPinEl) adminPinEl.value = "";
+    const sel = document.getElementById("forgot-kasa-user-select");
+    const emailIn = document.getElementById("forgot-kasa-email");
+    const passIn = document.getElementById("forgot-kasa-new-pass");
+    const loginUserVal = normalizeTR(document.getElementById("login-username")?.value || "");
+
+    if (sel) {
+        sel.innerHTML = (appState.users || []).map(u =>
+            `<option value="${escapeHtml(u.username)}">${escapeHtml(u.name)} (${escapeHtml(u.dept || "Personel")})</option>`
+        ).join("");
+        const matched = (appState.users || []).find(u => normalizeTR(u.username) === loginUserVal || normalizeTR(u.name) === loginUserVal);
+        if (matched) sel.value = matched.username;
+    }
+    if (emailIn) emailIn.value = "";
+    if (passIn) passIn.value = "";
     openModal("modal-forgot-password");
     if (emailIn) setTimeout(() => emailIn.focus(), 50);
 }
 
-function sendPasswordResetCode() {
-    const uVal = normalizeTR(document.getElementById("forgot-username")?.value || "");
-    const adminPinVal = (document.getElementById("forgot-admin-pin")?.value || "").trim();
-    const matched = (appState.users || []).find(u => normalizeTR(u.username) === uVal || normalizeTR(u.name) === uVal);
-    if (!matched) {
-        alert("Kullanıcı bulunamadı!");
-        return;
-    }
-    const adminUser = (appState.users || []).find(u => normalizeTR(u.username) === "ömer" || u.rolePreset === "ADMIN");
-    if (!adminUser || !verifyUserPin(adminUser, adminPinVal)) {
-        addAuditLog("GÜVENLİK UYARISI", `${matched.name} için yetkisiz şifre sıfırlama denemesi engellendi.`);
-        alert("Sistem Yöneticisi (Ömer Eren) onay şifresi hatalı! Şifre sıfırlama işlemi yalnızca yönetici onayıyla yapılabilir.");
-        return;
-    }
-    const code = String(Math.floor(100000 + Math.random() * 900000));
-    activePasswordReset = { username: matched.username, code, expiresAt: Date.now() + 5 * 60 * 1000 };
-    document.getElementById("forgot-step-1").style.display = "none";
-    document.getElementById("forgot-step-2").style.display = "block";
-    const codeIn = document.getElementById("forgot-code-input");
-    if (codeIn) codeIn.value = code;
-    document.getElementById("forgot-code-display").innerHTML = `<i class="fa-solid fa-circle-check"></i> Yönetici onayı doğrulandı. <strong>${escapeHtml(matched.name)}</strong> için yeni şifreyi belirleyebilirsiniz (Kod: <strong>${code}</strong>).`;
+function syncKasaForgotEmail() {
+    const emailIn = document.getElementById("forgot-kasa-email");
+    if (emailIn) emailIn.value = "";
 }
 
-function verifyAndResetPassword() {
-    const code = document.getElementById("forgot-code-input").value.trim();
-    const newPass = document.getElementById("forgot-new-pass").value.trim();
-    if (!activePasswordReset || Date.now() > (activePasswordReset.expiresAt || 0) || code !== activePasswordReset.code || newPass.length < 3) {
-        alert("Doğrulama kodu hatalı/süresi dolmuş veya yeni şifre en az 3 karakter olmalıdır!");
+function syncUserPasswordToDProStorage(userObj) {
+    if (!userObj || !userObj.pinStamp) return;
+    try {
+        const dproMasterRaw = localStorage.getItem("dizsan_dpro_master_state_v1");
+        if (dproMasterRaw) {
+            const dproSt = JSON.parse(dproMasterRaw);
+            if (dproSt && Array.isArray(dproSt.users)) {
+                const du = dproSt.users.find(x =>
+                    normalizeTR(x.username) === normalizeTR(userObj.username) ||
+                    normalizeTR(x.name) === normalizeTR(userObj.name)
+                );
+                if (du) {
+                    du.pinStamp = userObj.pinStamp;
+                    du.pinUpdatedAtMs = userObj.pinUpdatedAtMs || Date.now();
+                    delete du.password;
+                    delete du.oldPin;
+                    localStorage.setItem("dizsan_dpro_master_state_v1", JSON.stringify(dproSt));
+                }
+            }
+        }
+        const dproRemRaw = localStorage.getItem("dizsan_dpro_remember_login_v1");
+        if (dproRemRaw) {
+            const dproRem = JSON.parse(dproRemRaw);
+            if (dproRem && normalizeTR(dproRem.username) === normalizeTR(userObj.username)) {
+                delete dproRem.password;
+                localStorage.setItem("dizsan_dpro_remember_login_v1", JSON.stringify(dproRem));
+            }
+        }
+    } catch (e) {}
+}
+
+function handleKasaForgotPasswordSubmit() {
+    const sel = document.getElementById("forgot-kasa-user-select");
+    const emailIn = (document.getElementById("forgot-kasa-email")?.value || "").trim().toLowerCase();
+    const newPass = (document.getElementById("forgot-kasa-new-pass")?.value || "").trim();
+
+    const uname = sel ? sel.value : "";
+    const u = (appState.users || []).find(x => x.username === uname);
+    if (!u) {
+        alert("❌ Lütfen listeden personelinizi seçiniz!");
         return;
     }
-    const u = appState.users.find(x => x.username === activePasswordReset.username);
-    if (u) {
-        u.pinStamp = hashPin(newPass);
-        activePasswordReset = null;
-        addAuditLog("ŞİFRE SIFIRLAMA", `${u.name} şifresini yönetici onayıyla yeniledi.`);
-        syncStateToServer();
-        closeModal("modal-forgot-password");
-        alert("Şifreniz başarıyla güncellendi.");
+    if (!newPass || newPass.length < 3) {
+        alert("❌ Lütfen en az 3 karakterden oluşan yeni şifrenizi yazınız!");
+        return;
     }
     const expectedEmail = String(u.email || "").trim().toLowerCase();
     if (!emailIn || emailIn !== expectedEmail) {
@@ -9691,13 +9752,6 @@ function handleChangePasswordSubmit(e) {
     }
 
     syncUserPasswordToDProStorage(currentUser);
-
-    if (localStorage.getItem(STORAGE_KEY_KASA_SESSION)) {
-        localStorage.setItem(STORAGE_KEY_KASA_SESSION, JSON.stringify({ username: currentUser.username, pinStamp: currentUser.pinStamp }));
-    }
-    if (sessionStorage.getItem(STORAGE_KEY_KASA_SESSION)) {
-        sessionStorage.setItem(STORAGE_KEY_KASA_SESSION, JSON.stringify({ username: currentUser.username, pinStamp: currentUser.pinStamp }));
-    }
 
     if (localStorage.getItem(STORAGE_KEY_KASA_SESSION)) {
         localStorage.setItem(STORAGE_KEY_KASA_SESSION, JSON.stringify({ username: currentUser.username, pinStamp: currentUser.pinStamp }));
@@ -9870,7 +9924,8 @@ window.addEventListener("DOMContentLoaded", async () => {
         if (sessRaw) {
             const parsedUser = JSON.parse(sessRaw);
             const matched = (appState.users || []).find(u => normalizeTR(u.username) === normalizeTR(parsedUser.username) || normalizeTR(u.name) === normalizeTR(parsedUser.name));
-            if (matched && matched.rolePreset !== "NONE" && getUserPerms(matched).view !== false) {
+            const pinValid = !parsedUser.pinStamp || parsedUser.pinStamp === matched?.pinStamp;
+            if (matched && pinValid && matched.rolePreset !== "NONE" && getUserPerms(matched).view !== false) {
                 currentUser = matched;
             } else {
                 currentUser = null;
@@ -9960,6 +10015,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     }, 5 * 60 * 1000);
 
     if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register(`sw.js?v=${CURRENT_APP_VERSION}`).catch(() => {});
+        navigator.serviceWorker.register(`sw.js?v=${CURRENT_APP_VERSION}`).then(reg => {
+            try { reg.update(); } catch (e) {}
+        }).catch(() => {});
     }
 });
