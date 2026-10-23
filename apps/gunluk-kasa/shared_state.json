@@ -1,15 +1,15 @@
 {
   "version": "1.2.7",
-  "updatedAt": "23.10.2026 23:16:12",
-  "updatedAtMs": 1792786572913,
-  "stateRevision": 84,
+  "updatedAt": "23.10.2026 23:17:10",
+  "updatedAtMs": 1792786630146,
+  "stateRevision": 85,
   "users": [
     {
       "order": 0,
       "name": "ÖMER EREN",
       "username": "ömer",
       "email": "oeren@dizsan.com.tr",
-      "pinStamp": "2697120930-1230232798-23831670",
+      "pinStamp": "621976239-623787727-2631164839",
       "dept": "Yönetim Kurulu / Sistem Yöneticisi",
       "rolePreset": "ADMIN",
       "permissions": {
@@ -251,9 +251,35 @@
       "controllerApproved": false,
       "isLocked": false,
       "entries": []
+    },
+    "2026-10-31": {
+      "dateISO": "2026-10-31",
+      "euroRate": "--",
+      "usdRate": "--",
+      "prevInOverride": null,
+      "prevOutOverride": null,
+      "carryoverOverride": null,
+      "carryoverLabel": "30/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
+      "cashierName": "GÖKHAN ÖZBULUT",
+      "controllerName": "RAFET CANBEK",
+      "controllerApproved": false,
+      "isLocked": false,
+      "entries": []
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "23.10.2026 23:17:10",
+      "user": "ÖMER EREN",
+      "category": "ŞİFRE SIFIRLAMA",
+      "detail": "ÖMER EREN (oeren@dizsan.com.tr) şifresini güncelledi ve giriş yaptı."
+    },
+    {
+      "timestamp": "23.10.2026 23:16:36",
+      "user": "Sistem",
+      "category": "GÜVENLİK UYARISI",
+      "detail": "ÖMER EREN için hatalı kurumsal e-posta (deneme@dizsan.com.tr) ile şifre sıfırlama denemesi engellendi."
+    },
     {
       "timestamp": "23.10.2026 23:16:12",
       "user": "ÖMER EREN",
