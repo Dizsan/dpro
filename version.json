@@ -1,6 +1,6 @@
 {
-  "version": "1.6.8",
-  "updatedAt": "2026-10-23T11:35:00Z",
-  "notes": "v1.6.8 — Dizsan Günlük Kasa v1.1.3 (Mobil OCR %100 Kusursuzlaştırma: Silik Baş Harf & Unvan Düzeltme, Ürün/Kalem Satırı & %20 KDV Sembol Düzeltme, 4 Katmanlı Kart Son 4 Hane & Referans No Yakalayıcı)",
+  "version": "1.6.9",
+  "updatedAt": "2026-10-23T12:35:00Z",
+  "notes": "v1.6.9 — Dizsan Günlük Kasa v1.1.4 (Şirketler Arası Borç/Alacak Sistemi, Şahsi/Ofis/Atölye Alt Kategorileri, Coşkun Petrol & Gazi Cad. Belge Tarama Düzeltmeleri)",
   "mandatory": true
 }

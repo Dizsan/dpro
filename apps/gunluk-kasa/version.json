@@ -1,11 +1,11 @@
 {
   "appId": "dizsan-kasa",
   "appName": "Dizsan Günlük Kasa Formu & Kasa Takip",
-  "version": "1.1.3",
-  "build": 108,
-  "releasedAt": "2026-10-23 14:35:00",
-  "releaseNotes": "Mobil OCR Kusursuzlaştırma (v1.1.3): Silik baş harf ve eczane/işyeri unvan düzeltme (MÜR ECZANESİ -> ÖMÜR ECZANESİ), ürün/kalem satırı ve %20 KDV sembol düzeltme (. LA ROCH -FUSAY EFFAC %2 -> LA ROCHE-POSAY EFFAC %20), Türkçe karakter/rakam dönüşümlü 4 katmanlı Kart Son 4 Hane (3311) ve Referans No (2551907224) yakalayıcı, yumuşak gölge dengeleme.",
+  "version": "1.1.4",
+  "build": 109,
+  "releasedAt": "2026-10-23 15:35:00",
+  "releaseNotes": "v1.1.4 Güncellemesi: 1) Şirketler Arası Borç / Alacak Takip Sistemi (Diğer Şirketten Giriş & Diğer Şirkete Çıkış, döviz/TL/altın ve bozdurma kuru takibi, Sol Bar otomatik net borç/alacak özeti ve tarihli tablo), 2) Alt Kategorilere ŞAHSİ, OFİS ve ATÖLYE alanları + tek tık seçim butonları, 3) Belge Tarama Kusursuzlaştırma (0/O sıfır-harf dönüşümü: C0ŞKUN PETR0L -> COŞKUN PETROL, el yazısı LPG/Plaka/Litre×Fiyat yakalama: 34 TE 6263 & 47,36 Lt × 43,39 TL, GEZİ CAD -> GAZİ CAD. ve MİMARSİNAN MAH. adres düzeltme, REF.NO noktalı referans no okuma).",
   "author": "Ömer Eren & DİZSAN",
-  "notes": "Mobil tarayıcıda silik karakter, işyeri adı, kalem özeti, kart son 4 hane ve referans numarası okuma doğruluğu kalıcı olarak %100'e çıkarıldı",
-  "updatedAt": "2026-10-23T11:35:00.000000+00:00"
+  "notes": "Şirketler Arası Borç/Alacak, Şahsi/Ofis/Atölye alt kategorileri ve Coşkun Petrol + Gazi Cad. OCR düzeltmeleri",
+  "updatedAt": "2026-10-23T12:35:00.000000+00:00"
 }
