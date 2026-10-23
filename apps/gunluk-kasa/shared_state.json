@@ -1,8 +1,8 @@
 {
   "version": "1.1.4",
-  "updatedAt": "23.10.2026 16:12:02",
-  "updatedAtMs": 1792761122010,
-  "stateRevision": 47,
+  "updatedAt": "23.10.2026 16:16:14",
+  "updatedAtMs": 1792761374747,
+  "stateRevision": 48,
   "users": [
     {
       "order": 0,
@@ -233,6 +233,21 @@
           },
           "createdBy": "ÖMER EREN",
           "createdAt": "23.10.2026 16:11:01"
+        },
+        {
+          "id": "ENT-1792761374746-698",
+          "updatedAtMs": 1792761374746,
+          "dateISO": "2026-10-19",
+          "section": "CASH_OUT",
+          "col1": "ŞAHSİ GİDERLER / DİĞER ŞAHSİ GİDER",
+          "desc": "DENEME",
+          "dueDate": "",
+          "amount": 500,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "ÖMER EREN",
+          "createdAt": "23.10.2026 16:16:14"
         }
       ],
       "tcmbSlotKey": "2026-10-19_HISTORICAL"
@@ -603,6 +618,12 @@
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "23.10.2026 16:16:14",
+      "user": "ÖMER EREN",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Günlük Nakit Ödeme] \"ŞAHSİ GİDERLER / DİĞER ŞAHSİ GİDER - DENEME\" (500,00 ₺) eklendi."
+    },
     {
       "timestamp": "23.10.2026 16:11:01",
       "user": "ÖMER EREN",
