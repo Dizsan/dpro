@@ -1,5 +1,5 @@
 {
-  "version": "1.2.5",
+  "version": "1.2.6",
   "updatedAt": "23.10.2026 18:02:12",
   "updatedAtMs": 1792767732011,
   "stateRevision": 80,
@@ -124,7 +124,18 @@
       }
     }
   ],
-  "approvedDevices": {},
+  "approvedDevices": {
+    "DEV-243181-LXKL": {
+      "deviceId": "DEV-243181-LXKL",
+      "username": "ömer",
+      "userFullName": "ÖMER EREN",
+      "dept": "Yönetim Kurulu / Sistem Yöneticisi",
+      "platform": "Apple Mac (macOS) • Safari",
+      "approvedBy": "ÖMER EREN (Otomatik Yönetici Cihazı)",
+      "approvedAt": "23.10.2026 18:44:19",
+      "approvedAtMs": 1792770259420
+    }
+  },
   "pendingDevices": {},
   "revokedDevices": {},
   "days": {
