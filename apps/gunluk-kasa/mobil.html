@@ -292,7 +292,7 @@
                                                 <div id="bottom-manual-plate-wrap" style="margin-bottom:4px;">
                                                     <select id="bottom-manual-plate" class="form-control" style="font-size:0.73rem; font-weight:800; padding:4px 6px; border-color:rgba(52,211,153,0.55); color:#34d399;" onchange="handleBottomManualPlateChange(this.value)">
                                                     </select>
-                                                    <input type="text" id="bottom-manual-plate-custom" class="form-control" style="display:none; margin-top:4px; font-size:0.73rem; font-weight:800; padding:4px 6px; text-transform:uppercase;" placeholder="Plakayı elle yazın (Örn: 19 ABC 123)">
+                                                    <input type="text" id="bottom-manual-plate-custom" class="form-control" style="display:none; margin-top:4px; font-size:0.73rem; font-weight:800; padding:4px 6px; text-transform:uppercase;" placeholder="Plakayı elle yazın (Örn: 19ABC123)" oninput="this.value = normalizeVehiclePlateString(this.value)">
                                                 </div>
                                                 <input type="text" id="bottom-manual-col1" class="form-control" style="font-size:0.73rem; padding:4px 6px;" placeholder="Cari / Firma / Kart (İsteğe bağlı)">
                                             </td>
@@ -1059,7 +1059,7 @@
                         <!-- EN ALTTA ELLE PLAKA GİRİŞ KUTUSU (Listeden "En Altta Elle Giriş" seçilince veya doğrudan yazmak için) -->
                         <div id="entry-manual-plate-box" style="margin-top:8px; padding-top:7px; border-top:1px dashed rgba(52,211,153,0.35); display:flex; align-items:center; gap:6px;">
                             <span style="font-size:0.68rem; font-weight:800; color:#fde68a; white-space:nowrap;"><i class="fa-solid fa-keyboard"></i> Elle Plaka Girişi:</span>
-                            <input type="text" id="entry-new-plate-input" class="form-control" placeholder="Plakayı elle yazın (Örn: 19 ABC 123)" style="text-transform:uppercase; font-weight:800; font-size:0.76rem; padding:5px 8px;" oninput="handleManualPlateInputLive(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault(); addNewCompanyVehiclePlate();}">
+                            <input type="text" id="entry-new-plate-input" class="form-control" placeholder="Plakayı elle yazın (Örn: 19ABC123)" style="text-transform:uppercase; font-weight:800; font-size:0.76rem; padding:5px 8px;" oninput="handleManualPlateInputLive(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault(); addNewCompanyVehiclePlate();}">
                             <button type="button" class="btn btn-xs btn-success" style="white-space:nowrap; padding:6px 10px;" onclick="addNewCompanyVehiclePlate()" title="Yazılan plakayı listeye de kaydet">
                                 <i class="fa-solid fa-check"></i> Listeye Kaydet
                             </button>
@@ -1310,8 +1310,8 @@
 
     <!-- SCRIPTS -->
     <script src="auto-date-helper.js"></script>
-    <script src="app.js?v=1.1.9"></script>
-    <script src="dizsan-back-navigation.js?v=1.1.9"></script>
-    <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.1.9"></script>
+    <script src="app.js?v=1.2.0"></script>
+    <script src="dizsan-back-navigation.js?v=1.2.0"></script>
+    <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.2.0"></script>
 </body>
 </html>
