@@ -145,6 +145,16 @@
       "approvedBy": "ÖMER EREN (Otomatik Yönetici Cihazı)",
       "approvedAt": "24.10.2026 00:30:51",
       "approvedAtMs": 1792791051456
+    },
+    "DEV-815366-97LW": {
+      "deviceId": "DEV-815366-97LW",
+      "username": "ömer",
+      "userFullName": "ÖMER EREN",
+      "dept": "Yönetim Kurulu / Sistem Yöneticisi",
+      "platform": "Android Telefon/Tablet • Chrome",
+      "approvedBy": "ÖMER EREN (Otomatik Yönetici Cihazı)",
+      "approvedAt": "24.10.2026 01:03:32",
+      "approvedAtMs": 1792793012087
     }
   },
   "pendingDevices": {},
