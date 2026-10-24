@@ -1321,60 +1321,7 @@ function claimIncident(id, newStatus) {
     appendAuditLog(newStatus === "CONVERTED" ? "INCIDENT_CONVERTED" : "INCIDENT_CLAIMED", msg);
 }
 
-function normalizeTrPhoneToWa12(rawPhone) {
-    if (!rawPhone) return "";
-    const parts = String(rawPhone).split(/[,;/|]+|\bveya\b/i).map(s => s.trim()).filter(Boolean);
-    for (const p of parts) {
-        let d = p.replace(/[^0-9]/g, "");
-        if (d.startsWith("0090")) d = d.slice(2);
-        if (d.length === 11 && d.startsWith("0")) d = "90" + d.slice(1);
-        else if (d.length === 10 && /^[23458]/.test(d)) d = "90" + d;
-        else if (d.length === 7) d = "90364" + d;
-        if (d.length === 12 && d.startsWith("905")) return d;
-    }
-    let d0 = String(parts[0] || rawPhone).replace(/[^0-9]/g, "");
-    if (d0.startsWith("0090")) d0 = d0.slice(2);
-    if (d0.length === 11 && d0.startsWith("0")) d0 = "90" + d0.slice(1);
-    else if (d0.length === 10 && /^[23458]/.test(d0)) d0 = "90" + d0;
-    else if (d0.length === 7) d0 = "90364" + d0;
-    return (d0.length === 12 && d0.startsWith("90")) ? d0 : "";
-}
-
-function openNativeOrWebWhatsApp(rawPhone, text) {
-    const waPhone = normalizeTrPhoneToWa12(rawPhone);
-    const encText = encodeURIComponent(text || "");
-    const qParts = [];
-    if (waPhone) qParts.push(`phone=${waPhone}`);
-    if (encText) qParts.push(`text=${encText}`);
-    const nativeUrl = `whatsapp://send${qParts.length ? "?" + qParts.join("&") : ""}`;
-    const webUrl = waPhone
-        ? `https://wa.me/${waPhone}${encText ? `?text=${encText}` : ""}`
-        : `https://wa.me/${encText ? `?text=${encText}` : ""}`;
-    const isLocalHost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-    const ua = navigator.userAgent || "";
-    const isMacDesktop = /Macintosh|Mac OS X/i.test(ua) && !/iPhone|iPad|iPod/i.test(ua);
-
-    if (isLocalHost) {
-        fetch("/api/open-whatsapp", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ phone: waPhone, text: text || "", url: nativeUrl })
-        }).then(r => {
-            if (!r.ok) throw new Error("fallback");
-        }).catch(() => {
-            if (isMacDesktop) window.location.href = nativeUrl;
-            else window.open(webUrl, "_blank", "noopener,noreferrer");
-        });
-        return;
-    }
-    if (isMacDesktop) {
-        window.location.href = nativeUrl;
-    } else {
-        window.open(webUrl, "_blank", "noopener,noreferrer");
-    }
-}
-
-function shareIncidentWhatsApp(id, customPhone = "") {
+function shareIncidentWhatsApp(id) {
     const inc = appState.incidents.find(i => i.id === id);
     if (!inc) return;
     const text = `🚨 *D-Met SCANIA KAZA RADARI (KIRMIZI ALARM)* 🚨\n` +
@@ -1385,8 +1332,8 @@ function shareIncidentWhatsApp(id, customPhone = "") {
         `🛠 *Hasar:* ${inc.damageEstimate}\n` +
         `📰 *Haber:* ${inc.title}\n` +
         `🔗 *Kaynak:* ${inc.sourceUrl}`;
-    const targetPhone = customPhone || appState.config?.waPhone || inc.erpCustomerMatch?.phone || "";
-    openNativeOrWebWhatsApp(targetPhone, text);
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank");
     appendAuditLog("WHATSAPP_SHARE", `${inc.id} kaza kartı WhatsApp üzerinden saha ekibiyle paylaşıldı.`);
 }
 

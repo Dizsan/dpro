@@ -569,17 +569,6 @@ function buildInitialState() {
                 accountId: "ACC-OTO-GARANTI"
             },
             {
-                id: "CC-3311",
-                companyId: "COMP-OTOMOTIV",
-                bank: "Garanti BBVA",
-                cardName: "Bonus (*3311)",
-                cutoffDate: addDaysISO(t0, 1),
-                dueDate: addDaysISO(t0, 11),
-                debtAmount: 0,
-                paidAmount: 0,
-                accountId: "ACC-OTO-GARANTI"
-            },
-            {
                 id: "CC-6010",
                 companyId: "COMP-LOJISTIK",
                 bank: "Garanti BBVA",
