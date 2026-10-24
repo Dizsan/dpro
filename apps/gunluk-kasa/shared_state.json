@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "24.10.2026 12:43:04",
-  "updatedAtMs": 1792834984580,
-  "stateRevision": 124,
+  "updatedAt": "24.10.2026 12:43:32",
+  "updatedAtMs": 1792835012495,
+  "stateRevision": 125,
   "users": [
     {
       "order": 0,
@@ -374,12 +374,33 @@
           "intercompanyMeta": null,
           "createdBy": "GÖKHAN ÖZBULUT",
           "createdAt": "24.10.2026 12:43:04"
+        },
+        {
+          "id": "ENT-1792835012495-236",
+          "updatedAtMs": 1792835012495,
+          "dateISO": "2026-10-19",
+          "section": "CASH_IN",
+          "col1": "SERVİS & İŞÇİLİK GELİRİ / ARAÇ SERVİS BAKIM TAHSİLATI",
+          "desc": "PERAKENDE SATIŞ FIŞI TF345",
+          "dueDate": "",
+          "amount": 3000,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:43:32"
         }
       ],
-      "updatedAtMs": 1792834984580
+      "updatedAtMs": 1792835012495
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "24.10.2026 12:43:32",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Nakit Kasa Girişi] \"SERVİS & İŞÇİLİK GELİRİ / ARAÇ SERVİS BAKIM TAHSİLATI - PERAKENDE SATIŞ FIŞI TF345\" (3.000,00 ₺) eklendi."
+    },
     {
       "timestamp": "24.10.2026 12:43:04",
       "user": "GÖKHAN ÖZBULUT",
