@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "24.10.2026 11:50:04",
-  "updatedAtMs": 1792831804677,
-  "stateRevision": 102,
+  "updatedAt": "24.10.2026 11:50:41",
+  "updatedAtMs": 1792831841187,
+  "stateRevision": 103,
   "users": [
     {
       "order": 0,
@@ -155,9 +155,7 @@
       "approvedBy": "ÖMER EREN (Otomatik Yönetici Cihazı)",
       "approvedAt": "24.10.2026 01:03:32",
       "approvedAtMs": 1792793012087
-    }
-  },
-  "pendingDevices": {
+    },
     "DEV-711892-VDMR": {
       "deviceId": "DEV-711892-VDMR",
       "username": "gokhan.ozbulut",
@@ -165,10 +163,12 @@
       "dept": "Kasa Sorumlusu / Muhasebe & Finans",
       "platform": "Android Telefon/Tablet • Chrome",
       "approvalCode": "265642",
-      "requestedAt": "24.10.2026 11:50:04",
-      "requestedAtMs": 1792831804676
+      "approvedBy": "ÖMER EREN",
+      "approvedAt": "24.10.2026 11:50:41",
+      "approvedAtMs": 1792831841187
     }
   },
+  "pendingDevices": {},
   "revokedDevices": {},
   "days": {
     "2026-10-23": {
@@ -287,6 +287,12 @@
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "24.10.2026 11:50:41",
+      "user": "ÖMER EREN",
+      "category": "CİHAZ ONAYLANDI",
+      "detail": "Ömer Eren tarafından GÖKHAN ÖZBULUT (Android Telefon/Tablet • Chrome — DEV-711892-VDMR) cihazının kurulumu onaylandı."
+    },
     {
       "timestamp": "24.10.2026 11:50:04",
       "user": "GÖKHAN ÖZBULUT",
