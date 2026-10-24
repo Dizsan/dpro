@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "24.10.2026 12:05:56",
-  "updatedAtMs": 1792832756321,
-  "stateRevision": 116,
+  "updatedAt": "24.10.2026 12:05:58",
+  "updatedAtMs": 1792832758703,
+  "stateRevision": 117,
   "users": [
     {
       "order": 0,
@@ -200,21 +200,6 @@
       "isLocked": false,
       "entries": [
         {
-          "id": "ENT-1792832154242-560",
-          "updatedAtMs": 1792832154242,
-          "dateISO": "2026-10-24",
-          "section": "CASH_OUT",
-          "col1": "TEDARİK & ATÖLYE / ATÖLYE",
-          "desc": "MSLZEME ALIMI",
-          "dueDate": "",
-          "amount": 1800,
-          "code": "TDR",
-          "ocrMeta": null,
-          "intercompanyMeta": null,
-          "createdBy": "GÖKHAN ÖZBULUT",
-          "createdAt": "24.10.2026 11:55:54"
-        },
-        {
           "id": "ENT-1792832647348-297",
           "updatedAtMs": 1792832647348,
           "dateISO": "2026-10-24",
@@ -231,7 +216,7 @@
         }
       ],
       "tcmbSlotKey": "2026-10-24_BEFORE_1630",
-      "updatedAtMs": 1792832756320
+      "updatedAtMs": 1792832758703
     },
     "2026-10-25": {
       "dateISO": "2026-10-25",
@@ -320,6 +305,12 @@
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "24.10.2026 12:05:58",
+      "user": "ÖMER EREN",
+      "category": "KAYIT SİLME",
+      "detail": "24.10.2026 [Günlük Nakit Ödeme] \"MSLZEME ALIMI\" (1.800,00 ₺) silindi."
+    },
     {
       "timestamp": "24.10.2026 12:05:56",
       "user": "ÖMER EREN",
@@ -504,7 +495,8 @@
     "ENT-1792761374746-698",
     "ENT-1792766926300-0",
     "ENT-1792766967444-15",
-    "ENT-1792832079445-638"
+    "ENT-1792832079445-638",
+    "ENT-1792832154242-560"
   ],
   "clearedDays": {
     "2026-10-16": 1792762500000,
