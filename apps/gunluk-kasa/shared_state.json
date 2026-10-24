@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "24.10.2026 12:35:28",
-  "updatedAtMs": 1792834528393,
-  "stateRevision": 120,
+  "updatedAt": "24.10.2026 12:38:01",
+  "updatedAtMs": 1792834681819,
+  "stateRevision": 121,
   "users": [
     {
       "order": 0,
@@ -314,12 +314,33 @@
           "intercompanyMeta": null,
           "createdBy": "GÖKHAN ÖZBULUT",
           "createdAt": "24.10.2026 12:35:28"
+        },
+        {
+          "id": "ENT-1792834681818-75",
+          "updatedAtMs": 1792834681818,
+          "dateISO": "2026-10-19",
+          "section": "CASH_IN",
+          "col1": "BANKA & DİĞER GİRİŞLER / İADE / FAZLA ÖDEME DÖNÜŞÜ",
+          "desc": "TEKNIK KOMITE TOPLANTISI FAZLA IADESI",
+          "dueDate": "",
+          "amount": 1265,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:38:01"
         }
       ],
-      "updatedAtMs": 1792834528392
+      "updatedAtMs": 1792834681818
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "24.10.2026 12:38:01",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Nakit Kasa Girişi] \"BANKA & DİĞER GİRİŞLER / İADE / FAZLA ÖDEME DÖNÜŞÜ - TEKNIK KOMITE TOPLANTISI FAZLA IADESI\" (1.265,00 ₺) eklendi."
+    },
     {
       "timestamp": "24.10.2026 12:35:28",
       "user": "GÖKHAN ÖZBULUT",
