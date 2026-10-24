@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "24.10.2026 12:45:44",
-  "updatedAtMs": 1792835144554,
-  "stateRevision": 126,
+  "updatedAt": "24.10.2026 12:48:08",
+  "updatedAtMs": 1792835288939,
+  "stateRevision": 127,
   "users": [
     {
       "order": 0,
@@ -404,12 +404,33 @@
           "intercompanyMeta": null,
           "createdBy": "GÖKHAN ÖZBULUT",
           "createdAt": "24.10.2026 12:45:44"
+        },
+        {
+          "id": "ENT-1792835288938-223",
+          "updatedAtMs": 1792835288938,
+          "dateISO": "2026-10-19",
+          "section": "CASH_OUT",
+          "col1": "DİĞER GİDERLER",
+          "desc": "ALAATTIN ALA YOL YARDIM HARCIRAHI",
+          "dueDate": "",
+          "amount": 1200,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:48:08"
         }
       ],
-      "updatedAtMs": 1792835144553
+      "updatedAtMs": 1792835288938
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "24.10.2026 12:48:08",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Günlük Nakit Ödeme] \"DİĞER GİDERLER - ALAATTIN ALA YOL YARDIM HARCIRAHI\" (1.200,00 ₺) eklendi."
+    },
     {
       "timestamp": "24.10.2026 12:45:44",
       "user": "GÖKHAN ÖZBULUT",
