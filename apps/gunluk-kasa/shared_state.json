@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "24.10.2026 12:48:08",
-  "updatedAtMs": 1792835288939,
-  "stateRevision": 127,
+  "updatedAt": "24.10.2026 12:49:03",
+  "updatedAtMs": 1792835343433,
+  "stateRevision": 128,
   "users": [
     {
       "order": 0,
@@ -419,12 +419,33 @@
           "intercompanyMeta": null,
           "createdBy": "GÖKHAN ÖZBULUT",
           "createdAt": "24.10.2026 12:48:08"
+        },
+        {
+          "id": "ENT-1792835343432-203",
+          "updatedAtMs": 1792835343432,
+          "dateISO": "2026-10-19",
+          "section": "CASH_OUT",
+          "col1": "PERSONEL GİDERLERİ / MAAŞ AVANSI",
+          "desc": "HAKAN AYDIN AVANS VERILEN",
+          "dueDate": "",
+          "amount": 15000,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:49:03"
         }
       ],
-      "updatedAtMs": 1792835288938
+      "updatedAtMs": 1792835343432
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "24.10.2026 12:49:03",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Günlük Nakit Ödeme] \"PERSONEL GİDERLERİ / MAAŞ AVANSI - HAKAN AYDIN AVANS VERILEN\" (15.000,00 ₺) eklendi."
+    },
     {
       "timestamp": "24.10.2026 12:48:08",
       "user": "GÖKHAN ÖZBULUT",
