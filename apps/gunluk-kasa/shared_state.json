@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "24.10.2026 12:52:33",
-  "updatedAtMs": 1792835553287,
-  "stateRevision": 131,
+  "updatedAt": "24.10.2026 12:53:55",
+  "updatedAtMs": 1792835635239,
+  "stateRevision": 132,
   "users": [
     {
       "order": 0,
@@ -479,12 +479,33 @@
           "intercompanyMeta": null,
           "createdBy": "GÖKHAN ÖZBULUT",
           "createdAt": "24.10.2026 12:52:33"
+        },
+        {
+          "id": "ENT-1792835635239-317",
+          "updatedAtMs": 1792835635239,
+          "dateISO": "2026-10-19",
+          "section": "POS_CC",
+          "col1": "CARİ HESAP TAHSİLATI / POS / KREDİ KARTI CARİ TAHSİLAT",
+          "desc": "ELIF KARAKAŞ CARI HESABINA MAHSUBEN",
+          "dueDate": "",
+          "amount": 1500,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:53:55"
         }
       ],
-      "updatedAtMs": 1792835553287
+      "updatedAtMs": 1792835635239
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "24.10.2026 12:53:55",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Kredi Kartı (POS)] \"CARİ HESAP TAHSİLATI / POS / KREDİ KARTI CARİ TAHSİLAT - ELIF KARAKAŞ CARI HESABINA MAHSUBEN\" (1.500,00 ₺) eklendi."
+    },
     {
       "timestamp": "24.10.2026 12:52:33",
       "user": "GÖKHAN ÖZBULUT",
