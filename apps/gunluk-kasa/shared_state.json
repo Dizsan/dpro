@@ -1,8 +1,8 @@
 {
   "version": "1.3.1",
-  "updatedAt": "24.10.2026 20:22:25",
-  "updatedAtMs": 1792862545062,
-  "stateRevision": 171,
+  "updatedAt": "24.10.2026 20:22:31",
+  "updatedAtMs": 1792862551352,
+  "stateRevision": 172,
   "users": [
     {
       "order": 0,
@@ -837,6 +837,20 @@
       "prevOutOverride": null,
       "carryoverOverride": null,
       "carryoverLabel": "21/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
+      "cashierName": "GÖKHAN ÖZBULUT",
+      "controllerName": "RAFET CANBEK",
+      "controllerApproved": false,
+      "isLocked": false,
+      "entries": []
+    },
+    "2026-10-18": {
+      "dateISO": "2026-10-18",
+      "euroRate": "--",
+      "usdRate": "--",
+      "prevInOverride": null,
+      "prevOutOverride": null,
+      "carryoverOverride": null,
+      "carryoverLabel": "17/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
       "cashierName": "GÖKHAN ÖZBULUT",
       "controllerName": "RAFET CANBEK",
       "controllerApproved": false,
