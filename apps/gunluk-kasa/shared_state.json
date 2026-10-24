@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "24.10.2026 13:15:20",
-  "updatedAtMs": 1792836920002,
-  "stateRevision": 144,
+  "updatedAt": "24.10.2026 13:16:35",
+  "updatedAtMs": 1792836995226,
+  "stateRevision": 145,
   "users": [
     {
       "order": 0,
@@ -651,12 +651,38 @@
           "intercompanyMeta": null,
           "createdBy": "GÖKHAN ÖZBULUT",
           "createdAt": "24.10.2026 13:15:20"
+        },
+        {
+          "id": "ENT-1792836995226-480",
+          "updatedAtMs": 1792836995226,
+          "dateISO": "2026-10-20",
+          "section": "POS_CC",
+          "col1": "CARİ HESAP TAHSİLATI / POS / KREDİ KARTI CARİ TAHSİLAT",
+          "desc": "PLAKA: 19AK404 · DSA000136 ILHAN ÖZTÜRK TAHSILATI",
+          "dueDate": "",
+          "amount": 2000,
+          "code": "",
+          "ocrMeta": {
+            "docType": "OTHER",
+            "hasReceiptImg": false,
+            "hasPosImg": false,
+            "plate": "19AK404"
+          },
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 13:16:35"
         }
       ],
-      "updatedAtMs": 1792836920002
+      "updatedAtMs": 1792836995226
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "24.10.2026 13:16:35",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "20.10.2026 [Kredi Kartı (POS)] \"CARİ HESAP TAHSİLATI / POS / KREDİ KARTI CARİ TAHSİLAT - PLAKA: 19AK404 · DSA000136 ILHAN ÖZTÜRK TAHSILATI\" (2.000,00 ₺) eklendi."
+    },
     {
       "timestamp": "24.10.2026 13:15:20",
       "user": "GÖKHAN ÖZBULUT",
