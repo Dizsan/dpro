@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "24.10.2026 14:19:32",
-  "updatedAtMs": 1792840772812,
-  "stateRevision": 158,
+  "updatedAt": "24.10.2026 14:20:22",
+  "updatedAtMs": 1792840822925,
+  "stateRevision": 159,
   "users": [
     {
       "order": 0,
@@ -738,12 +738,33 @@
           "intercompanyMeta": null,
           "createdBy": "GÖKHAN ÖZBULUT",
           "createdAt": "24.10.2026 14:19:32"
+        },
+        {
+          "id": "ENT-1792840822925-521",
+          "updatedAtMs": 1792840822925,
+          "dateISO": "2026-10-21",
+          "section": "CASH_IN",
+          "col1": "SERVİS & İŞÇİLİK GELİRİ / ARIZA / ONARIM İŞÇİLİK",
+          "desc": "TF000347 PERAKENDE SATIŞ FIŞI",
+          "dueDate": "",
+          "amount": 1000,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 14:20:22"
         }
       ],
-      "updatedAtMs": 1792840772811
+      "updatedAtMs": 1792840822925
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "24.10.2026 14:20:22",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "21.10.2026 [Nakit Kasa Girişi] \"SERVİS & İŞÇİLİK GELİRİ / ARIZA / ONARIM İŞÇİLİK - TF000347 PERAKENDE SATIŞ FIŞI\" (1.000,00 ₺) eklendi."
+    },
     {
       "timestamp": "24.10.2026 14:19:32",
       "user": "GÖKHAN ÖZBULUT",
