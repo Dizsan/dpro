@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "24.10.2026 14:23:46",
-  "updatedAtMs": 1792841026943,
-  "stateRevision": 165,
+  "updatedAt": "24.10.2026 14:24:27",
+  "updatedAtMs": 1792841067817,
+  "stateRevision": 166,
   "users": [
     {
       "order": 0,
@@ -783,13 +783,34 @@
           "intercompanyMeta": null,
           "createdBy": "GÖKHAN ÖZBULUT",
           "createdAt": "24.10.2026 14:23:46"
+        },
+        {
+          "id": "ENT-1792841067817-578",
+          "updatedAtMs": 1792841067817,
+          "dateISO": "2026-10-21",
+          "section": "CASH_OUT",
+          "col1": "PERSONEL GİDERLERİ / MAAŞ AVANSI",
+          "desc": "GÖKHAN ÖZBULUT AVANS VERILEN",
+          "dueDate": "",
+          "amount": 12000,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 14:24:27"
         }
       ],
-      "updatedAtMs": 1792841026943,
+      "updatedAtMs": 1792841067817,
       "tcmbSlotKey": "2026-10-21_HISTORICAL"
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "24.10.2026 14:24:27",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "21.10.2026 [Günlük Nakit Ödeme] \"PERSONEL GİDERLERİ / MAAŞ AVANSI - GÖKHAN ÖZBULUT AVANS VERILEN\" (12.000,00 ₺) eklendi."
+    },
     {
       "timestamp": "24.10.2026 14:23:46",
       "user": "GÖKHAN ÖZBULUT",
