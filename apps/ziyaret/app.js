@@ -12,7 +12,7 @@
  */
 
 const INITIAL_APP_VERSION = "v1.3.0";
-const CURRENT_APP_VERSION = "1.5.9";
+const CURRENT_APP_VERSION = "1.6.9";
 let hasShownUpdateNotice = false;
 const VAPID_PUBLIC_KEY = "BJIJfCBiDwya3clZOWS08EDxfuN18xtfJGTX0n_apWBTEW7-kO_FGKNy5VDRvUsMgc46IP5oxLlIHqgrDo-JTkE";
 const STORAGE_KEY_STATE = "dizsan_ziyaret_shared_state_v1";
@@ -271,250 +271,6 @@ function getDevicePlatform() {
     if (/Mac/.test(ua)) return "macOS / Masaüstü";
     return "Web Tarayıcı";
 }
-
-// ==========================================================================
-// AKILLI TÜRKİYE TELEFON NUMARASI AYRIŞTIRICI VE WHATSAPP KÖPRÜSÜ
-// ==========================================================================
-const TR_CITY_AREA_CODES = {
-    "corum": "364", "amasya": "358", "tokat": "356", "yozgat": "354",
-    "cankiri": "376", "samsun": "362", "ankara": "312", "istanbul": "212",
-    "kastamonu": "366", "sinop": "368", "kirikkale": "318", "kayseri": "352",
-    "sivas": "346", "ordu": "452", "giresun": "454", "trabzon": "462",
-    "kirsehir": "386", "nevsehir": "384", "konya": "332", "adana": "322",
-    "mersin": "324", "gaziantep": "342", "hatay": "326", "izmir": "232",
-    "bursa": "224", "kocaeli": "262", "sakarya": "264", "bolu": "374",
-    "duzce": "380", "zonguldak": "372", "karabuk": "370", "bartin": "378",
-    "artvin": "466", "rize": "464", "erzurum": "442", "erzincan": "446"
-};
-
-function formatPhone12Display(phone12) {
-    const d = String(phone12 || '').replace(/[^0-9]/g, '');
-    if (d.length === 12 && d.startsWith('90')) {
-        return `0 (${d.slice(2, 5)}) ${d.slice(5, 8)} ${d.slice(8, 10)} ${d.slice(10, 12)}`;
-    }
-    return phone12 || '';
-}
-
-function parseTurkishPhones(rawPhone, city = '') {
-    if (!rawPhone || String(rawPhone).trim().toUpperCase() === 'YOK') {
-        return { wa: '', tel: '', display: '', mobiles: [], all: [], hasPhone: false };
-    }
-    const ac = TR_CITY_AREA_CODES[cleanTR(city)] || '364';
-    const parts = String(rawPhone).split(/[,;/|]+/);
-    const valid = [];
-
-    for (const part of parts) {
-        const digits = part.replace(/[^0-9]/g, '');
-        if (!digits) continue;
-
-        let subparts = [digits];
-        if (digits.length === 14 && !digits.startsWith('0090')) {
-            subparts = [digits.slice(0, 7), digits.slice(7, 14)];
-        } else if (digits.length > 12 && !digits.startsWith('0090')) {
-            const matches = digits.match(/(?:90|0)?(5\d{9}|[2348]\d{9})/g);
-            if (matches && matches.length > 0) {
-                subparts = matches;
-            }
-        }
-
-        for (let d of subparts) {
-            if (d.startsWith('0090') && d.length === 14) {
-                d = d.slice(2);
-            } else if (d.startsWith('90') && d.length === 12) {
-                // Zaten 90XXXXXXXXXX formatında
-            } else if (d.startsWith('0') && d.length === 11) {
-                d = '9' + d;
-            } else if (d.length === 10 && '23458'.includes(d[0])) {
-                d = '90' + d;
-            } else if (d.length === 7) {
-                d = '90' + ac + d;
-            } else if (d.length === 11 && d.startsWith('5')) {
-                const m = d.match(/(5\d{9})/);
-                if (m) d = '90' + m[1];
-            }
-            if (d.length === 12 && d.startsWith('90') && !valid.includes(d)) {
-                valid.push(d);
-            }
-        }
-    }
-
-    const mobiles = valid.filter(v => v.startsWith('905'));
-    const bestWa = mobiles[0] || valid[0] || '';
-    const bestTel = bestWa ? ('+' + bestWa) : '';
-    const display = bestWa ? formatPhone12Display(bestWa) : String(rawPhone);
-
-    return {
-        wa: bestWa,
-        tel: bestTel,
-        display,
-        mobiles,
-        all: valid,
-        hasPhone: Boolean(bestWa)
-    };
-}
-
-function openWhatsAppChat(phoneRaw = '', messageText = '', cityHint = '') {
-    const parsed = parseTurkishPhones(phoneRaw, cityHint);
-    const phoneParam = parsed.wa || '';
-    const textParam = messageText ? encodeURIComponent(String(messageText)) : '';
-
-    const queryParts = [];
-    if (phoneParam) queryParts.push(`phone=${phoneParam}`);
-    if (textParam) queryParts.push(`text=${textParam}`);
-    const queryString = queryParts.join('&');
-
-    const nativeSchemeUrl = `whatsapp://send${queryString ? '?' + queryString : ''}`;
-    const webWaUrl = phoneParam
-        ? `https://wa.me/${phoneParam}${textParam ? '?text=' + textParam : ''}`
-        : `https://wa.me/${textParam ? '?text=' + textParam : ''}`;
-
-    const ua = navigator.userAgent || '';
-    const isMacDesktop = /Macintosh|Mac OS X/.test(ua) && !/iPhone|iPad|iPod/.test(ua);
-    const isLocalServer = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
-    // 1. Yerel Portal Sunucusu (macOS) aktifse doğrudan LaunchServices ile WhatsApp.app'i sıfır uyarıyla aç
-    if (isLocalServer && isMacDesktop) {
-        fetch('/api/open-whatsapp', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url: nativeSchemeUrl, webUrl: webWaUrl, phone: phoneParam })
-        }).then(r => {
-            if (!r.ok) {
-                triggerClientWhatsAppRedirect(nativeSchemeUrl, webWaUrl, isMacDesktop);
-            }
-        }).catch(() => {
-            triggerClientWhatsAppRedirect(nativeSchemeUrl, webWaUrl, isMacDesktop);
-        });
-        return;
-    }
-
-    // 2. İstemci tarafı doğrudan yönlendirme (macOS WhatsApp.app / Mobil PWA / Web)
-    triggerClientWhatsAppRedirect(nativeSchemeUrl, webWaUrl, isMacDesktop);
-}
-
-function triggerClientWhatsAppRedirect(nativeSchemeUrl, webWaUrl, isMacDesktop) {
-    try {
-        if (isMacDesktop) {
-            // macOS üzerinde yüklü WhatsApp.app'i boş sekme bırakmadan doğrudan tetikle
-            const a = document.createElement('a');
-            a.href = nativeSchemeUrl;
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(() => a.remove(), 300);
-            return;
-        }
-        const win = window.open(webWaUrl, '_blank', 'noopener,noreferrer');
-        if (!win) {
-            window.top.location.href = webWaUrl;
-        }
-    } catch (e) {
-        window.location.href = webWaUrl;
-    }
-}
-
-function openCustomerWhatsApp(customerCode, mode = 'DEFAULT', extraIndex = 0) {
-    const customer = (appState.customers || []).find(c => c.code === customerCode);
-    if (!customer) {
-        showToast('Müşteri kaydı bulunamadı.', 'danger');
-        return;
-    }
-    const parsed = parseTurkishPhones(customer.phone, customer.city);
-    if (!parsed.hasPhone) {
-        showToast('Bu müşteriye ait geçerli bir telefon numarası bulunamadı.', 'warning');
-        return;
-    }
-
-    const targetPhone = (extraIndex > 0 && parsed.all[extraIndex]) ? parsed.all[extraIndex] : parsed.wa;
-    const acc = getCustomerAccountingSummary(customer);
-    const senderName = currentUser ? currentUser.name : 'DİZSAN Otomotiv Yetkili Servis';
-
-    let msg = '';
-    if (mode === 'EKSTRE') {
-        msg = [
-            `Sayın *${customer.title}* Yetkilisi${customer.authorized && customer.authorized !== 'Bilinmiyor' ? ` (${customer.authorized})` : ''},`,
-            ``,
-            `*DİZSAN Otomotiv Scania Yetkili Servisi* cari hesap bilgilendirmesidir:`,
-            `• *Cari Kodu:* ${customer.code}`,
-            `• *Toplam Borç:* ${formatMoney(acc.borc)}`,
-            `• *Toplam Alacak:* ${formatMoney(acc.alacak)}`,
-            `• *Güncel Net Bakiye:* *${formatMoney(Math.abs(acc.bakiye))} ${acc.baCode}*`,
-            customer.lastDate ? `• *Son İşlem Tarihi:* ${customer.lastDate}` : '',
-            ``,
-            `Bilgilerinize sunar, iyi çalışmalar dileriz.`,
-            `_${senderName} — DİZSAN Otomotiv Çorum_`
-        ].filter(Boolean).join('\n');
-    } else if (mode === 'INVOICE') {
-        const historyList = customer.serviceHistory || [];
-        const inv = historyList[Number(extraIndex) || 0];
-        if (inv) {
-            const norm = normalizeInvoiceLines(inv);
-            msg = [
-                `Sayın *${customer.title}* Yetkilisi,`,
-                ``,
-                `*DİZSAN Otomotiv* servis işlem ve fatura özetiniz:`,
-                `• *Fatura No:* ${inv.fatura_no || '-'}`,
-                `• *Tarih:* ${inv.tarih || '-'}`,
-                `• *Araç Plakası:* ${(inv.plaka && inv.plaka !== '-') ? inv.plaka : (customer.plates || '-')}`,
-                `• *İşlem:* ${inv.islem || '-'}`,
-                `• *Genel Toplam (KDV Dahil):* *${formatMoney(norm.genelToplam)}*`,
-                ``,
-                `İyi yolculuklar ve hayırlı işler dileriz.`,
-                `_${senderName} — DİZSAN Otomotiv_`
-            ].join('\n');
-        }
-    } else {
-        msg = [
-            `Sayın *${customer.title}* Yetkilisi${customer.authorized && customer.authorized !== 'Bilinmiyor' ? ` (${customer.authorized})` : ''},`,
-            ``,
-            `*DİZSAN Otomotiv (Çorum Scania Yetkili Servisi)* olarak araçlarınızın servis/bakım durumu ve devam eden kampanyalarımız hakkında sizinle iletişime geçiyoruz.`,
-            customer.plates && customer.plates !== 'Plakasız' ? `• *Kayıtlı Araç:* ${customer.plates}` : '',
-            ``,
-            `Müsait olduğunuzda görüşmek dileğiyle, iyi çalışmalar dileriz.`,
-            `_${senderName}_`
-        ].filter(Boolean).join('\n');
-    }
-
-    addAuditLog('WHATSAPP İLETİŞİM', `${customer.code} - ${customer.title} (${formatPhone12Display(targetPhone)}) için WhatsApp mesajı başlatıldı.`);
-    openWhatsAppChat(targetPhone, msg, customer.city);
-}
-
-function shareCustomRouteWhatsApp(routeId) {
-    const rt = (appState.customRoutes || []).find(r => r.id === routeId);
-    if (!rt) return;
-    const customers = (appState.customers || []).filter(c =>
-        (Array.isArray(rt.customerCodes) && rt.customerCodes.includes(c.code)) || c.rut === rt.name
-    );
-
-    const custLines = customers.slice(0, 20).map((c, i) => {
-        const p = parseTurkishPhones(c.phone, c.city);
-        return `${i + 1}. *${c.title}* (${c.district || c.city})${p.hasPhone ? ` - 📞 ${p.display}` : ''}`;
-    });
-    if (customers.length > 20) {
-        custLines.push(`...ve +${customers.length - 20} müşteri daha.`);
-    }
-
-    const msg = [
-        `🚗 *DİZSAN SAHA ZİYARET RUT PLANI*`,
-        `📌 *Rut Adı:* ${rt.name}`,
-        `🛣️ *Güzergah:* ${rt.routeText || '-'}`,
-        `📅 *Plan Tarihi:* ${rt.plannedDate || '-'}`,
-        `👤 *Sorumlu:* ${rt.assignee || '-'}`,
-        `👥 *Toplam Cari:* ${customers.length} Müşteri`,
-        rt.notes ? `📝 *Not:* ${rt.notes}` : '',
-        ``,
-        `*Ziyaret Edilecek Müşteriler:*`,
-        ...custLines
-    ].filter(Boolean).join('\n');
-
-    addAuditLog('WHATSAPP PAYLAŞIM', `"${rt.name}" rut planı WhatsApp üzerinden paylaşıldı.`);
-    openWhatsAppChat('', msg);
-}
-
-window.parseTurkishPhones = parseTurkishPhones;
-window.openWhatsAppChat = openWhatsAppChat;
-window.openCustomerWhatsApp = openCustomerWhatsApp;
-window.shareCustomRouteWhatsApp = shareCustomRouteWhatsApp;
 
 function addAuditLog(category, detail) {
     const actor = currentUser ? currentUser.name : "SİSTEM";
@@ -826,50 +582,25 @@ async function forceRefreshFromGitHub() {
 }
 
 async function fetchLiveGitHubData(isInitial = false) {
-    const ts = Date.now();
-    const primarySources = [
-        'https://raw.githubusercontent.com/Dizsan/ziyaret/main/shared_state.json?t=' + ts,
-        'shared_state.json?t=' + ts
+    const sources = [
+        'shared_state.json?t=' + Date.now(),
+        'https://raw.githubusercontent.com/Dizsan/ziyaret/main/shared_state.json?t=' + Date.now(),
+        'customer_database.json?t=' + Date.now(),
+        'https://raw.githubusercontent.com/Dizsan/ziyaret/main/customer_database.json?t=' + Date.now()
     ];
-    const fallbackSources = [
-        'customer_database.json?t=' + ts,
-        'https://raw.githubusercontent.com/Dizsan/ziyaret/main/customer_database.json?t=' + ts
-    ];
-
-    let candidates = [];
-    const settled = await Promise.allSettled(
-        primarySources.map(src => fetch(src, { cache: 'no-store' }).then(r => r.ok ? r.json() : null))
-    );
-    for (const res of settled) {
-        if (res.status === 'fulfilled' && res.value && Array.isArray(res.value.customers) && res.value.customers.length > 0) {
-            candidates.push(res.value);
-        }
-    }
 
     let liveData = null;
-    if (candidates.length > 0) {
-        candidates.sort((a, b) => {
-            const revA = Number(a.stateRevision || 0);
-            const revB = Number(b.stateRevision || 0);
-            if (revA !== revB) return revB - revA;
-            const tA = new Date(a.updatedAt || 0).getTime() || 0;
-            const tB = new Date(b.updatedAt || 0).getTime() || 0;
-            return tB - tA;
-        });
-        liveData = candidates[0];
-    } else {
-        for (const src of fallbackSources) {
-            try {
-                const res = await fetch(src, { cache: 'no-store' });
-                if (res.ok) {
-                    const parsed = await res.json();
-                    if (parsed && Array.isArray(parsed.customers) && parsed.customers.length > 0) {
-                        liveData = parsed;
-                        break;
-                    }
+    for (const src of sources) {
+        try {
+            const res = await fetch(src, { cache: 'no-store' });
+            if (res.ok) {
+                const parsed = await res.json();
+                if (parsed && Array.isArray(parsed.customers) && parsed.customers.length > 0) {
+                    liveData = parsed;
+                    break;
                 }
-            } catch (e) {}
-        }
+            }
+        } catch (e) {}
     }
 
     if (!liveData) {
@@ -887,40 +618,12 @@ async function fetchLiveGitHubData(isInitial = false) {
     }
 
     lastSyncedSignature = incomingSignature;
-    const remoteTime = new Date(liveData.updatedAt || 0).getTime() || 0;
-    const localTime = new Date(appState.updatedAt || 0).getTime() || 0;
-    const isRemoteNewerOrEqual = remoteTime >= localTime || isInitial;
-
-    if (liveData.updatedAt && isRemoteNewerOrEqual) {
+    if (liveData.updatedAt) {
         appState.updatedAt = liveData.updatedAt;
-    }
-    if (liveData.stateRevision && Number(liveData.stateRevision) >= Number(appState.stateRevision || 0)) {
-        appState.stateRevision = Number(liveData.stateRevision);
     }
 
     if (liveData.customers && liveData.customers.length > 0) {
-        // Safari localStorage kotası nedeniyle serviceHistory kırpılmışsa mevcut fatura geçmişini koru
-        const existingHistMap = new Map();
-        (appState.customers || []).forEach(c => {
-            if (Array.isArray(c.serviceHistory) && c.serviceHistory.length > 0) {
-                existingHistMap.set(c.code, c.serviceHistory);
-            }
-        });
-        // Adaylardan birinde serviceHistory varsa onu da haritaya ekle
-        candidates.forEach(cand => {
-            (cand.customers || []).forEach(c => {
-                if (!existingHistMap.has(c.code) && Array.isArray(c.serviceHistory) && c.serviceHistory.length > 0) {
-                    existingHistMap.set(c.code, c.serviceHistory);
-                }
-            });
-        });
-
-        appState.customers = liveData.customers.map(c => {
-            if ((!Array.isArray(c.serviceHistory) || c.serviceHistory.length === 0) && existingHistMap.has(c.code)) {
-                return { ...c, serviceHistory: existingHistMap.get(c.code) };
-            }
-            return c;
-        });
+        appState.customers = liveData.customers;
     }
     if (liveData.districtStrategies && Object.keys(liveData.districtStrategies).length > 0) {
         appState.districtStrategies = liveData.districtStrategies;
@@ -934,16 +637,16 @@ async function fetchLiveGitHubData(isInitial = false) {
         appState.users = migrateOfficialUserEmails(liveData.users);
     }
 
-    // Bulut verisi daha güncelse veya yerel liste boşsa senkronize et (silme ve düzenlemeleri de yansıtır)
-    if (Array.isArray(liveData.visits) && (isRemoteNewerOrEqual || liveData.visits.length >= (appState.visits || []).length)) {
+    // Cihazdaki bekleyen yerel kayıtları koruyarak bulut ziyaretlerini ve özel rut planlarını birleştir
+    if (Array.isArray(liveData.visits) && liveData.visits.length >= (appState.visits || []).length) {
         appState.visits = liveData.visits;
     }
-    if (Array.isArray(liveData.tasks) && (isRemoteNewerOrEqual || liveData.tasks.length >= (appState.tasks || []).length)) {
+    if (Array.isArray(liveData.tasks) && liveData.tasks.length >= (appState.tasks || []).length) {
         appState.tasks = liveData.tasks;
     }
     if (Array.isArray(liveData.customRoutes)) {
         const localRoutes = Array.isArray(appState.customRoutes) ? appState.customRoutes : [];
-        if (isRemoteNewerOrEqual || liveData.customRoutes.length >= localRoutes.length) {
+        if (liveData.customRoutes.length >= localRoutes.length) {
             appState.customRoutes = liveData.customRoutes;
         }
     }
@@ -1045,7 +748,7 @@ async function pushStateToGitHubCloud(isRetry = false) {
 
         const putBody = {
             message: `sync: ${appState.version} (${formatNowTR()})`,
-            content: encodeUTF8Base64(JSON.stringify(sanitizeStateForCloud(appState)))
+            content: encodeUTF8Base64(JSON.stringify(sanitizeStateForCloud(appState), null, 2))
         };
         if (lastKnownCloudSha) putBody.sha = lastKnownCloudSha;
 
@@ -1594,8 +1297,8 @@ function renderDashboard() {
             .slice(0, 5);
 
         agendaBox.innerHTML = topVipCandidates.map(c => {
-            const phInfo = parseTurkishPhones(c.phone, c.city);
-            const hasPhone = phInfo.hasPhone;
+            const cleanPh = (c.phone || '').replace(/[^0-9]/g, '');
+            const hasPhone = c.phone && c.phone !== 'YOK' && cleanPh.length >= 10;
             const acc = getCustomerAccountingSummary(c);
             return `
                 <div class="smart-agenda-card">
@@ -1612,12 +1315,12 @@ function renderDashboard() {
                     </div>
                     <div style="display:flex; align-items:center; gap:0.35rem; flex-wrap:wrap;">
                         ${hasPhone ? `
-                            <a href="tel:${phInfo.tel}" class="btn btn-secondary btn-sm" style="padding:0.32rem 0.55rem;" title="Hemen Ara: ${phInfo.display}">
+                            <a href="tel:${c.phone}" class="btn btn-secondary btn-sm" style="padding:0.32rem 0.55rem;" title="Hemen Ara: ${c.phone}">
                                 <i class="fa-solid fa-phone" style="color:#38bdf8;"></i>
                             </a>
-                            <button type="button" class="btn btn-secondary btn-sm" style="padding:0.32rem 0.55rem;" onclick="openCustomerWhatsApp('${c.code}')" title="WhatsApp Mesajı Gönder (${phInfo.display})">
+                            <a href="https://wa.me/${cleanPh.startsWith('0') ? '9' + cleanPh : cleanPh}" target="_blank" class="btn btn-secondary btn-sm" style="padding:0.32rem 0.55rem;" title="WhatsApp Mesajı Gönder">
                                 <i class="fa-brands fa-whatsapp" style="color:#25d366;"></i>
-                            </button>
+                            </a>
                         ` : ''}
                         <button type="button" class="btn btn-secondary btn-sm" style="padding:0.32rem 0.6rem;" onclick="openCustomerDetailModal('${c.code}')" title="Logo Cari Ekstre &amp; Fatura Kalemleri">
                             <i class="fa-solid fa-file-invoice-dollar" style="color:#fbbf24;"></i> Ekstre
@@ -2055,7 +1758,6 @@ function renderLegacyCustomers() {
 
         const isSelectedForDraft = selectedSet.has(c.code);
         const hasSavedRut = c.rut && !/^(RUT-\d+|DİĞER)$/i.test(String(c.rut).trim());
-        const phInfo = parseTurkishPhones(c.phone, c.city);
 
         return `
             <tr style="${isSelectedForDraft ? 'background:rgba(16,185,129,0.08);' : ''}">
@@ -2066,10 +1768,7 @@ function renderLegacyCustomers() {
                 </td>
                 <td style="max-width:145px;">
                     <div style="font-weight:600; color:#e2e8f0; font-size:0.75rem; line-height:1.25;">${c.authorized || '-'}</div>
-                    ${phInfo.hasPhone
-                        ? `<a href="tel:${phInfo.tel}" style="color:#38bdf8; font-size:0.72rem; text-decoration:none; display:inline-block; margin-top:2px;" title="${c.phone || ''}"><i class="fa-solid fa-phone"></i> ${phInfo.display}</a>`
-                        : `<span style="color:var(--text-muted); font-size:0.72rem; display:inline-block; margin-top:2px;"><i class="fa-solid fa-phone"></i> ${c.phone || '-'}</span>`
-                    }
+                    <a href="tel:${c.phone}" style="color:#38bdf8; font-size:0.72rem; text-decoration:none; display:inline-block; margin-top:2px;"><i class="fa-solid fa-phone"></i> ${c.phone || '-'}</a>
                 </td>
                 <td style="white-space:nowrap;">
                     <span class="badge badge-secondary">${c.city} / ${c.district}</span>
@@ -2095,11 +1794,6 @@ function renderLegacyCustomers() {
                 <td style="white-space:nowrap;"><span class="badge ${badgeCls}" title="${c.priority || 'Normal'}">${shortPriority}</span></td>
                 <td style="text-align:right; white-space:nowrap;">
                     <div style="display:flex; justify-content:flex-end; gap:0.28rem;">
-                        ${phInfo.hasPhone ? `
-                            <button type="button" class="btn btn-secondary btn-sm" style="padding:0.28rem 0.48rem; font-size:0.74rem; border-color:rgba(37,211,102,0.4); color:#25d366;" title="WhatsApp Mesajı Gönder (${phInfo.display})" onclick="openCustomerWhatsApp('${c.code}')">
-                                <i class="fa-brands fa-whatsapp"></i>
-                            </button>
-                        ` : ''}
                         <button type="button" class="btn ${isSelectedForDraft ? 'btn-success' : 'btn-secondary'} btn-sm" style="padding:0.28rem 0.5rem; font-size:0.71rem; ${isSelectedForDraft ? '' : 'border-color:rgba(56,189,248,0.4); color:#38bdf8;'}" title="Yeni Rut Planına Ekle / Çıkar" onclick="toggleCustomerInCustomRouteDraft('${c.code}')">
                             <i class="fa-solid ${isSelectedForDraft ? 'fa-check' : 'fa-plus'}"></i> ${isSelectedForDraft ? 'Rutta' : 'Ruta Ekle'}
                         </button>
@@ -2470,7 +2164,7 @@ function openCustomerDetailModal(code) {
         cdSubtitle.innerHTML = `<span style="font-family:monospace; color:#38bdf8; font-weight:700;">${customer.code}</span> | ${customer.city} / ${customer.district} | Durum: <strong style="color:${acc.baCode === '(B)' ? '#f87171' : acc.baCode === '(A)' ? '#34d399' : '#94a3b8'};">${acc.baLabel}</strong> | Logo ERP: <span style="color:#34d399;">Canlı &amp; Doğrulanmış</span>`;
     }
 
-    const phInfo = parseTurkishPhones(customer.phone, customer.city);
+    const cleanPhone = (customer.phone || '').replace(/[^0-9]/g, '');
     const cleanAddress = customer.address || `${customer.title} ${customer.city} ${customer.district}`;
     const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanAddress)}`;
 
@@ -2579,10 +2273,9 @@ function openCustomerDetailModal(code) {
                     ${customer.loyaltyLevel ? `<div><span style="color:var(--text-muted);">Sadakat Seviyesi:</span> <span class="badge badge-success">${customer.loyaltyLevel}</span></div>` : ''}
                 </div>
                 <div style="display:flex; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap;">
-                    ${phInfo.valid ? `
-                        <a href="tel:${phInfo.tel}" class="btn btn-primary btn-sm"><i class="fa-solid fa-phone"></i> Hemen Ara (${phInfo.display})</a>
-                        <button type="button" class="btn btn-success btn-sm" onclick="openCustomerWhatsApp('${customer.code}')"><i class="fa-brands fa-whatsapp"></i> WhatsApp (${phInfo.display})</button>
-                        <button type="button" class="btn btn-secondary btn-sm" style="border-color:rgba(37,211,102,0.4); color:#25d366;" onclick="openCustomerWhatsApp('${customer.code}', 'EKSTRE')"><i class="fa-brands fa-whatsapp"></i> Ekstre Özeti Gönder</button>
+                    ${customer.phone && customer.phone !== 'YOK' ? `
+                        <a href="tel:${customer.phone}" class="btn btn-primary btn-sm"><i class="fa-solid fa-phone"></i> Hemen Ara</a>
+                        <a href="https://wa.me/${cleanPhone}" target="_blank" class="btn btn-success btn-sm"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
                     ` : ''}
                 </div>
             </div>
@@ -2766,8 +2459,7 @@ function openInvoiceDetailModal(customerCode, invoiceIdx) {
                 </button>
                 <span style="font-size:0.72rem; color:#94a3b8; margin-left:0.35rem;"><i class="fa-solid fa-shield-check" style="color:#34d399;"></i> Dizsan Otomotiv Logo ERP (Salt-Okunur)</span>
             </div>
-            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-                <button type="button" class="btn btn-success" onclick="openCustomerWhatsApp('${customer.code}', 'INVOICE', ${idxNum})"><i class="fa-brands fa-whatsapp"></i> WhatsApp ile Fatura Özeti</button>
+            <div style="display:flex; gap:0.5rem;">
                 <button type="button" class="btn btn-secondary" onclick="window.print()"><i class="fa-solid fa-print"></i> Yazdır / PDF</button>
                 <button type="button" class="btn btn-primary" onclick="closeInvoiceDetailModal()"><i class="fa-solid fa-arrow-left"></i> Ekstreye Dön / Kapat</button>
             </div>
@@ -3928,10 +3620,7 @@ function renderActiveVisits() {
 
                 <div class="visit-meta">
                     ${v.contactPerson ? `<span><i class="fa-solid fa-user-tie"></i> ${v.contactPerson}</span>` : ''}
-                    ${v.phone ? (() => {
-                        const vPh = parseTurkishPhones(v.phone);
-                        return `<span><i class="fa-solid fa-phone"></i> <a href="tel:${vPh.tel || v.phone}" style="color:#38bdf8; text-decoration:none;">${vPh.display || v.phone}</a> <a href="javascript:void(0)" onclick="openWhatsAppChat('${(v.phone || '').replace(/'/g, "\\'")}', 'Sayın ${String(v.customerTitle || '').replace(/'/g, "\\'")}, Dizsan Otomotiv adına iyi çalışmalar dileriz.')" style="color:#25d366; margin-left:6px; text-decoration:none;" title="WhatsApp ile Yaz"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a></span>`;
-                    })() : ''}
+                    ${v.phone ? `<span><i class="fa-solid fa-phone"></i> <a href="tel:${v.phone}" style="color:#38bdf8; text-decoration:none;">${v.phone}</a></span>` : ''}
                     ${v.plate ? `<span><i class="fa-solid fa-truck"></i> ${v.plate}</span>` : ''}
                     ${v.assignedBy ? `<span><i class="fa-solid fa-user-gear"></i> Görevi Veren: <strong>${v.assignedBy}</strong></span>` : ''}
                 </div>
@@ -5471,9 +5160,6 @@ function renderSavedCustomRoutesList() {
                     <button type="button" class="btn btn-secondary btn-sm" style="padding:0.24rem 0.55rem; font-size:0.7rem;" onclick="printCustomRouteSheet('${rt.id}')">
                         <i class="fa-solid fa-print" style="color:#fbbf24;"></i> Yazdır
                     </button>
-                    <button type="button" class="btn btn-secondary btn-sm" style="padding:0.24rem 0.55rem; font-size:0.7rem; border-color:rgba(37,211,102,0.4); color:#25d366;" onclick="shareCustomRouteWhatsApp('${rt.id}')">
-                        <i class="fa-brands fa-whatsapp"></i> WhatsApp
-                    </button>
                     <button type="button" class="btn btn-danger btn-sm" style="padding:0.24rem 0.5rem; font-size:0.7rem; margin-left:auto;" onclick="deleteCustomRoutePlan('${rt.id}')" title="Rutu Sil">
                         <i class="fa-solid fa-trash"></i>
                     </button>
@@ -6053,9 +5739,7 @@ function sendLocalOrServiceWorkerPush(notif) {
 }
 
 function showPhoneReminderModal(task) {
-    const phInfo = parseTurkishPhones(task.phone);
-    const safePhone = String(task.phone || '').replace(/'/g, "\\'");
-    const safeTitle = String(task.customerTitle || '').replace(/'/g, "\\'");
+    const phoneClean = (task.phone || '').replace(/[^0-9+]/g, '');
     const modalHtml = `
         <div id="phone-reminder-active-banner" style="position:fixed; bottom:20px; right:20px; z-index:99999; max-width:420px; width:calc(100% - 40px); background:rgba(15,23,42,0.96); border:2px solid #38bdf8; border-radius:16px; padding:1.2rem; box-shadow:0 15px 45px rgba(0,0,0,0.8), 0 0 30px rgba(56,189,248,0.3); backdrop-filter:blur(15px); animation:fadeInUp 0.3s ease;">
             <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem;">
@@ -6073,14 +5757,11 @@ function showPhoneReminderModal(task) {
             <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:0.75rem; line-height:1.4;">
                 <strong style="color:#fde68a;">${task.customerTitle}</strong> ile saat <strong style="color:#fff;">${task.dueTime}</strong> randevunuz var.${task.contactPerson ? ` (Yetkili: ${task.contactPerson})` : ''}
             </p>
-            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-                ${phInfo.valid ? `
-                    <a href="tel:${phInfo.tel}" class="btn btn-primary btn-sm" style="flex:1; justify-content:center; text-decoration:none;">
-                        <i class="fa-solid fa-phone"></i> Ara (${phInfo.display})
+            <div style="display:flex; gap:0.5rem;">
+                ${phoneClean ? `
+                    <a href="tel:${phoneClean}" class="btn btn-success btn-sm" style="flex:1; justify-content:center; text-decoration:none;">
+                        <i class="fa-solid fa-phone"></i> Hemen Ara (${task.phone})
                     </a>
-                    <button type="button" class="btn btn-success btn-sm" style="flex:1; justify-content:center;" onclick="openWhatsAppChat('${safePhone}', 'Sayın ${safeTitle}, Dizsan Otomotiv adına iyi çalışmalar dileriz.')">
-                        <i class="fa-brands fa-whatsapp"></i> WhatsApp
-                    </button>
                 ` : ''}
                 <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('phone-reminder-active-banner').remove()">
                     Tamam
@@ -6100,9 +5781,7 @@ function openUrgentDepartureModal(task) {
     if (!modal || !body || !footer) return;
 
     const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=Dizsan+Otomotiv+Corum&destination=${encodeURIComponent(task.location || task.customerTitle)}`;
-    const phInfo = parseTurkishPhones(task.phone);
-    const safePhone = String(task.phone || '').replace(/'/g, "\\'");
-    const safeTitle = String(task.customerTitle || '').replace(/'/g, "\\'");
+    const phoneClean = (task.phone || '').replace(/[^0-9+]/g, '');
 
     body.innerHTML = `
         <div class="urgent-departure-card">
@@ -6139,7 +5818,7 @@ function openUrgentDepartureModal(task) {
 
             ${task.contactPerson || task.phone ? `
                 <div style="font-size:0.82rem; color:#cbd5e1; margin-bottom:0.75rem;">
-                    Yetkili: <strong>${task.contactPerson || '-'}</strong> &bull; Telefon: <strong>${phInfo.display || task.phone || '-'}</strong>
+                    Yetkili: <strong>${task.contactPerson || '-'}</strong> &bull; Telefon: <strong>${task.phone || '-'}</strong>
                 </div>
             ` : ''}
         </div>
@@ -6149,13 +5828,10 @@ function openUrgentDepartureModal(task) {
         <a href="${mapsUrl}" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; text-decoration:none;">
             <i class="fa-solid fa-diamond-turn-right"></i> Google Haritalar Rota Başlat
         </a>
-        ${phInfo.valid ? `
-            <a href="tel:${phInfo.tel}" class="btn btn-primary" style="justify-content:center; text-decoration:none;">
-                <i class="fa-solid fa-phone"></i> Ara
+        ${phoneClean ? `
+            <a href="tel:${phoneClean}" class="btn btn-success" style="justify-content:center; text-decoration:none;">
+                <i class="fa-solid fa-phone"></i> Müşteriyi Ara
             </a>
-            <button type="button" class="btn btn-success" onclick="openWhatsAppChat('${safePhone}', 'Sayın ${safeTitle}, Dizsan Otomotiv saha ekibimiz ziyaretiniz için yola çıkmıştır.')">
-                <i class="fa-brands fa-whatsapp"></i> WhatsApp
-            </button>
         ` : ''}
         <button type="button" class="btn btn-secondary" onclick="closeUrgentDepartureModal()">
             <i class="fa-solid fa-check"></i> Yola Çıktım / Kapat
@@ -6452,7 +6128,7 @@ function getLivePreferredUrl() {
 function shareAppOnWhatsApp() {
     const url = getLivePreferredUrl();
     const msg = `📢 *DİZSAN Müşteri Ziyaret & Saha Takip Sistemi*\n\n🔗 *Uygulama Giriş Linki:*\n${url}\n\n📲 *Telefon ve Tablete Kurulum:*\n• *iPhone / iPad:* Safari'de açın ➔ *Paylaş (⬆️)* ➔ *Ana Ekrana Ekle*\n• *Android:* Chrome menüsünden *Uygulamayı Yükle* seçin.\n\n🔑 *Giriş Şifresi:* 123 veya 123456`;
-    openWhatsAppChat('', msg);
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
 // PWA Kurulum İstemi Dinleyicisi
@@ -6777,6 +6453,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Service Worker Kaydı (Sonsuz yenileme döngüsü yaratmadan sessiz çalışır)
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js?v=1.5.9').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=Aranan kelimenin gectigi alani ve kelimeyi sari isaretleme (highlight) sistemi eklendi').catch(() => {});
     }
 });

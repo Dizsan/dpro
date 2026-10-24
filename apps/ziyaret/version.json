@@ -1,6 +1,7 @@
 {
-  "version": "1.5.8",
-  "updatedAt": "2026-10-18T22:58:30Z",
-  "notes": "v1.5.8 — Özel Rut Planlama & Kaydetme Sistemi, Kredi Son Ödeme Tarihleri, Dizsan Otomotiv Cari Filtresi",
-  "mandatory": true
+  "version": "1.6.9",
+  "build": 169,
+  "releasedAt": "2026-10-24 23:05:31",
+  "releaseNotes": "GitHub Tam Yedekleme ve Sadece Omer Eren Erisim Kalkani",
+  "author": "Ömer Eren & DİZSAN"
 }
