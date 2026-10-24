@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "24.10.2026 12:38:01",
-  "updatedAtMs": 1792834681819,
-  "stateRevision": 121,
+  "updatedAt": "24.10.2026 12:40:30",
+  "updatedAtMs": 1792834830671,
+  "stateRevision": 122,
   "users": [
     {
       "order": 0,
@@ -329,12 +329,33 @@
           "intercompanyMeta": null,
           "createdBy": "GÖKHAN ÖZBULUT",
           "createdAt": "24.10.2026 12:38:01"
+        },
+        {
+          "id": "ENT-1792834830670-778",
+          "updatedAtMs": 1792834830670,
+          "dateISO": "2026-10-19",
+          "section": "CASH_IN",
+          "col1": "BANKA & DİĞER GİRİŞLER",
+          "desc": "HURDA SATIMI 11 TL X 745 KG",
+          "dueDate": "",
+          "amount": 8200,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:40:30"
         }
       ],
-      "updatedAtMs": 1792834681818
+      "updatedAtMs": 1792834830670
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "24.10.2026 12:40:30",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Nakit Kasa Girişi] \"BANKA & DİĞER GİRİŞLER - HURDA SATIMI 11 TL X 745 KG\" (8.200,00 ₺) eklendi."
+    },
     {
       "timestamp": "24.10.2026 12:38:01",
       "user": "GÖKHAN ÖZBULUT",
