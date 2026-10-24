@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "24.10.2026 14:18:41",
-  "updatedAtMs": 1792840721447,
-  "stateRevision": 157,
+  "updatedAt": "24.10.2026 14:19:32",
+  "updatedAtMs": 1792840772812,
+  "stateRevision": 158,
   "users": [
     {
       "order": 0,
@@ -710,9 +710,46 @@
       ],
       "updatedAtMs": 1792838804029,
       "tcmbSlotKey": "2026-10-20_HISTORICAL"
+    },
+    "2026-10-21": {
+      "dateISO": "2026-10-21",
+      "euroRate": "--",
+      "usdRate": "--",
+      "prevInOverride": null,
+      "prevOutOverride": null,
+      "carryoverOverride": null,
+      "carryoverLabel": "20/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
+      "cashierName": "GÖKHAN ÖZBULUT",
+      "controllerName": "RAFET CANBEK",
+      "controllerApproved": false,
+      "isLocked": false,
+      "entries": [
+        {
+          "id": "ENT-1792840772811-680",
+          "updatedAtMs": 1792840772811,
+          "dateISO": "2026-10-21",
+          "section": "CASH_IN",
+          "col1": "CARİ HESAP TAHSİLATI / MÜŞTERİ CARİ NAKİT TAHSİLAT",
+          "desc": "MIKDAT BULUT CARI HESAP TAHSILATI",
+          "dueDate": "",
+          "amount": 25000,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 14:19:32"
+        }
+      ],
+      "updatedAtMs": 1792840772811
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "24.10.2026 14:19:32",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "21.10.2026 [Nakit Kasa Girişi] \"CARİ HESAP TAHSİLATI / MÜŞTERİ CARİ NAKİT TAHSİLAT - MIKDAT BULUT CARI HESAP TAHSILATI\" (25.000,00 ₺) eklendi."
+    },
     {
       "timestamp": "24.10.2026 13:46:44",
       "user": "GÖKHAN ÖZBULUT",
@@ -1038,7 +1075,7 @@
       "detail": "Demo / test girişlerinin tamamı temizlendi; kasa gerçek üretim girişleri için 0,00 TL bakiye ile sıfırlandı."
     }
   ],
-  "lastActiveDateISO": "2026-10-20",
+  "lastActiveDateISO": "2026-10-21",
   "lastFullResetMs": 1792766040000,
   "deletedEntryIds": [
     "ENT-1792413946541-678",
