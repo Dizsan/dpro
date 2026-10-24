@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "24.10.2026 12:04:07",
-  "updatedAtMs": 1792832647349,
-  "stateRevision": 115,
+  "updatedAt": "24.10.2026 12:05:56",
+  "updatedAtMs": 1792832756321,
+  "stateRevision": 116,
   "users": [
     {
       "order": 0,
@@ -200,21 +200,6 @@
       "isLocked": false,
       "entries": [
         {
-          "id": "ENT-1792832079445-638",
-          "updatedAtMs": 1792832079445,
-          "dateISO": "2026-10-24",
-          "section": "CASH_IN",
-          "col1": "SERVİS & İŞÇİLİK GELİRİ / ATÖLYE",
-          "desc": "TF4040000360",
-          "dueDate": "",
-          "amount": 1000,
-          "code": "",
-          "ocrMeta": null,
-          "intercompanyMeta": null,
-          "createdBy": "GÖKHAN ÖZBULUT",
-          "createdAt": "24.10.2026 11:54:39"
-        },
-        {
           "id": "ENT-1792832154242-560",
           "updatedAtMs": 1792832154242,
           "dateISO": "2026-10-24",
@@ -246,7 +231,7 @@
         }
       ],
       "tcmbSlotKey": "2026-10-24_BEFORE_1630",
-      "updatedAtMs": 1792832647349
+      "updatedAtMs": 1792832756320
     },
     "2026-10-25": {
       "dateISO": "2026-10-25",
@@ -335,6 +320,12 @@
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "24.10.2026 12:05:56",
+      "user": "ÖMER EREN",
+      "category": "KAYIT SİLME",
+      "detail": "24.10.2026 [Nakit Kasa Girişi] \"TF4040000360\" (1.000,00 ₺) silindi."
+    },
     {
       "timestamp": "24.10.2026 12:04:07",
       "user": "GÖKHAN ÖZBULUT",
@@ -512,7 +503,8 @@
     "ENT-1792761061351-250",
     "ENT-1792761374746-698",
     "ENT-1792766926300-0",
-    "ENT-1792766967444-15"
+    "ENT-1792766967444-15",
+    "ENT-1792832079445-638"
   ],
   "clearedDays": {
     "2026-10-16": 1792762500000,
