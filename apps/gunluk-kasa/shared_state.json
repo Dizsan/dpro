@@ -1,15 +1,15 @@
 {
-  "version": "1.0.5",
-  "updatedAt": "22.10.2026 03:26:24",
-  "updatedAtMs": 1792628784302,
-  "stateRevision": 28,
+  "version": "1.3.1",
+  "updatedAt": "24.10.2026 20:25:02",
+  "updatedAtMs": 1792862702397,
+  "stateRevision": 175,
   "users": [
     {
       "order": 0,
       "name": "ÖMER EREN",
       "username": "ömer",
       "email": "oeren@dizsan.com.tr",
-      "pinStamp": "2697120930-1230232798-23831670",
+      "pinStamp": "621976239-623787727-2631164839",
       "dept": "Yönetim Kurulu / Sistem Yöneticisi",
       "rolePreset": "ADMIN",
       "permissions": {
@@ -19,7 +19,8 @@
         "delete": true,
         "lockDay": true,
         "manageUsers": true
-      }
+      },
+      "pinUpdatedAtMs": 1792787040000
     },
     {
       "order": 1,
@@ -124,7 +125,178 @@
       }
     }
   ],
+  "approvedDevices": {
+    "DEV-243181-LXKL": {
+      "deviceId": "DEV-243181-LXKL",
+      "username": "ömer",
+      "userFullName": "ÖMER EREN",
+      "dept": "Yönetim Kurulu / Sistem Yöneticisi",
+      "platform": "Apple Mac (macOS) • Safari",
+      "approvedBy": "ÖMER EREN (Otomatik Yönetici Cihazı)",
+      "approvedAt": "23.10.2026 18:44:19",
+      "approvedAtMs": 1792770259420
+    },
+    "DEV-874458-9G4U": {
+      "deviceId": "DEV-874458-9G4U",
+      "username": "ömer",
+      "userFullName": "ÖMER EREN",
+      "dept": "Yönetim Kurulu / Sistem Yöneticisi",
+      "platform": "Apple Mac (macOS) • Safari",
+      "approvedBy": "ÖMER EREN (Otomatik Yönetici Cihazı)",
+      "approvedAt": "24.10.2026 00:30:51",
+      "approvedAtMs": 1792791051456
+    },
+    "DEV-815366-97LW": {
+      "deviceId": "DEV-815366-97LW",
+      "username": "ömer",
+      "userFullName": "ÖMER EREN",
+      "dept": "Yönetim Kurulu / Sistem Yöneticisi",
+      "platform": "Android Telefon/Tablet • Chrome",
+      "approvedBy": "ÖMER EREN (Otomatik Yönetici Cihazı)",
+      "approvedAt": "24.10.2026 01:03:32",
+      "approvedAtMs": 1792793012087
+    },
+    "DEV-711892-VDMR": {
+      "deviceId": "DEV-711892-VDMR",
+      "username": "gokhan.ozbulut",
+      "userFullName": "GÖKHAN ÖZBULUT",
+      "dept": "Kasa Sorumlusu / Muhasebe & Finans",
+      "platform": "Android Telefon/Tablet • Chrome",
+      "approvalCode": "265642",
+      "approvedBy": "ÖMER EREN",
+      "approvedAt": "24.10.2026 11:50:41",
+      "approvedAtMs": 1792831841187
+    },
+    "DEV-988047-ZDDZ": {
+      "deviceId": "DEV-988047-ZDDZ",
+      "username": "ömer",
+      "userFullName": "ÖMER EREN",
+      "dept": "Yönetim Kurulu / Sistem Yöneticisi",
+      "platform": "Apple Mac (macOS) • Safari",
+      "approvedBy": "ÖMER EREN (Otomatik Yönetici Cihazı)",
+      "approvedAt": "24.10.2026 20:22:13",
+      "approvedAtMs": 1792862533999
+    }
+  },
+  "pendingDevices": {},
+  "revokedDevices": {},
   "days": {
+    "2026-10-23": {
+      "dateISO": "2026-10-23",
+      "euroRate": "55,8683",
+      "usdRate": "49,7746",
+      "prevInOverride": null,
+      "prevOutOverride": null,
+      "carryoverOverride": null,
+      "carryoverLabel": "22/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
+      "cashierName": "GÖKHAN ÖZBULUT",
+      "controllerName": "RAFET CANBEK",
+      "controllerApproved": false,
+      "isLocked": false,
+      "entries": [],
+      "tcmbSlotKey": "2026-10-23_HISTORICAL"
+    },
+    "2026-10-24": {
+      "dateISO": "2026-10-24",
+      "euroRate": "55,8683",
+      "usdRate": "49,7746",
+      "prevInOverride": null,
+      "prevOutOverride": null,
+      "carryoverOverride": null,
+      "carryoverLabel": "23/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
+      "cashierName": "GÖKHAN ÖZBULUT",
+      "controllerName": "RAFET CANBEK",
+      "controllerApproved": false,
+      "isLocked": false,
+      "entries": [],
+      "tcmbSlotKey": "2026-10-24_AFTER_1630",
+      "updatedAtMs": 1792832760368
+    },
+    "2026-10-25": {
+      "dateISO": "2026-10-25",
+      "euroRate": "55,8683",
+      "usdRate": "49,7746",
+      "prevInOverride": null,
+      "prevOutOverride": null,
+      "carryoverOverride": null,
+      "carryoverLabel": "24/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
+      "cashierName": "GÖKHAN ÖZBULUT",
+      "controllerName": "RAFET CANBEK",
+      "controllerApproved": false,
+      "isLocked": false,
+      "entries": [],
+      "tcmbSlotKey": "2026-10-25_HISTORICAL"
+    },
+    "2026-10-26": {
+      "dateISO": "2026-10-26",
+      "euroRate": "--",
+      "usdRate": "--",
+      "prevInOverride": null,
+      "prevOutOverride": null,
+      "carryoverOverride": null,
+      "carryoverLabel": "25/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
+      "cashierName": "GÖKHAN ÖZBULUT",
+      "controllerName": "RAFET CANBEK",
+      "controllerApproved": false,
+      "isLocked": false,
+      "entries": []
+    },
+    "2026-10-27": {
+      "dateISO": "2026-10-27",
+      "euroRate": "--",
+      "usdRate": "--",
+      "prevInOverride": null,
+      "prevOutOverride": null,
+      "carryoverOverride": null,
+      "carryoverLabel": "26/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
+      "cashierName": "GÖKHAN ÖZBULUT",
+      "controllerName": "RAFET CANBEK",
+      "controllerApproved": false,
+      "isLocked": false,
+      "entries": []
+    },
+    "2026-10-28": {
+      "dateISO": "2026-10-28",
+      "euroRate": "--",
+      "usdRate": "--",
+      "prevInOverride": null,
+      "prevOutOverride": null,
+      "carryoverOverride": null,
+      "carryoverLabel": "27/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
+      "cashierName": "GÖKHAN ÖZBULUT",
+      "controllerName": "RAFET CANBEK",
+      "controllerApproved": false,
+      "isLocked": false,
+      "entries": []
+    },
+    "2026-10-29": {
+      "dateISO": "2026-10-29",
+      "euroRate": "--",
+      "usdRate": "--",
+      "prevInOverride": null,
+      "prevOutOverride": null,
+      "carryoverOverride": null,
+      "carryoverLabel": "28/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
+      "cashierName": "GÖKHAN ÖZBULUT",
+      "controllerName": "RAFET CANBEK",
+      "controllerApproved": false,
+      "isLocked": false,
+      "entries": []
+    },
+    "2026-10-30": {
+      "dateISO": "2026-10-30",
+      "euroRate": "--",
+      "usdRate": "--",
+      "prevInOverride": null,
+      "prevOutOverride": null,
+      "carryoverOverride": null,
+      "carryoverLabel": "29/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
+      "cashierName": "GÖKHAN ÖZBULUT",
+      "controllerName": "RAFET CANBEK",
+      "controllerApproved": false,
+      "isLocked": false,
+      "entries": []
+    },
     "2026-10-19": {
       "dateISO": "2026-10-19",
       "euroRate": "55,5676",
@@ -139,36 +311,253 @@
       "isLocked": false,
       "entries": [
         {
-          "id": "ENT-1792413946541-678",
-          "dateISO": "2026-10-19",
-          "section": "CASH_OUT",
-          "col1": "YAKIT GİDERİ",
-          "desc": "19AAJ501 YAKIT ALIMI",
-          "dueDate": "",
-          "amount": 10000,
-          "code": "",
-          "createdBy": "ÖMER EREN",
-          "createdAt": "19.10.2026 15:45:46"
-        },
-        {
-          "id": "ENT-1792413985584-132",
+          "id": "ENT-1792834528392-702",
+          "updatedAtMs": 1792834528392,
           "dateISO": "2026-10-19",
           "section": "CASH_IN",
-          "col1": "AHMET DENEME",
-          "desc": "CARİ HESABA MAHSUBEN",
+          "col1": "SERVİS & İŞÇİLİK GELİRİ / ARAÇ SERVİS BAKIM TAHSİLATI",
+          "desc": "ALAATTIN ALA CARI HESABINA MAHSUBEN",
           "dueDate": "",
-          "amount": 11000,
+          "amount": 20000,
           "code": "",
-          "createdBy": "ÖMER EREN",
-          "createdAt": "19.10.2026 15:46:25"
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:35:28"
+        },
+        {
+          "id": "ENT-1792834681818-75",
+          "updatedAtMs": 1792834681818,
+          "dateISO": "2026-10-19",
+          "section": "CASH_IN",
+          "col1": "BANKA & DİĞER GİRİŞLER / İADE / FAZLA ÖDEME DÖNÜŞÜ",
+          "desc": "TEKNIK KOMITE TOPLANTISI FAZLA IADESI",
+          "dueDate": "",
+          "amount": 1265,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:38:01"
+        },
+        {
+          "id": "ENT-1792834830670-778",
+          "updatedAtMs": 1792834830670,
+          "dateISO": "2026-10-19",
+          "section": "CASH_IN",
+          "col1": "BANKA & DİĞER GİRİŞLER",
+          "desc": "HURDA SATIMI 11 TL X 745 KG",
+          "dueDate": "",
+          "amount": 8200,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:40:30"
+        },
+        {
+          "id": "ENT-1792834936106-792",
+          "updatedAtMs": 1792834936106,
+          "dateISO": "2026-10-19",
+          "section": "CASH_IN",
+          "col1": "SERVİS & İŞÇİLİK GELİRİ / ARAÇ SERVİS BAKIM TAHSİLATI",
+          "desc": "ARDA KILIÇ SATIŞ FİŞİ TF344",
+          "dueDate": "",
+          "amount": 3500,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:42:16"
+        },
+        {
+          "id": "ENT-1792834984580-482",
+          "updatedAtMs": 1792834984580,
+          "dateISO": "2026-10-19",
+          "section": "CASH_IN",
+          "col1": "SERVİS & İŞÇİLİK GELİRİ / ARAÇ SERVİS BAKIM TAHSİLATI",
+          "desc": "PERAKENDE SATIŞ FIŞI TF346",
+          "dueDate": "",
+          "amount": 4000,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:43:04"
+        },
+        {
+          "id": "ENT-1792835012495-236",
+          "updatedAtMs": 1792835012495,
+          "dateISO": "2026-10-19",
+          "section": "CASH_IN",
+          "col1": "SERVİS & İŞÇİLİK GELİRİ / ARAÇ SERVİS BAKIM TAHSİLATI",
+          "desc": "PERAKENDE SATIŞ FIŞI TF345",
+          "dueDate": "",
+          "amount": 3000,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:43:32"
+        },
+        {
+          "id": "ENT-1792835144553-249",
+          "updatedAtMs": 1792835144553,
+          "dateISO": "2026-10-19",
+          "section": "CASH_OUT",
+          "col1": "PERSONEL GİDERLERİ / İŞ / SAHA AVANSI",
+          "desc": "HAKAN AYDIN KIBRIS EĞITIM TOPLANTISI YOL HARCIRAHI",
+          "dueDate": "",
+          "amount": 3500,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:45:44"
+        },
+        {
+          "id": "ENT-1792835288938-223",
+          "updatedAtMs": 1792835288938,
+          "dateISO": "2026-10-19",
+          "section": "CASH_OUT",
+          "col1": "DİĞER GİDERLER",
+          "desc": "ALAATTIN ALA YOL YARDIM HARCIRAHI",
+          "dueDate": "",
+          "amount": 1200,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:48:08"
+        },
+        {
+          "id": "ENT-1792835343432-203",
+          "updatedAtMs": 1792835343432,
+          "dateISO": "2026-10-19",
+          "section": "CASH_OUT",
+          "col1": "PERSONEL GİDERLERİ / MAAŞ AVANSI",
+          "desc": "HAKAN AYDIN AVANS VERILEN",
+          "dueDate": "",
+          "amount": 15000,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:49:03"
+        },
+        {
+          "id": "ENT-1792835446957-326",
+          "updatedAtMs": 1792835446957,
+          "dateISO": "2026-10-19",
+          "section": "CASH_OUT",
+          "col1": "ŞAHSİ GİDERLER / ŞAHSİ HARCAMA / ÖDEME",
+          "desc": "100 DOLAR ÖMER BEYE VERILDI",
+          "dueDate": "",
+          "amount": 4900,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:50:46"
+        },
+        {
+          "id": "ENT-1792835498006-913",
+          "updatedAtMs": 1792835498006,
+          "dateISO": "2026-10-19",
+          "section": "CASH_OUT",
+          "col1": "PERSONEL GİDERLERİ / MAAŞ AVANSI",
+          "desc": "GÖKHAN ÖZBULUT AVANS VERILEN",
+          "dueDate": "",
+          "amount": 5000,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:51:38"
+        },
+        {
+          "id": "ENT-1792835553287-722",
+          "updatedAtMs": 1792835553287,
+          "dateISO": "2026-10-19",
+          "section": "CASH_OUT",
+          "col1": "ŞAHSİ GİDERLER / ŞAHSİ MARKET / GIDA / YEMEK",
+          "desc": "ÖMER EREN YEMEK HARCAMASI",
+          "dueDate": "",
+          "amount": 2000,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:52:33"
+        },
+        {
+          "id": "ENT-1792835635239-317",
+          "updatedAtMs": 1792835635239,
+          "dateISO": "2026-10-19",
+          "section": "POS_CC",
+          "col1": "CARİ HESAP TAHSİLATI / POS / KREDİ KARTI CARİ TAHSİLAT",
+          "desc": "ELIF KARAKAŞ CARI HESABINA MAHSUBEN",
+          "dueDate": "",
+          "amount": 1500,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:53:55"
+        },
+        {
+          "id": "ENT-1792835697339-324",
+          "updatedAtMs": 1792835697339,
+          "dateISO": "2026-10-19",
+          "section": "POS_CC",
+          "col1": "CARİ HESAP TAHSİLATI / POS / KREDİ KARTI CARİ TAHSİLAT",
+          "desc": "MURAT YALÇIN FATURA BEDELI",
+          "dueDate": "",
+          "amount": 500,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:54:57"
+        },
+        {
+          "id": "ENT-1792835782648-505",
+          "updatedAtMs": 1792835782648,
+          "dateISO": "2026-10-19",
+          "section": "WIRE_IN",
+          "col1": "CARİ HESAP TAHSİLATI / GELEN HAVALE / EFT CARİ TAHSİLAT",
+          "desc": "TURGUT GÜLER FATURA BEDELI GARANTI HESABA GELEN",
+          "dueDate": "",
+          "amount": 60000,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:56:22"
+        },
+        {
+          "id": "ENT-1792835860963-26",
+          "updatedAtMs": 1792835860963,
+          "dateISO": "2026-10-19",
+          "section": "WIRE_OUT",
+          "col1": "CARİ / FİRMA ÖDEMELERİ / FATURALI CARİ HESAP ÖDEMESİ",
+          "desc": "VDF DOĞUŞ CARI ÖDEMESI",
+          "dueDate": "",
+          "amount": 15000,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:57:40"
         }
       ],
+      "updatedAtMs": 1792835860963,
       "tcmbSlotKey": "2026-10-19_HISTORICAL"
     },
     "2026-10-20": {
       "dateISO": "2026-10-20",
-      "euroRate": "55,6191",
-      "usdRate": "49,5780",
+      "euroRate": "55,8683",
+      "usdRate": "49,7746",
       "prevInOverride": null,
       "prevOutOverride": null,
       "carryoverOverride": null,
@@ -179,63 +568,271 @@
       "isLocked": false,
       "entries": [
         {
-          "id": "ENT-1792493531934-42",
+          "id": "ENT-1792836623595-259",
+          "updatedAtMs": 1792836623595,
           "dateISO": "2026-10-20",
           "section": "CASH_IN",
-          "col1": "CARI HESABA MAHSUBEN ÖDEME",
-          "desc": "CEMAL DEMIR CARI ÖDEME",
+          "col1": "BANKA & DİĞER GİRİŞLER / İADE / FAZLA ÖDEME DÖNÜŞÜ",
+          "desc": "ALAATTIN ALA YOZGAT YOL YARDIMI AVANS IADESI",
           "dueDate": "",
-          "amount": 50000,
+          "amount": 1200,
           "code": "",
-          "createdBy": "ÖMER EREN",
-          "createdAt": "20.10.2026 13:52:11"
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 13:10:23"
         },
         {
-          "id": "ENT-1792493562961-823",
+          "id": "ENT-1792836723736-389",
+          "updatedAtMs": 1792836723736,
+          "dateISO": "2026-10-20",
+          "section": "CASH_OUT",
+          "col1": "ARAÇ GİDERLERİ / YAKIT (MAZOT / BENZİN)",
+          "desc": "PLAKA: 19AK404 · KM: 670.000 · YAKIT (MAZOT / BENZİN)",
+          "dueDate": "",
+          "amount": 1400,
+          "code": "",
+          "ocrMeta": {
+            "docType": "FUEL",
+            "hasReceiptImg": false,
+            "hasPosImg": false,
+            "plate": "19AK404",
+            "km": 670000
+          },
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 13:12:03"
+        },
+        {
+          "id": "ENT-1792836775828-600",
+          "updatedAtMs": 1792836775828,
+          "dateISO": "2026-10-20",
+          "section": "CASH_OUT",
+          "col1": "PERSONEL GİDERLERİ / MAAŞ AVANSI",
+          "desc": "PLAKA: 19AK404 · RAFET CANBEK AVANS VERILEN",
+          "dueDate": "",
+          "amount": 5000,
+          "code": "",
+          "ocrMeta": {
+            "docType": "OTHER",
+            "hasReceiptImg": false,
+            "hasPosImg": false,
+            "plate": "19AK404"
+          },
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 13:12:55"
+        },
+        {
+          "id": "ENT-1792836848815-603",
+          "updatedAtMs": 1792836848815,
+          "dateISO": "2026-10-20",
+          "section": "CASH_OUT",
+          "col1": "ATÖLYE GİDERLERİ / DİĞER ATÖLYE GİDERİ",
+          "desc": "PLAKA: 19AK404 · 40ACD898 TAKOGRAF KALIBRASYON ÖDEMESI",
+          "dueDate": "",
+          "amount": 1100,
+          "code": "",
+          "ocrMeta": {
+            "docType": "OTHER",
+            "hasReceiptImg": false,
+            "hasPosImg": false,
+            "plate": "19AK404"
+          },
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 13:14:08"
+        },
+        {
+          "id": "ENT-1792836920002-487",
+          "updatedAtMs": 1792836920002,
+          "dateISO": "2026-10-20",
+          "section": "CASH_OUT",
+          "col1": "CARİ / FİRMA ÖDEMELERİ / PEŞİN MALZEME ALIMI",
+          "desc": "PLAKA: 19AK404 · ER TICARET KAYNAK TÜP DOLUMU",
+          "dueDate": "",
+          "amount": 1600,
+          "code": "",
+          "ocrMeta": {
+            "docType": "OTHER",
+            "hasReceiptImg": false,
+            "hasPosImg": false,
+            "plate": "19AK404"
+          },
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 13:15:20"
+        },
+        {
+          "id": "ENT-1792836995226-480",
+          "updatedAtMs": 1792836995226,
           "dateISO": "2026-10-20",
           "section": "POS_CC",
-          "col1": "CARI HESABE ÖDEME",
-          "desc": "CARI ÖDEME",
+          "col1": "CARİ HESAP TAHSİLATI / POS / KREDİ KARTI CARİ TAHSİLAT",
+          "desc": "PLAKA: 19AK404 · DSA000136 ILHAN ÖZTÜRK TAHSILATI",
           "dueDate": "",
-          "amount": 10000,
+          "amount": 2000,
           "code": "",
-          "createdBy": "ÖMER EREN",
-          "createdAt": "20.10.2026 13:52:42"
+          "ocrMeta": {
+            "docType": "OTHER",
+            "hasReceiptImg": false,
+            "hasPosImg": false,
+            "plate": "19AK404"
+          },
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 13:16:35"
         },
         {
-          "id": "ENT-1792493593726-672",
+          "id": "ENT-1792837054355-187",
+          "updatedAtMs": 1792837054356,
           "dateISO": "2026-10-20",
-          "section": "WIRE_IN",
-          "col1": "GARANTI BANKASI ÖMER EREN ŞAHSI HESAP",
-          "desc": "CARI HESABA ÖDEME",
+          "section": "POS_CC",
+          "col1": "CARİ HESAP TAHSİLATI / POS / KREDİ KARTI CARİ TAHSİLAT",
+          "desc": "PLAKA: 19AK404 · DSE000967 MAHMUT SAK FATURA ÖDEMESI",
           "dueDate": "",
-          "amount": 8000,
+          "amount": 17000,
           "code": "",
-          "createdBy": "ÖMER EREN",
-          "createdAt": "20.10.2026 13:53:13"
+          "ocrMeta": {
+            "docType": "OTHER",
+            "hasReceiptImg": false,
+            "hasPosImg": false,
+            "plate": "19AK404"
+          },
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 13:17:34"
+        },
+        {
+          "id": "ENT-1792838804029-53",
+          "updatedAtMs": 1792838804029,
+          "dateISO": "2026-10-20",
+          "section": "WIRE_OUT",
+          "col1": "CARİ / FİRMA ÖDEMELERİ / FATURALI CARİ HESAP ÖDEMESİ",
+          "desc": "ÇALIŞKAN TAŞIMACILIK CARI ÖDEMESI",
+          "dueDate": "",
+          "amount": 23017,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 13:46:44"
         }
       ],
-      "tcmbSlotKey": "2026-10-20_AFTER_1630"
+      "updatedAtMs": 1792838804029,
+      "tcmbSlotKey": "2026-10-20_HISTORICAL"
     },
-    "2026-10-18": {
-      "dateISO": "2026-10-18",
-      "euroRate": "55,6180",
-      "usdRate": "49,4463",
+    "2026-10-21": {
+      "dateISO": "2026-10-21",
+      "euroRate": "55,8683",
+      "usdRate": "49,7746",
       "prevInOverride": null,
       "prevOutOverride": null,
       "carryoverOverride": null,
-      "carryoverLabel": "17/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
+      "carryoverLabel": "20/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
       "cashierName": "GÖKHAN ÖZBULUT",
       "controllerName": "RAFET CANBEK",
       "controllerApproved": false,
       "isLocked": false,
-      "entries": [],
-      "tcmbSlotKey": "2026-10-18_HISTORICAL"
+      "entries": [
+        {
+          "id": "ENT-1792840772811-680",
+          "updatedAtMs": 1792840772811,
+          "dateISO": "2026-10-21",
+          "section": "CASH_IN",
+          "col1": "CARİ HESAP TAHSİLATI / MÜŞTERİ CARİ NAKİT TAHSİLAT",
+          "desc": "MIKDAT BULUT CARI HESAP TAHSILATI",
+          "dueDate": "",
+          "amount": 25000,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 14:19:32"
+        },
+        {
+          "id": "ENT-1792840822925-521",
+          "updatedAtMs": 1792840822925,
+          "dateISO": "2026-10-21",
+          "section": "CASH_IN",
+          "col1": "SERVİS & İŞÇİLİK GELİRİ / ARIZA / ONARIM İŞÇİLİK",
+          "desc": "TF000347 PERAKENDE SATIŞ FIŞI",
+          "dueDate": "",
+          "amount": 1000,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 14:20:22"
+        },
+        {
+          "id": "ENT-1792840981402-798",
+          "updatedAtMs": 1792840981402,
+          "dateISO": "2026-10-21",
+          "section": "CASH_OUT",
+          "col1": "ŞAHSİ GİDERLER / ŞAHSİ HARCAMA / ÖDEME",
+          "desc": "ÖMER EREN KAMP OCAĞI ALIMI",
+          "dueDate": "",
+          "amount": 625,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 14:23:01"
+        },
+        {
+          "id": "ENT-1792841026943-725",
+          "updatedAtMs": 1792841026943,
+          "dateISO": "2026-10-21",
+          "section": "CASH_OUT",
+          "col1": "ŞAHSİ GİDERLER / ŞAHSİ HARCAMA / ÖDEME",
+          "desc": "BREZILYA KAHVE ALIMI 500 GR",
+          "dueDate": "",
+          "amount": 920,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 14:23:46"
+        },
+        {
+          "id": "ENT-1792841067817-578",
+          "updatedAtMs": 1792841067817,
+          "dateISO": "2026-10-21",
+          "section": "CASH_OUT",
+          "col1": "PERSONEL GİDERLERİ / MAAŞ AVANSI",
+          "desc": "GÖKHAN ÖZBULUT AVANS VERILEN",
+          "dueDate": "",
+          "amount": 12000,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 14:24:27"
+        },
+        {
+          "id": "ENT-1792841117026-887",
+          "updatedAtMs": 1792841117026,
+          "dateISO": "2026-10-21",
+          "section": "CASH_OUT",
+          "col1": "KARGO & NAKLİYE / KARGO GÖNDERİM ÜCRETİ",
+          "desc": "YURT IÇI KARGO ÖDEMESI",
+          "dueDate": "",
+          "amount": 600,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 14:25:17"
+        }
+      ],
+      "updatedAtMs": 1792841117026,
+      "tcmbSlotKey": "2026-10-21_HISTORICAL"
     },
     "2026-10-22": {
       "dateISO": "2026-10-22",
-      "euroRate": "55,8801",
-      "usdRate": "49,6349",
+      "euroRate": "--",
+      "usdRate": "--",
       "prevInOverride": null,
       "prevOutOverride": null,
       "carryoverOverride": null,
@@ -244,101 +841,440 @@
       "controllerName": "RAFET CANBEK",
       "controllerApproved": false,
       "isLocked": false,
-      "entries": [
-        {
-          "id": "ENT-1792625699623-145",
-          "dateISO": "2026-10-22",
-          "section": "CARI_CC",
-          "col1": "GARANTİ BBVA - 4360 (CORPORATE (DIZSAN OTOMOTIV)) · MUTFAK & İKRAM / MİSAFİR İKRAM GİDERİ",
-          "desc": "DOĞUŞ OTO SUAT BEY ÖĞLE YEMEĞİ",
-          "dueDate": "",
-          "amount": 12500,
-          "code": "",
-          "createdBy": "ÖMER EREN",
-          "createdAt": "22.10.2026 02:34:59"
-        }
-      ],
-      "tcmbSlotKey": "2026-10-22_BEFORE_1630"
+      "entries": []
+    },
+    "2026-10-31": {
+      "dateISO": "2026-10-31",
+      "euroRate": "--",
+      "usdRate": "--",
+      "prevInOverride": null,
+      "prevOutOverride": null,
+      "carryoverOverride": null,
+      "carryoverLabel": "30/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
+      "cashierName": "GÖKHAN ÖZBULUT",
+      "controllerName": "RAFET CANBEK",
+      "controllerApproved": false,
+      "isLocked": false,
+      "entries": []
     }
   },
   "auditLogs": [
     {
-      "timestamp": "22.10.2026 02:34:59",
+      "timestamp": "24.10.2026 20:22:13",
       "user": "ÖMER EREN",
+      "category": "OTURUM",
+      "detail": "ÖMER EREN sisteme giriş yaptı."
+    },
+    {
+      "timestamp": "24.10.2026 14:25:17",
+      "user": "GÖKHAN ÖZBULUT",
       "category": "MANUEL GİRİŞ",
-      "detail": "22.10.2026 [Şirket Kredi Kartı ile Ödeme (Gider)] \"GARANTİ BBVA - 4360 (CORPORATE (DIZSAN OTOMOTIV)) · MUTFAK & İKRAM / MİSAFİR İKRAM GİDERİ - DOĞUŞ OTO SUAT BEY ÖĞLE YEMEĞİ\" (12.500,00 ₺) eklendi."
+      "detail": "21.10.2026 [Günlük Nakit Ödeme] \"KARGO & NAKLİYE / KARGO GÖNDERİM ÜCRETİ - YURT IÇI KARGO ÖDEMESI\" (600,00 ₺) eklendi."
     },
     {
-      "timestamp": "20.10.2026 13:53:13",
-      "user": "ÖMER EREN",
+      "timestamp": "24.10.2026 14:24:27",
+      "user": "GÖKHAN ÖZBULUT",
       "category": "MANUEL GİRİŞ",
-      "detail": "20.10.2026 [Gelen Havale] \"CARI HESABA ÖDEME\" (8.000,00 ₺) eklendi."
+      "detail": "21.10.2026 [Günlük Nakit Ödeme] \"PERSONEL GİDERLERİ / MAAŞ AVANSI - GÖKHAN ÖZBULUT AVANS VERILEN\" (12.000,00 ₺) eklendi."
     },
     {
-      "timestamp": "20.10.2026 13:52:42",
-      "user": "ÖMER EREN",
+      "timestamp": "24.10.2026 14:23:46",
+      "user": "GÖKHAN ÖZBULUT",
       "category": "MANUEL GİRİŞ",
-      "detail": "20.10.2026 [Kredi Kartı (POS)] \"CARI ÖDEME\" (10.000,00 ₺) eklendi."
+      "detail": "21.10.2026 [Günlük Nakit Ödeme] \"ŞAHSİ GİDERLER / ŞAHSİ HARCAMA / ÖDEME - BREZILYA KAHVE ALIMI 500 GR\" (920,00 ₺) eklendi."
     },
     {
-      "timestamp": "20.10.2026 13:52:11",
-      "user": "ÖMER EREN",
+      "timestamp": "24.10.2026 14:23:01",
+      "user": "GÖKHAN ÖZBULUT",
       "category": "MANUEL GİRİŞ",
-      "detail": "20.10.2026 [Nakit Kasa Girişi] \"CEMAL DEMIR CARI ÖDEME\" (50.000,00 ₺) eklendi."
+      "detail": "21.10.2026 [Günlük Nakit Ödeme] \"ŞAHSİ GİDERLER / ŞAHSİ HARCAMA / ÖDEME - ÖMER EREN KAMP OCAĞI ALIMI\" (625,00 ₺) eklendi."
     },
     {
-      "timestamp": "19.10.2026 15:49:10",
-      "user": "ÖMER EREN",
-      "category": "YETKİ DEĞİŞİKLİĞİ",
-      "detail": "RAFET CANBEK için \"edit\" izni KAPATILDI."
-    },
-    {
-      "timestamp": "19.10.2026 15:49:09",
-      "user": "ÖMER EREN",
-      "category": "YETKİ DEĞİŞİKLİĞİ",
-      "detail": "RAFET CANBEK için \"edit\" izni AÇILDI."
-    },
-    {
-      "timestamp": "19.10.2026 15:49:09",
-      "user": "ÖMER EREN",
-      "category": "YETKİ DEĞİŞİKLİĞİ",
-      "detail": "RAFET CANBEK için \"edit\" izni KAPATILDI."
-    },
-    {
-      "timestamp": "19.10.2026 15:49:08",
-      "user": "ÖMER EREN",
-      "category": "YETKİ DEĞİŞİKLİĞİ",
-      "detail": "RAFET CANBEK için \"edit\" izni AÇILDI."
-    },
-    {
-      "timestamp": "19.10.2026 15:48:04",
-      "user": "ÖMER EREN",
-      "category": "YETKİ DEĞİŞİKLİĞİ",
-      "detail": "RAFET CANBEK kullanıcısının yetki profili \"Sadece Ekleme Yetkisi\" olarak güncellendi."
-    },
-    {
-      "timestamp": "19.10.2026 15:47:57",
-      "user": "ÖMER EREN",
-      "category": "YETKİ DEĞİŞİKLİĞİ",
-      "detail": "GÖKHAN ÖZBULUT kullanıcısının yetki profili \"Sadece Ekleme Yetkisi\" olarak güncellendi."
-    },
-    {
-      "timestamp": "19.10.2026 15:46:25",
-      "user": "ÖMER EREN",
+      "timestamp": "24.10.2026 14:20:22",
+      "user": "GÖKHAN ÖZBULUT",
       "category": "MANUEL GİRİŞ",
-      "detail": "19.10.2026 [Nakit Kasa Girişi] \"CARİ HESABA MAHSUBEN\" (11.000,00 ₺) eklendi."
+      "detail": "21.10.2026 [Nakit Kasa Girişi] \"SERVİS & İŞÇİLİK GELİRİ / ARIZA / ONARIM İŞÇİLİK - TF000347 PERAKENDE SATIŞ FIŞI\" (1.000,00 ₺) eklendi."
     },
     {
-      "timestamp": "19.10.2026 15:45:46",
-      "user": "ÖMER EREN",
+      "timestamp": "24.10.2026 14:19:32",
+      "user": "GÖKHAN ÖZBULUT",
       "category": "MANUEL GİRİŞ",
-      "detail": "19.10.2026 [Günlük Nakit Ödeme] \"19AAJ501 YAKIT ALIMI\" (10.000,00 ₺) eklendi."
+      "detail": "21.10.2026 [Nakit Kasa Girişi] \"CARİ HESAP TAHSİLATI / MÜŞTERİ CARİ NAKİT TAHSİLAT - MIKDAT BULUT CARI HESAP TAHSILATI\" (25.000,00 ₺) eklendi."
     },
     {
-      "timestamp": "19.10.2026 12:40:00",
+      "timestamp": "24.10.2026 13:46:44",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "20.10.2026 [Giden Havale] \"CARİ / FİRMA ÖDEMELERİ / FATURALI CARİ HESAP ÖDEMESİ - ÇALIŞKAN TAŞIMACILIK CARI ÖDEMESI\" (23.017,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 13:17:34",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "20.10.2026 [Kredi Kartı (POS)] \"CARİ HESAP TAHSİLATI / POS / KREDİ KARTI CARİ TAHSİLAT - PLAKA: 19AK404 · DSE000967 MAHMUT SAK FATURA ÖDEMESI\" (17.000,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 13:16:35",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "20.10.2026 [Kredi Kartı (POS)] \"CARİ HESAP TAHSİLATI / POS / KREDİ KARTI CARİ TAHSİLAT - PLAKA: 19AK404 · DSA000136 ILHAN ÖZTÜRK TAHSILATI\" (2.000,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 13:15:20",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "20.10.2026 [Günlük Nakit Ödeme] \"CARİ / FİRMA ÖDEMELERİ / PEŞİN MALZEME ALIMI - PLAKA: 19AK404 · ER TICARET KAYNAK TÜP DOLUMU\" (1.600,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 13:14:08",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "20.10.2026 [Günlük Nakit Ödeme] \"ATÖLYE GİDERLERİ / DİĞER ATÖLYE GİDERİ - PLAKA: 19AK404 · 40ACD898 TAKOGRAF KALIBRASYON ÖDEMESI\" (1.100,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 13:12:55",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "20.10.2026 [Günlük Nakit Ödeme] \"PERSONEL GİDERLERİ / MAAŞ AVANSI - PLAKA: 19AK404 · RAFET CANBEK AVANS VERILEN\" (5.000,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 13:12:03",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "20.10.2026 [Günlük Nakit Ödeme] \"ARAÇ GİDERLERİ / YAKIT (MAZOT / BENZİN) - PLAKA: 19AK404 · KM: 670.000 · YAKIT (MAZOT / BENZİN)\" (1.400,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 13:10:23",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "20.10.2026 [Nakit Kasa Girişi] \"BANKA & DİĞER GİRİŞLER / İADE / FAZLA ÖDEME DÖNÜŞÜ - ALAATTIN ALA YOZGAT YOL YARDIMI AVANS IADESI\" (1.200,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 12:57:40",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Giden Havale] \"CARİ / FİRMA ÖDEMELERİ / FATURALI CARİ HESAP ÖDEMESİ - VDF DOĞUŞ CARI ÖDEMESI\" (15.000,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 12:56:22",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Gelen Havale] \"CARİ HESAP TAHSİLATI / GELEN HAVALE / EFT CARİ TAHSİLAT - TURGUT GÜLER FATURA BEDELI GARANTI HESABA GELEN\" (60.000,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 12:54:57",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Kredi Kartı (POS)] \"CARİ HESAP TAHSİLATI / POS / KREDİ KARTI CARİ TAHSİLAT - MURAT YALÇIN FATURA BEDELI\" (500,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 12:53:55",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Kredi Kartı (POS)] \"CARİ HESAP TAHSİLATI / POS / KREDİ KARTI CARİ TAHSİLAT - ELIF KARAKAŞ CARI HESABINA MAHSUBEN\" (1.500,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 12:52:33",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Günlük Nakit Ödeme] \"ŞAHSİ GİDERLER / ŞAHSİ MARKET / GIDA / YEMEK - ÖMER EREN YEMEK HARCAMASI\" (2.000,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 12:51:38",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Günlük Nakit Ödeme] \"PERSONEL GİDERLERİ / MAAŞ AVANSI - GÖKHAN ÖZBULUT AVANS VERILEN\" (5.000,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 12:50:46",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Günlük Nakit Ödeme] \"ŞAHSİ GİDERLER / ŞAHSİ HARCAMA / ÖDEME - 100 DOLAR ÖMER BEYE VERILDI\" (4.900,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 12:49:03",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Günlük Nakit Ödeme] \"PERSONEL GİDERLERİ / MAAŞ AVANSI - HAKAN AYDIN AVANS VERILEN\" (15.000,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 12:48:08",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Günlük Nakit Ödeme] \"DİĞER GİDERLER - ALAATTIN ALA YOL YARDIM HARCIRAHI\" (1.200,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 12:45:44",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Günlük Nakit Ödeme] \"PERSONEL GİDERLERİ / İŞ / SAHA AVANSI - HAKAN AYDIN KIBRIS EĞITIM TOPLANTISI YOL HARCIRAHI\" (3.500,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 12:43:32",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Nakit Kasa Girişi] \"SERVİS & İŞÇİLİK GELİRİ / ARAÇ SERVİS BAKIM TAHSİLATI - PERAKENDE SATIŞ FIŞI TF345\" (3.000,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 12:43:04",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Nakit Kasa Girişi] \"SERVİS & İŞÇİLİK GELİRİ / ARAÇ SERVİS BAKIM TAHSİLATI - PERAKENDE SATIŞ FIŞI TF346\" (4.000,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 12:42:16",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Nakit Kasa Girişi] \"SERVİS & İŞÇİLİK GELİRİ / ARAÇ SERVİS BAKIM TAHSİLATI - ARDA KILIÇ SATIŞ FİŞİ TF344\" (3.500,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 12:40:30",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Nakit Kasa Girişi] \"BANKA & DİĞER GİRİŞLER - HURDA SATIMI 11 TL X 745 KG\" (8.200,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 12:38:01",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Nakit Kasa Girişi] \"BANKA & DİĞER GİRİŞLER / İADE / FAZLA ÖDEME DÖNÜŞÜ - TEKNIK KOMITE TOPLANTISI FAZLA IADESI\" (1.265,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 12:35:28",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Nakit Kasa Girişi] \"SERVİS & İŞÇİLİK GELİRİ / ARAÇ SERVİS BAKIM TAHSİLATI - ALAATTIN ALA CARI HESABINA MAHSUBEN\" (20.000,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 12:06:00",
+      "user": "ÖMER EREN",
+      "category": "KAYIT SİLME",
+      "detail": "24.10.2026 [Nakit Kasa Girişi] \"DİZSAN LOJİSTİK ŞİRKETİNDEN 3.100,00 USD ($) BORÇ ALINDI (KUR: 49,65 -> 153.915,00 ₺ BANKA HAVALE/EFT)\" (153.915,00 ₺) silindi."
+    },
+    {
+      "timestamp": "24.10.2026 12:05:58",
+      "user": "ÖMER EREN",
+      "category": "KAYIT SİLME",
+      "detail": "24.10.2026 [Günlük Nakit Ödeme] \"MSLZEME ALIMI\" (1.800,00 ₺) silindi."
+    },
+    {
+      "timestamp": "24.10.2026 12:05:56",
+      "user": "ÖMER EREN",
+      "category": "KAYIT SİLME",
+      "detail": "24.10.2026 [Nakit Kasa Girişi] \"TF4040000360\" (1.000,00 ₺) silindi."
+    },
+    {
+      "timestamp": "24.10.2026 12:04:07",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "24.10.2026 [Nakit Kasa Girişi] \"SERVİS & İŞÇİLİK GELİRİ / ARAÇ SERVİS BAKIM TAHSİLATI - DİZSAN LOJİSTİK ŞİRKETİNDEN 3.100,00 USD ($) BORÇ ALINDI (KUR: 49,65 -> 153.915,00 ₺ BANKA HAVALE/EFT)\" (153.915,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 11:55:54",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "24.10.2026 [Günlük Nakit Ödeme] \"TEDARİK & ATÖLYE / ATÖLYE - MSLZEME ALIMI\" (1.800,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 11:54:39",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "24.10.2026 [Nakit Kasa Girişi] \"SERVİS & İŞÇİLİK GELİRİ / ATÖLYE - TF4040000360\" (1.000,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "24.10.2026 11:50:41",
+      "user": "ÖMER EREN",
+      "category": "CİHAZ ONAYLANDI",
+      "detail": "Ömer Eren tarafından GÖKHAN ÖZBULUT (Android Telefon/Tablet • Chrome — DEV-711892-VDMR) cihazının kurulumu onaylandı."
+    },
+    {
+      "timestamp": "24.10.2026 11:50:04",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "CİHAZ ONAY TALEBİ",
+      "detail": "GÖKHAN ÖZBULUT (Android Telefon/Tablet • Chrome — DEV-711892-VDMR) yeni cihaz kurulum onayı talep etti."
+    },
+    {
+      "timestamp": "24.10.2026 00:30:51",
+      "user": "ÖMER EREN",
+      "category": "OTURUM",
+      "detail": "ÖMER EREN sisteme giriş yaptı."
+    },
+    {
+      "timestamp": "23.10.2026 23:29:45",
+      "user": "ÖMER EREN",
+      "category": "OTURUM",
+      "detail": "ÖMER EREN çıkış yaptı."
+    },
+    {
+      "timestamp": "23.10.2026 23:26:01",
+      "user": "ÖMER EREN",
+      "category": "OTURUM",
+      "detail": "ÖMER EREN sisteme giriş yaptı."
+    },
+    {
+      "timestamp": "23.10.2026 23:25:50",
+      "user": "ÖMER EREN",
+      "category": "OTURUM",
+      "detail": "ÖMER EREN çıkış yaptı."
+    },
+    {
+      "timestamp": "23.10.2026 23:25:45",
+      "user": "ÖMER EREN",
+      "category": "OTURUM",
+      "detail": "ÖMER EREN sisteme giriş yaptı."
+    },
+    {
+      "timestamp": "23.10.2026 23:25:36",
+      "user": "ÖMER EREN",
+      "category": "OTURUM",
+      "detail": "ÖMER EREN çıkış yaptı."
+    },
+    {
+      "timestamp": "23.10.2026 23:17:33",
+      "user": "ÖMER EREN",
+      "category": "OTURUM",
+      "detail": "ÖMER EREN çıkış yaptı."
+    },
+    {
+      "timestamp": "23.10.2026 23:17:31",
+      "user": "ÖMER EREN",
+      "category": "OTURUM",
+      "detail": "ÖMER EREN sisteme giriş yaptı."
+    },
+    {
+      "timestamp": "23.10.2026 23:17:25",
+      "user": "ÖMER EREN",
+      "category": "OTURUM",
+      "detail": "ÖMER EREN çıkış yaptı."
+    },
+    {
+      "timestamp": "23.10.2026 23:17:23",
+      "user": "ÖMER EREN",
+      "category": "OTURUM",
+      "detail": "ÖMER EREN sisteme giriş yaptı."
+    },
+    {
+      "timestamp": "23.10.2026 23:17:18",
+      "user": "ÖMER EREN",
+      "category": "OTURUM",
+      "detail": "ÖMER EREN çıkış yaptı."
+    },
+    {
+      "timestamp": "23.10.2026 23:17:10",
+      "user": "ÖMER EREN",
+      "category": "ŞİFRE SIFIRLAMA",
+      "detail": "ÖMER EREN (oeren@dizsan.com.tr) şifresini güncelledi ve giriş yaptı."
+    },
+    {
+      "timestamp": "23.10.2026 23:16:36",
       "user": "Sistem",
-      "category": "SİSTEM",
-      "detail": "Dizsan Günlük Kasa Formu %100 manuel giriş modunda (0,00 TL başlangıç ile) hazırlandı."
+      "category": "GÜVENLİK UYARISI",
+      "detail": "ÖMER EREN için hatalı kurumsal e-posta (deneme@dizsan.com.tr) ile şifre sıfırlama denemesi engellendi."
+    },
+    {
+      "timestamp": "23.10.2026 23:16:12",
+      "user": "ÖMER EREN",
+      "category": "OTURUM",
+      "detail": "ÖMER EREN çıkış yaptı."
+    },
+    {
+      "timestamp": "23.10.2026 23:12:24",
+      "user": "ÖMER EREN",
+      "category": "OTURUM",
+      "detail": "ÖMER EREN çıkış yaptı."
+    },
+    {
+      "timestamp": "23.10.2026 23:12:21",
+      "user": "ÖMER EREN",
+      "category": "OTURUM",
+      "detail": "ÖMER EREN sisteme giriş yaptı."
+    },
+    {
+      "timestamp": "23.10.2026 23:12:12",
+      "user": "ÖMER EREN",
+      "category": "OTURUM",
+      "detail": "ÖMER EREN çıkış yaptı."
+    },
+    {
+      "timestamp": "23.10.2026 18:02:12",
+      "user": "ÖMER EREN",
+      "category": "KAYIT SİLME",
+      "detail": "23.10.2026 [Günlük Nakit Ödeme] \"DENEME\" (800,00 ₺) silindi."
+    },
+    {
+      "timestamp": "23.10.2026 18:02:09",
+      "user": "ÖMER EREN",
+      "category": "KAYIT SİLME",
+      "detail": "23.10.2026 [Nakit Kasa Girişi] \"DENEME\" (500,00 ₺) silindi."
+    },
+    {
+      "timestamp": "23.10.2026 17:49:27",
+      "user": "ÖMER EREN",
+      "category": "MANUEL GİRİŞ",
+      "detail": "23.10.2026 [Günlük Nakit Ödeme] \"TEDARİK & ATÖLYE / ATÖLYE - DENEME\" (800,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "23.10.2026 17:48:46",
+      "user": "ÖMER EREN",
+      "category": "MANUEL GİRİŞ",
+      "detail": "23.10.2026 [Nakit Kasa Girişi] \"SERVİS & İŞÇİLİK GELİRİ / ARAÇ SERVİS BAKIM TAHSİLATI - DENEME\" (500,00 ₺) eklendi."
+    },
+    {
+      "timestamp": "23.10.2026 17:34:30",
+      "user": "ÖMER EREN",
+      "category": "SİSTEM SIFIRLAMA",
+      "detail": "Demo / test girişlerinin tamamı temizlendi; kasa gerçek üretim girişleri için 0,00 TL bakiye ile sıfırlandı."
+    },
+    {
+      "timestamp": "24.10.2026 19:58:39",
+      "user": "ÖMER EREN",
+      "category": "KAYIT SİLME",
+      "detail": "22.10.2026 [Şirket Kredi Kartı ile Ödeme (Gider)] \"DOĞUŞ OTO SUAT BEY ÖĞLE YEMEĞİ\" (12.500,00 ₺) silindi."
     }
+  ],
+  "lastActiveDateISO": "2026-10-21",
+  "lastFullResetMs": 1792766040000,
+  "deletedEntryIds": [
+    "ENT-1792413946541-678",
+    "ENT-1792413985584-132",
+    "ENT-1792493531934-42",
+    "ENT-1792493562961-823",
+    "ENT-1792493593726-672",
+    "ENT-1792625699623-145",
+    "ENT-1792690464483-839",
+    "ENT-1792756015807-529",
+    "ENT-1792761061351-250",
+    "ENT-1792761374746-698",
+    "ENT-1792766926300-0",
+    "ENT-1792766967444-15",
+    "ENT-1792832079445-638",
+    "ENT-1792832154242-560",
+    "ENT-1792832647348-297"
+  ],
+  "clearedDays": {
+    "2026-10-16": 1792762500000,
+    "2026-10-17": 1792762500000,
+    "2026-10-18": 1792762500000,
+    "2026-10-19": 1792762500000,
+    "2026-10-20": 1792762500000,
+    "2026-10-21": 1792762500000,
+    "2026-10-22": 1792762500000,
+    "2026-10-23": 1792762500000,
+    "2026-10-31": 1792762500000
+  },
+  "vehiclePlates": [
+    "19AK404",
+    "19AAJ501",
+    "19DS134",
+    "19DS645",
+    "19DS224",
+    "19DS750",
+    "34TE6263",
+    "34FEH141",
+    "19DS560",
+    "19DC555",
+    "19DS233",
+    "19DS393",
+    "19DS762"
   ]
 }

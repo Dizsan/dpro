@@ -1,6 +1,6 @@
 {
-  "version": "1.5.8",
-  "updatedAt": "2026-10-18T22:58:30Z",
-  "notes": "v1.5.8 — Özel Rut Planlama & Kaydetme Sistemi, Kredi Son Ödeme Tarihleri, Dizsan Otomotiv Cari Filtresi",
+  "version": "1.5.9",
+  "updatedAt": "2026-10-24T19:15:00Z",
+  "notes": "v1.5.9 — Akıllı Türkiye Telefon & WhatsApp Motoru (1.990 Müşteri Çoklu Numara, Alan Kodu, Cari Ekstre/Fatura/Rut WhatsApp Paylaşımı) ve Çift Kaynaklı Bulut Senkronizasyonu",
   "mandatory": true
 }

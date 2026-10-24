@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dizsan-kasa-v1.0.6';
+const CACHE_NAME = 'dizsan-kasa-v1.3.0';
 const ASSETS = [
   './',
   './index.html',
@@ -42,7 +42,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   event.respondWith(
-    fetch(req)
+    fetch(req, { cache: 'no-store' })
       .then((res) => {
         const clone = res.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
