@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "24.10.2026 11:50:41",
-  "updatedAtMs": 1792831841187,
-  "stateRevision": 103,
+  "updatedAt": "24.10.2026 11:54:39",
+  "updatedAtMs": 1792832079446,
+  "stateRevision": 104,
   "users": [
     {
       "order": 0,
@@ -198,8 +198,25 @@
       "controllerName": "RAFET CANBEK",
       "controllerApproved": false,
       "isLocked": false,
-      "entries": [],
-      "tcmbSlotKey": "2026-10-24_BEFORE_1630"
+      "entries": [
+        {
+          "id": "ENT-1792832079445-638",
+          "updatedAtMs": 1792832079445,
+          "dateISO": "2026-10-24",
+          "section": "CASH_IN",
+          "col1": "SERVİS & İŞÇİLİK GELİRİ / ATÖLYE",
+          "desc": "TF4040000360",
+          "dueDate": "",
+          "amount": 1000,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 11:54:39"
+        }
+      ],
+      "tcmbSlotKey": "2026-10-24_BEFORE_1630",
+      "updatedAtMs": 1792832079445
     },
     "2026-10-25": {
       "dateISO": "2026-10-25",
@@ -287,6 +304,12 @@
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "24.10.2026 11:54:39",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "24.10.2026 [Nakit Kasa Girişi] \"SERVİS & İŞÇİLİK GELİRİ / ATÖLYE - TF4040000360\" (1.000,00 ₺) eklendi."
+    },
     {
       "timestamp": "24.10.2026 11:50:41",
       "user": "ÖMER EREN",
@@ -432,7 +455,7 @@
       "detail": "Demo / test girişlerinin tamamı temizlendi; kasa gerçek üretim girişleri için 0,00 TL bakiye ile sıfırlandı."
     }
   ],
-  "lastActiveDateISO": "2026-10-23",
+  "lastActiveDateISO": "2026-10-24",
   "lastFullResetMs": 1792766040000,
   "deletedEntryIds": [
     "ENT-1792413946541-678",
