@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "24.10.2026 12:56:22",
-  "updatedAtMs": 1792835782649,
-  "stateRevision": 134,
+  "updatedAt": "24.10.2026 12:57:40",
+  "updatedAtMs": 1792835860963,
+  "stateRevision": 135,
   "users": [
     {
       "order": 0,
@@ -524,12 +524,33 @@
           "intercompanyMeta": null,
           "createdBy": "GÖKHAN ÖZBULUT",
           "createdAt": "24.10.2026 12:56:22"
+        },
+        {
+          "id": "ENT-1792835860963-26",
+          "updatedAtMs": 1792835860963,
+          "dateISO": "2026-10-19",
+          "section": "WIRE_OUT",
+          "col1": "CARİ / FİRMA ÖDEMELERİ / FATURALI CARİ HESAP ÖDEMESİ",
+          "desc": "VDF DOĞUŞ CARI ÖDEMESI",
+          "dueDate": "",
+          "amount": 15000,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:57:40"
         }
       ],
-      "updatedAtMs": 1792835782648
+      "updatedAtMs": 1792835860963
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "24.10.2026 12:57:40",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "19.10.2026 [Giden Havale] \"CARİ / FİRMA ÖDEMELERİ / FATURALI CARİ HESAP ÖDEMESİ - VDF DOĞUŞ CARI ÖDEMESI\" (15.000,00 ₺) eklendi."
+    },
     {
       "timestamp": "24.10.2026 12:56:22",
       "user": "GÖKHAN ÖZBULUT",
