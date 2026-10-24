@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "24.10.2026 13:19:44",
-  "updatedAtMs": 1792837184282,
-  "stateRevision": 147,
+  "updatedAt": "24.10.2026 13:19:45",
+  "updatedAtMs": 1792837185508,
+  "stateRevision": 150,
   "users": [
     {
       "order": 0,
@@ -545,8 +545,8 @@
     },
     "2026-10-20": {
       "dateISO": "2026-10-20",
-      "euroRate": "--",
-      "usdRate": "--",
+      "euroRate": "55,8683",
+      "usdRate": "49,7746",
       "prevInOverride": null,
       "prevOutOverride": null,
       "carryoverOverride": null,
@@ -693,7 +693,8 @@
           "createdAt": "24.10.2026 13:17:34"
         }
       ],
-      "updatedAtMs": 1792837054356
+      "updatedAtMs": 1792837054356,
+      "tcmbSlotKey": "2026-10-20_HISTORICAL"
     }
   },
   "auditLogs": [
