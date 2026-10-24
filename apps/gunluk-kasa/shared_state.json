@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "24.10.2026 11:57:28",
-  "updatedAtMs": 1792832248779,
-  "stateRevision": 114,
+  "updatedAt": "24.10.2026 12:04:07",
+  "updatedAtMs": 1792832647349,
+  "stateRevision": 115,
   "users": [
     {
       "order": 0,
@@ -228,10 +228,25 @@
           "intercompanyMeta": null,
           "createdBy": "GÖKHAN ÖZBULUT",
           "createdAt": "24.10.2026 11:55:54"
+        },
+        {
+          "id": "ENT-1792832647348-297",
+          "updatedAtMs": 1792832647348,
+          "dateISO": "2026-10-24",
+          "section": "CASH_IN",
+          "col1": "SERVİS & İŞÇİLİK GELİRİ / ARAÇ SERVİS BAKIM TAHSİLATI",
+          "desc": "DİZSAN LOJİSTİK ŞİRKETİNDEN 3.100,00 USD ($) BORÇ ALINDI (KUR: 49,65 -> 153.915,00 ₺ BANKA HAVALE/EFT)",
+          "dueDate": "",
+          "amount": 153915,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 12:04:07"
         }
       ],
       "tcmbSlotKey": "2026-10-24_BEFORE_1630",
-      "updatedAtMs": 1792832154242
+      "updatedAtMs": 1792832647349
     },
     "2026-10-25": {
       "dateISO": "2026-10-25",
@@ -320,6 +335,12 @@
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "24.10.2026 12:04:07",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "24.10.2026 [Nakit Kasa Girişi] \"SERVİS & İŞÇİLİK GELİRİ / ARAÇ SERVİS BAKIM TAHSİLATI - DİZSAN LOJİSTİK ŞİRKETİNDEN 3.100,00 USD ($) BORÇ ALINDI (KUR: 49,65 -> 153.915,00 ₺ BANKA HAVALE/EFT)\" (153.915,00 ₺) eklendi."
+    },
     {
       "timestamp": "24.10.2026 11:55:54",
       "user": "GÖKHAN ÖZBULUT",
