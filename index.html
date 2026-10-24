@@ -709,13 +709,32 @@
             display: flex;
         }
 
+        #view-embedded-app.active {
+            height: 100vh;
+            height: 100dvh;
+            max-height: 100dvh;
+            overflow: hidden;
+        }
+
         .app-iframe-container {
-            flex: 1;
+            flex: 1 1 0%;
             width: 100%;
-            height: calc(100vh - 44px);
-            min-height: calc(100vh - 44px);
+            height: 100%;
+            min-height: 0;
             border: none;
             background: #060913;
+        }
+
+        @media (max-width: 768px) {
+            .embed-toolbar {
+                padding: 4px 8px;
+                min-height: 38px;
+                gap: 4px;
+            }
+            .embed-toolbar .btn-sm {
+                padding: 4px 8px;
+                font-size: 0.72rem;
+            }
         }
 
         /* ==================== CARDS, TABLES & GRIDS ==================== */
