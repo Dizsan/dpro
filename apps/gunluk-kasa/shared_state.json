@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "24.10.2026 14:22:15",
-  "updatedAtMs": 1792840935718,
-  "stateRevision": 163,
+  "updatedAt": "24.10.2026 14:23:01",
+  "updatedAtMs": 1792840981402,
+  "stateRevision": 164,
   "users": [
     {
       "order": 0,
@@ -753,13 +753,34 @@
           "intercompanyMeta": null,
           "createdBy": "GÖKHAN ÖZBULUT",
           "createdAt": "24.10.2026 14:20:22"
+        },
+        {
+          "id": "ENT-1792840981402-798",
+          "updatedAtMs": 1792840981402,
+          "dateISO": "2026-10-21",
+          "section": "CASH_OUT",
+          "col1": "ŞAHSİ GİDERLER / ŞAHSİ HARCAMA / ÖDEME",
+          "desc": "ÖMER EREN KAMP OCAĞI ALIMI",
+          "dueDate": "",
+          "amount": 625,
+          "code": "",
+          "ocrMeta": null,
+          "intercompanyMeta": null,
+          "createdBy": "GÖKHAN ÖZBULUT",
+          "createdAt": "24.10.2026 14:23:01"
         }
       ],
-      "updatedAtMs": 1792840822925,
+      "updatedAtMs": 1792840981402,
       "tcmbSlotKey": "2026-10-21_HISTORICAL"
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "24.10.2026 14:23:01",
+      "user": "GÖKHAN ÖZBULUT",
+      "category": "MANUEL GİRİŞ",
+      "detail": "21.10.2026 [Günlük Nakit Ödeme] \"ŞAHSİ GİDERLER / ŞAHSİ HARCAMA / ÖDEME - ÖMER EREN KAMP OCAĞI ALIMI\" (625,00 ₺) eklendi."
+    },
     {
       "timestamp": "24.10.2026 14:20:22",
       "user": "GÖKHAN ÖZBULUT",
