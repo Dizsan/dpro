@@ -1,6 +1,6 @@
 {
-  "version": "1.8.0",
-  "updatedAt": "2026-10-23T15:30:00Z",
-  "notes": "v1.8.0 — D-Pro Canlı Kasa Modu (Ömer Eren hariç tüm personel sadece Günlük Kasa'yı görür), Cihaz Kurulum Onay Linki, Açık/Koyu Tema ve Mobil/PC Kurulum Karekodu",
+  "version": "1.6.1",
+  "updatedAt": "2026-10-19T12:58:00Z",
+  "notes": "v1.6.1 — Dizsan Günlük Kasa (%100 Manuel Günlük Kasa Formu, Yetki Matrisi & A4 Çıktı), D-Met ve DiKas D-Pro Sol Menü Entegrasyonu",
   "mandatory": true
 }

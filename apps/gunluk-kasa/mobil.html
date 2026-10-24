@@ -24,8 +24,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <link rel="stylesheet" href="style.css?v=1.3.0">
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" defer></script>
+    <link rel="stylesheet" href="style.css?v=1.0.6">
 </head>
 <body>
 
@@ -77,90 +76,19 @@
                 </button>
             </form>
 
-            <div style="margin-top:10px; display:flex; gap:6px; flex-wrap:wrap;">
-                <button type="button" onclick="openInstallModal()" class="btn" style="flex:1; background:rgba(56,189,248,0.14); border-color:rgba(56,189,248,0.45); color:var(--text-primary); font-size:0.8rem; font-weight:700;">
-                    <i class="fa-solid fa-qrcode" style="color:#38bdf8;"></i>
-                    <span>Karekod &amp; PC/Mobil Kurulum</span>
+            <div style="margin-top:10px; display:flex; gap:6px;">
+                <button type="button" onclick="openInstallModal()" class="btn" style="flex:1; background:rgba(56,189,248,0.12); border-color:rgba(56,189,248,0.35); color:#e0f2fe; font-size:0.73rem;">
+                    <i class="fa-solid fa-mobile-screen-button" style="color:#38bdf8;"></i>
+                    <span>Mobil / Masaüstü Kurulum</span>
                 </button>
-                <button type="button" onclick="toggleLightDarkTheme()" class="btn theme-toggle-btn" title="Açık / Koyu Tema Değiştir" style="font-size:0.8rem; font-weight:700;">
-                    <i class="fa-solid fa-sun theme-toggle-icon" style="color:#fbbf24;"></i>
-                    <span class="theme-toggle-label">Açık Tema</span>
-                </button>
+                <a href="../index.html" class="btn" style="background:rgba(255,255,255,0.06); color:#cbd5e1; text-decoration:none; font-size:0.73rem;">
+                    <i class="fa-solid fa-grid-2"></i> Portal
+                </a>
             </div>
 
             <div class="quick-user-chips">
                 <span><i class="fa-solid fa-users-gear"></i> Yetkili Personel Seçimi (Kullanıcı adını doldurur):</span>
                 <div id="quick-user-list" class="chip-list"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ==========================================================================
-         1B. YENİ CİHAZ KURULUM & ERİŞİM ONAYI EKRANI (ÖMER EREN ONAYI ZORUNLU)
-         ========================================================================== -->
-    <div id="device-approval-overlay" class="login-overlay hidden" style="z-index:9600;">
-        <div class="login-card" style="max-width:500px; border-color:rgba(245,158,11,0.55);">
-            <div class="login-brand" style="margin-bottom:14px;">
-                <div style="width:64px; height:64px; border-radius:16px; background:rgba(245,158,11,0.16); border:2px solid rgba(251,191,36,0.55); display:inline-flex; align-items:center; justify-content:center; font-size:1.8rem; color:#fbbf24; margin-bottom:10px;">
-                    <i class="fa-solid fa-shield-halved"></i>
-                </div>
-                <h1 style="font-size:1.35rem;">Cihaz Kurulum &amp; Giriş Onayı Gerekli</h1>
-                <p style="font-size:0.86rem; margin-top:6px; line-height:1.45;">
-                    Güvenlik gereği yeni bir telefon veya bilgisayara kurulum yapılırken <strong>Sistem Yöneticisi (Ömer Eren)</strong> onayı zorunludur.
-                </p>
-            </div>
-
-            <div style="padding:12px 14px; border-radius:12px; background:rgba(15,23,42,0.75); border:1px solid rgba(56,189,248,0.35); margin-bottom:14px; font-size:0.84rem; display:flex; flex-direction:column; gap:6px;">
-                <div style="display:flex; justify-content:space-between; gap:8px;">
-                    <span style="color:var(--text-muted); font-weight:700;">Personel:</span>
-                    <strong id="dev-req-user-name" style="color:var(--text-white);">-</strong>
-                </div>
-                <div style="display:flex; justify-content:space-between; gap:8px;">
-                    <span style="color:var(--text-muted); font-weight:700;">Cihaz Türü:</span>
-                    <strong id="dev-req-platform" style="color:#38bdf8;">-</strong>
-                </div>
-                <div style="display:flex; justify-content:space-between; gap:8px;">
-                    <span style="color:var(--text-muted); font-weight:700;">Cihaz Kimlik Kodu:</span>
-                    <strong id="dev-req-device-id" style="color:#fbbf24; font-family:monospace; font-size:0.9rem;">-</strong>
-                </div>
-                <div style="display:flex; justify-content:space-between; gap:8px;">
-                    <span style="color:var(--text-muted); font-weight:700;">Durum:</span>
-                    <span id="dev-req-status-badge" class="badge badge-warning"><i class="fa-solid fa-clock fa-spin"></i> Ömer Eren Onayı Bekleniyor...</span>
-                </div>
-            </div>
-
-            <div style="display:flex; flex-direction:column; gap:9px; margin-bottom:14px;">
-                <button type="button" class="btn" onclick="sendDeviceApprovalLinkToOmer()" style="width:100%; padding:12px 14px; background:linear-gradient(135deg, #10b981 0%, #059669 100%); border-color:#34d399; color:#ffffff; font-size:0.92rem; font-weight:800;">
-                    <i class="fa-brands fa-whatsapp" style="font-size:1.15rem;"></i>
-                    <span>Ömer Eren'e Onay Linki Gönder (WhatsApp)</span>
-                </button>
-                <div style="display:flex; gap:8px;">
-                    <button type="button" class="btn" onclick="copyDeviceApprovalLink()" style="flex:1; padding:9px 10px; font-size:0.8rem; font-weight:700;">
-                        <i class="fa-solid fa-copy" style="color:#38bdf8;"></i>
-                        <span>Onay Linkini Kopyala</span>
-                    </button>
-                    <button type="button" class="btn" onclick="checkDeviceApprovalNow(true)" style="flex:1; padding:9px 10px; font-size:0.8rem; font-weight:700;">
-                        <i class="fa-solid fa-arrows-rotate" style="color:#34d399;"></i>
-                        <span>Onayı Şimdi Kontrol Et</span>
-                    </button>
-                </div>
-            </div>
-
-            <div style="padding:11px 12px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px dashed var(--border-subtle); margin-bottom:12px;">
-                <label for="manual-device-approval-code" style="display:block; font-size:0.78rem; font-weight:700; color:var(--text-secondary); margin-bottom:6px;">
-                    <i class="fa-solid fa-key" style="color:#fbbf24;"></i> Veya Ömer Eren'den Aldığınız 6 Haneli Onay Kodunu Girin:
-                </label>
-                <div style="display:flex; gap:8px;">
-                    <input type="text" inputmode="numeric" maxlength="6" id="manual-device-approval-code" class="form-control" placeholder="6 Haneli Onay Kodu" style="text-align:center; font-weight:800; font-size:1rem; letter-spacing:3px;">
-                    <button type="button" class="btn btn-primary" onclick="verifyManualDeviceApprovalCode()" style="font-weight:800; padding:8px 16px;">Onayla</button>
-                </div>
-            </div>
-
-            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.78rem;">
-                <span style="color:var(--text-muted);"><i class="fa-solid fa-satellite-dish" style="color:#38bdf8;"></i> Onaylandığında ekran otomatik açılır</span>
-                <button type="button" class="btn btn-xs" onclick="handleLogout()">
-                    <i class="fa-solid fa-arrow-left"></i> Farklı Kullanıcı
-                </button>
             </div>
         </div>
     </div>
@@ -189,14 +117,6 @@
                     <span class="nav-left"><i class="fa-solid fa-table-list"></i> <span>Günlük Kasa Formu</span></span>
                     <span class="nav-badge" id="nav-badge-today-items">0</span>
                 </button>
-                <button class="side-nav-btn" data-tab="intercompany" onclick="switchTab('intercompany')">
-                    <span class="nav-left"><i class="fa-solid fa-right-left" style="color:#fbbf24;"></i> <span>Şirketler Arası Borç / Alacak</span></span>
-                    <span class="nav-badge" id="nav-badge-intercompany" style="background:rgba(245,158,11,0.22); color:#fbbf24;">0</span>
-                </button>
-                <button class="side-nav-btn" data-tab="reports" onclick="switchTab('reports')">
-                    <span class="nav-left"><i class="fa-solid fa-chart-pie" style="color:#34d399;"></i> <span>Raporlama &amp; Analiz</span></span>
-                    <span class="nav-badge" id="nav-badge-reports" style="background:rgba(16,185,129,0.22); color:#34d399;">📊</span>
-                </button>
                 <button class="side-nav-btn" data-tab="a4" onclick="switchTab('a4')">
                     <span class="nav-left"><i class="fa-solid fa-print"></i> <span>A4 Çıktı Önizleme</span></span>
                     <span class="nav-badge" style="background:rgba(245,158,11,0.2); color:#fbbf24;">A4</span>
@@ -209,12 +129,6 @@
                     <span class="nav-left"><i class="fa-solid fa-user-lock"></i> <span>Kullanıcı &amp; Yetkiler</span></span>
                     <span class="nav-badge" id="nav-badge-users">0</span>
                 </button>
-
-                <!-- SOL BAR ŞİRKETLER ARASI BORÇ / ALACAK CANLI ÖZET & TABLO WIDGET -->
-                <div id="sidebar-intercompany-widget" class="sidebar-cal-widget"></div>
-
-                <!-- SOL BAR TAKVİM & KASA DEVİR ÖZETİ WIDGET -->
-                <div id="sidebar-calendar-widget" class="sidebar-cal-widget"></div>
             </nav>
 
             <div class="sidebar-footer">
@@ -224,12 +138,6 @@
                         <div class="user-mini-role" id="sidebar-user-role">Yönetici (Tam Yetki)</div>
                     </div>
                     <div style="display:flex; gap:4px;">
-                        <button class="btn btn-xs theme-toggle-btn" onclick="toggleLightDarkTheme()" title="Açık / Koyu Tema Değiştir">
-                            <i class="fa-solid fa-sun theme-toggle-icon" style="color:#fbbf24;"></i>
-                        </button>
-                        <button class="btn btn-xs" onclick="openInstallModal()" title="Mobil Karekod &amp; PC Kurulum Rehberi">
-                            <i class="fa-solid fa-qrcode" style="color:var(--dizsan-cyan);"></i>
-                        </button>
                         <button class="btn btn-xs" onclick="openChangePasswordModal()" title="Şifre Değiştir">
                             <i class="fa-solid fa-key"></i>
                         </button>
@@ -238,8 +146,8 @@
                         </button>
                     </div>
                 </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted);">
-                    <a id="sidebar-dpro-back-link" href="../D-Pro/index.html" onclick="if(window.parent && window.parent !== window){ event.preventDefault(); window.parent.postMessage({type:'DPRO_BACK_TO_MAIN'}, '*'); }" style="color:var(--dizsan-cyan); text-decoration:none; font-weight:700;"><i class="fa-solid fa-arrow-left"></i> D-Pro / Portal</a>
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.68rem; color:var(--text-muted);">
+                    <a href="../D-Pro/index.html" onclick="if(window.parent && window.parent !== window){ event.preventDefault(); window.parent.postMessage({type:'DPRO_BACK_TO_MAIN'}, '*'); }" style="color:var(--dizsan-cyan); text-decoration:none;"><i class="fa-solid fa-arrow-left"></i> D-Pro / Portal</a>
                     <span id="sync-status-indicator"><i class="fa-solid fa-circle-check" style="color:var(--emerald-ok);"></i> Kayıtlı</span>
                 </div>
             </div>
@@ -251,11 +159,8 @@
             <!-- GÖVDE İÇERİĞİ -->
             <div class="workspace-body">
 
-                <!-- ÖMER EREN İÇİN CANLI YENİ CİHAZ KURULUM ONAY BİLDİRİM ŞERİDİ -->
-                <div id="admin-device-requests-banner" class="no-print" style="display:none; margin-bottom:12px; padding:12px 14px; border-radius:12px; background:linear-gradient(90deg, rgba(245,158,11,0.22), rgba(16,185,129,0.16)); border:2px solid rgba(251,191,36,0.75); box-shadow:0 8px 24px rgba(0,0,0,0.28);"></div>
-
                 <!-- YETKİ BİLGİLENDİRME ŞERİDİ -->
-                <div id="role-permission-banner" style="display:none; margin-bottom:10px; padding:9px 14px; border-radius:10px; font-size:0.84rem; font-weight:600; align-items:center; justify-content:space-between; gap:8px;"></div>
+                <div id="role-permission-banner" style="display:none; margin-bottom:10px; padding:8px 12px; border-radius:10px; font-size:0.76rem; align-items:center; justify-content:space-between; gap:8px;"></div>
 
                 <!-- ======================================================================
                      SEKME 1: SADE VE TEMİZ GÜNLÜK KASA EKRANI
@@ -295,11 +200,7 @@
                             </button>
                         </div>
 
-                        <div class="clean-topbar-actions" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                            <button type="button" class="btn btn-sm theme-toggle-btn" onclick="toggleLightDarkTheme()" title="Açık / Koyu Tema Seçimi">
-                                <i class="fa-solid fa-sun theme-toggle-icon" style="color:#fbbf24;"></i>
-                                <span class="theme-toggle-label">Açık Tema</span>
-                            </button>
+                        <div class="clean-topbar-actions">
                             <button type="button" class="btn btn-add-hero perm-require-add" onclick="openEntryModal()">
                                 <i class="fa-solid fa-plus"></i> <span>Ekle</span>
                             </button>
@@ -310,24 +211,20 @@
                     <div id="clean-entries-container" class="clean-entries-container">
                         <div class="clean-summary-strip">
                             <div class="clean-sum-item">
-                                <span><i class="fa-solid fa-clock-rotate-left" style="color:#38bdf8;"></i> Bir Önceki Kasa Devri</span>
+                                <span>Kasa Devri</span>
                                 <strong id="clean-sum-carry" onclick="openCarryoverOverrideModal()" style="cursor:pointer;" title="Devri düzenlemek için tıklayın">0,00 ₺</strong>
-                                <small id="clean-sum-carry-sub" style="display:block; font-size:0.65rem; color:var(--text-muted); margin-top:2px;">Önceki günden otomatik devir</small>
                             </div>
                             <div class="clean-sum-item sum-in">
-                                <span><i class="fa-solid fa-arrow-down-long"></i> Nakit Giren (+)</span>
+                                <span>Toplam Gelir</span>
                                 <strong id="clean-sum-in">0,00 ₺</strong>
-                                <small id="clean-sum-in-sub" style="display:block; font-size:0.65rem; color:var(--text-muted); margin-top:2px;">Gün içi nakit kasa girişi</small>
                             </div>
                             <div class="clean-sum-item sum-out">
-                                <span><i class="fa-solid fa-arrow-up-long"></i> Nakit Çıkan (-)</span>
+                                <span>Toplam Gider</span>
                                 <strong id="clean-sum-out">0,00 ₺</strong>
-                                <small id="clean-sum-out-sub" style="display:block; font-size:0.65rem; color:var(--text-muted); margin-top:2px;">Gün içi nakit kasa ödemesi</small>
                             </div>
                             <div class="clean-sum-item sum-net">
-                                <span><i class="fa-solid fa-share-from-square"></i> Yarına Devir</span>
+                                <span>Net Kasa Bakiyesi</span>
                                 <strong id="clean-sum-net">0,00 ₺</strong>
-                                <small id="clean-sum-net-sub" style="display:block; font-size:0.65rem; color:var(--text-muted); margin-top:2px;">Bir sonraki güne otomatik devreder</small>
                             </div>
                         </div>
 
@@ -336,12 +233,11 @@
                                 <table class="kasa-table">
                                     <thead>
                                         <tr>
-                                            <th style="width:120px;">GELİR / GİDER</th>
-                                            <th style="width:180px;">KATEGORİ</th>
-                                            <th style="width:190px;">CARİ / BANKA / KAYNAK</th>
+                                            <th style="width:130px;">GELİR / GİDER</th>
+                                            <th style="width:190px;">KATEGORİ</th>
+                                            <th style="width:200px;">CARİ / BANKA / KAYNAK</th>
                                             <th>AÇIKLAMA</th>
-                                            <th style="width:155px;">KAYDEDEN PERSONEL</th>
-                                            <th style="width:140px; text-align:right;">TUTAR (₺)</th>
+                                            <th style="width:150px; text-align:right;">TUTAR (₺)</th>
                                             <th style="width:80px; text-align:right;">İŞLEM</th>
                                         </tr>
                                     </thead>
@@ -351,311 +247,6 @@
                         </div>
                     </div>
 
-                </section>
-
-                <!-- ======================================================================
-                     SEKME 1B: ŞİRKETLER ARASI BORÇ / ALACAK ÖZETİ VE TARİHLİ CARİ TABLO
-                     ====================================================================== -->
-                <section id="tab-intercompany" class="tab-section">
-                    <div class="kasa-panel" style="margin-bottom:14px; border-color:rgba(251,191,36,0.35);">
-                        <div class="kasa-panel-header" style="background:linear-gradient(90deg, rgba(245,158,11,0.15), rgba(14,165,233,0.08));">
-                            <div class="kasa-panel-title">
-                                <i class="fa-solid fa-right-left" style="color:#fbbf24;"></i>
-                                <span>ŞİRKETLER ARASI BORÇ / ALACAK OTOMATİK NET BAKİYE ÖZETİ (DÖVİZ &amp; TL)</span>
-                            </div>
-                            <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                                <button type="button" class="btn btn-xs btn-success" onclick="exportIntercompanyExcel()" title="Şirketler arası borç/alacak özetini ve hareket tablosunu Excel (.xls) olarak indir">
-                                    <i class="fa-solid fa-file-excel"></i> <span>Excel (.xls) Rapor İndir</span>
-                                </button>
-                                <button type="button" class="btn btn-xs btn-success perm-require-add" onclick="openIntercompanyQuickModal('GELIR')">
-                                    <i class="fa-solid fa-arrow-down-long"></i> <span>+ Diğer Şirketten Giriş (Borç Al)</span>
-                                </button>
-                                <button type="button" class="btn btn-xs btn-warning perm-require-add" onclick="openIntercompanyQuickModal('GIDER')">
-                                    <i class="fa-solid fa-arrow-up-long"></i> <span>- Diğer Şirkete Çıkış (Borç Ver / Öde)</span>
-                                </button>
-                            </div>
-                        </div>
-                        <div style="padding:12px;">
-                            <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:10px;">
-                                Günlük kasaya girilen tüm <strong>Diğer Şirketten Giriş</strong> ve <strong>Diğer Şirkete Çıkış</strong> hareketleri para cinsine göre (<strong>USD $, EUR €, TL ₺, GBP £, Altın</strong>) otomatik toplanır ve hangi şirketin hangi şirkete ne kadar borçlu olduğu aşağıda canlı olarak listelenir.
-                            </div>
-                            <div id="intercompany-net-summary-cards" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:10px;"></div>
-                        </div>
-                    </div>
-
-                    <div class="kasa-panel">
-                        <div class="kasa-panel-header">
-                            <div class="kasa-panel-title">
-                                <i class="fa-solid fa-table-list" style="color:var(--dizsan-cyan);"></i>
-                                <span>TARİHLİ ŞİRKETLER ARASI BORÇ / ALACAK HAREKETLERİ TABLOSU</span>
-                            </div>
-                        </div>
-                        <div class="kasa-table-wrap">
-                            <table class="kasa-table">
-                                <thead>
-                                    <tr>
-                                        <th style="width:105px;">TARİH</th>
-                                        <th style="width:155px;">İŞLEM YÖNÜ &amp; KANALI</th>
-                                        <th style="width:165px;">BORÇLU ŞİRKET</th>
-                                        <th style="width:165px;">ALACAKLI ŞİRKET</th>
-                                        <th style="width:160px; text-align:right;">BORÇ TUTARI &amp; PARA CİNSİ</th>
-                                        <th style="width:140px; text-align:right;">KASA / BANKA TL KARŞILIĞI</th>
-                                        <th>AÇIKLAMA</th>
-                                        <th style="width:145px;">KAYDEDEN PERSONEL</th>
-                                        <th style="width:95px; text-align:right;">İŞLEM</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tbody-intercompany-ledger"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- ======================================================================
-                     SEKME 1C: KAPSAMLI RAPORLAMA VE ANALİZ MERKEZİ
-                     ====================================================================== -->
-                <section id="tab-reports" class="tab-section">
-                    <!-- FİLTRE & DÖNEM BAR -->
-                    <div class="kasa-panel no-print" style="margin-bottom:12px; border-color:rgba(52,211,153,0.35);">
-                        <div class="kasa-panel-header" style="background:linear-gradient(90deg, rgba(16,185,129,0.16), rgba(14,165,233,0.10)); flex-wrap:wrap; gap:8px;">
-                            <div class="kasa-panel-title">
-                                <i class="fa-solid fa-chart-pie" style="color:#34d399;"></i>
-                                <span>KASA, KREDİ KARTI, PLAKA/YAKIT, KATEGORİ VE ŞAHSİ/OFİS/ATÖLYE RAPORLAMA MERKEZİ</span>
-                            </div>
-                            <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                                <button type="button" class="btn btn-xs btn-warning" onclick="printReportsSummary()">
-                                    <i class="fa-solid fa-print"></i> <span>Raporu Yazdır / PDF</span>
-                                </button>
-                                <button type="button" class="btn btn-xs btn-success" onclick="exportReportsExcel()">
-                                    <i class="fa-solid fa-file-excel"></i> <span>Excel (.xls) İndir</span>
-                                </button>
-                                <button type="button" class="btn btn-xs" onclick="shareReportsWhatsApp()">
-                                    <i class="fa-brands fa-whatsapp" style="color:#25D366;"></i> <span>WhatsApp Rapor Özeti</span>
-                                </button>
-                            </div>
-                        </div>
-                        <div style="padding:12px;">
-                            <!-- Hızlı Dönem Butonları -->
-                            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
-                                <div style="display:flex; gap:5px; flex-wrap:wrap;">
-                                    <button type="button" class="btn btn-xs" id="rep-preset-TODAY" onclick="setReportPeriodPreset('TODAY')">Seçili Gün</button>
-                                    <button type="button" class="btn btn-xs" id="rep-preset-WEEK" onclick="setReportPeriodPreset('WEEK')">Son 7 Gün</button>
-                                    <button type="button" class="btn btn-xs" id="rep-preset-MONTH" onclick="setReportPeriodPreset('MONTH')">Bu Ay</button>
-                                    <button type="button" class="btn btn-xs" id="rep-preset-YEAR" onclick="setReportPeriodPreset('YEAR')">Bu Yıl</button>
-                                    <button type="button" class="btn btn-xs badge-info" id="rep-preset-ALL" onclick="setReportPeriodPreset('ALL')">Tüm Zamanlar</button>
-                                </div>
-                                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                                    <span style="font-size:0.72rem; color:var(--text-muted); font-weight:700;">Tarih Aralığı:</span>
-                                    <input type="text" id="rep-start-date" class="form-control" style="width:108px; text-align:center; font-weight:700; padding:4px 6px; font-size:0.75rem;" placeholder="GG.AA.YYYY" onchange="handleCustomReportDateChange()">
-                                    <span style="color:var(--text-muted);">—</span>
-                                    <input type="text" id="rep-end-date" class="form-control" style="width:108px; text-align:center; font-weight:700; padding:4px 6px; font-size:0.75rem;" placeholder="GG.AA.YYYY" onchange="handleCustomReportDateChange()">
-                                </div>
-                            </div>
-
-                            <!-- Detaylı Filtreler -->
-                            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:8px;">
-                                <div>
-                                    <label style="display:block; font-size:0.66rem; color:var(--text-muted); font-weight:700; margin-bottom:3px;">Kanal / Tablo Filtresi</label>
-                                    <select id="rep-filter-channel" class="form-control" onchange="renderReportsSection()">
-                                        <option value="ALL">Tüm Kanallar (Nakit + Kart + Banka + Çek)</option>
-                                        <option value="CASH">Sadece Nakit Kasa (Giriş &amp; Çıkış)</option>
-                                        <option value="CARI_CC">Sadece Şirket Kredi Kartı Harcamaları</option>
-                                        <option value="POS_CC">Sadece POS (Müşteri Kredi Kartı Tahsilat)</option>
-                                        <option value="WIRE">Sadece Banka Havale / EFT (Gelen &amp; Giden)</option>
-                                        <option value="CHECK">Sadece Çek / Senet İşlemleri</option>
-                                        <option value="INTERCOMPANY">Sadece Şirketler Arası Borç / Alacak</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style="display:block; font-size:0.66rem; color:var(--text-muted); font-weight:700; margin-bottom:3px;">Alan / Alt Kategori Filtresi</label>
-                                    <select id="rep-filter-area" class="form-control" onchange="handleReportAreaFilterChange(this.value)">
-                                        <option value="ALL">Tüm Kategoriler (Şahsi + Ofis + Atölye + Araç vb.)</option>
-                                        <option value="FUEL">⛽ Sadece Yakıt / Akaryakıt (Plaka Listesi Açılır)</option>
-                                        <option value="ŞAHSİ">Sadece ŞAHSİ Harcamalar</option>
-                                        <option value="OFİS">Sadece OFİS Harcamaları</option>
-                                        <option value="ATÖLYE">Sadece ATÖLYE Harcamaları</option>
-                                        <option value="TDR">Sadece TDR (Tedarik / Parça) Kalemleri</option>
-                                    </select>
-                                </div>
-                                <div id="rep-filter-plate-wrap" style="display:none; padding:6px 8px; border-radius:8px; background:rgba(16,185,129,0.12); border:1px solid rgba(52,211,153,0.45);">
-                                    <label style="display:block; font-size:0.66rem; color:#34d399; font-weight:800; margin-bottom:3px;">
-                                        <i class="fa-solid fa-car"></i> Araç Plakası Seçimi (Otomatik Liste)
-                                    </label>
-                                    <select id="rep-filter-plate" class="form-control" onchange="renderReportsSection()">
-                                        <option value="ALL">Tüm Araç Plakaları</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style="display:block; font-size:0.66rem; color:var(--text-muted); font-weight:700; margin-bottom:3px;">Kredi Kartı Filtresi</label>
-                                    <select id="rep-filter-card" class="form-control" onchange="renderReportsSection()">
-                                        <option value="ALL">Tüm Kredi Kartları</option>
-                                        <option value="4360">GARANTİ BBVA •••• 4360</option>
-                                        <option value="6010">GARANTİ BBVA •••• 6010</option>
-                                        <option value="0667">AKBANK •••• 0667</option>
-                                        <option value="3311">YAPI KREDİ •••• 3311</option>
-                                        <option value="0122">QNB •••• 0122</option>
-                                        <option value="3290">HALKBANK •••• 3290</option>
-                                        <option value="7446">ZİRAAT •••• 7446</option>
-                                        <option value="7506">VAKIFBANK •••• 7506</option>
-                                        <option value="1829">İŞ BANKASI •••• 1829</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style="display:block; font-size:0.66rem; color:var(--text-muted); font-weight:700; margin-bottom:3px;">Kelime / Plaka / Firma Ara</label>
-                                    <input type="text" id="rep-filter-query" class="form-control" placeholder="Plaka (19 DS 750), firma veya açıklama..." oninput="renderReportsSection()">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 6'LI YÖNETİCİ ÖZET KARTLARI (KPI) -->
-                    <div id="rep-kpi-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-bottom:12px;"></div>
-
-                    <!-- ŞAHSİ / OFİS / ATÖLYE HIZLI ÖZET ŞERİDİ -->
-                    <div id="rep-special-areas-strip" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px; margin-bottom:12px;"></div>
-
-                    <!-- 4 ANA KIRILIM TABLOSU (2x2 GRID) -->
-                    <div class="form-grid-2" style="gap:12px; margin-bottom:12px;">
-                        <!-- 1. Kategori & Alt Kategori Dağılımı -->
-                        <div class="kasa-panel">
-                            <div class="kasa-panel-header">
-                                <div class="kasa-panel-title">
-                                    <i class="fa-solid fa-layer-group" style="color:#fbbf24;"></i>
-                                    <span>1. KATEGORİ &amp; ALT KATEGORİ GİDER DAĞILIMI</span>
-                                </div>
-                                <button type="button" class="btn btn-xs btn-success no-print" onclick="exportSingleReportTableExcel('CATEGORIES')">
-                                    <i class="fa-solid fa-file-excel"></i> <span>Excel</span>
-                                </button>
-                            </div>
-                            <div class="kasa-table-wrap" style="max-height:340px; overflow-y:auto;">
-                                <table class="kasa-table">
-                                    <thead>
-                                        <tr>
-                                            <th>KATEGORİ / ALT KATEGORİ</th>
-                                            <th style="text-align:center; width:65px;">ADET</th>
-                                            <th style="text-align:right; width:105px;">KDV (₺)</th>
-                                            <th style="text-align:right; width:130px;">TOPLAM (₺)</th>
-                                            <th style="width:90px;">ORAN</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tbody-rep-categories"></tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- 2. Şirket Kredi Kartları Bazlı Harcama Raporu -->
-                        <div class="kasa-panel">
-                            <div class="kasa-panel-header">
-                                <div class="kasa-panel-title">
-                                    <i class="fa-solid fa-credit-card" style="color:#38bdf8;"></i>
-                                    <span>2. ŞİRKET KREDİ KARTLARI BAZLI HARCAMA RAPORU</span>
-                                </div>
-                                <button type="button" class="btn btn-xs btn-success no-print" onclick="exportSingleReportTableExcel('CARDS')">
-                                    <i class="fa-solid fa-file-excel"></i> <span>Excel</span>
-                                </button>
-                            </div>
-                            <div class="kasa-table-wrap" style="max-height:340px; overflow-y:auto;">
-                                <table class="kasa-table">
-                                    <thead>
-                                        <tr>
-                                            <th>BANKA &amp; KART SON 4 HANE</th>
-                                            <th style="text-align:center; width:65px;">SLİP</th>
-                                            <th style="text-align:right; width:105px;">KDV (₺)</th>
-                                            <th style="text-align:right; width:130px;">TOPLAM (₺)</th>
-                                            <th style="width:90px;">PAY</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tbody-rep-cards"></tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- 3. Araç Plakası & Yakıt (Litre / KM / Tutar) Raporu -->
-                        <div class="kasa-panel">
-                            <div class="kasa-panel-header">
-                                <div class="kasa-panel-title">
-                                    <i class="fa-solid fa-gas-pump" style="color:#34d399;"></i>
-                                    <span>3. ARAÇ PLAKASI, YAKIT &amp; KM RAPORU</span>
-                                </div>
-                                <button type="button" class="btn btn-xs btn-success no-print" onclick="exportSingleReportTableExcel('PLATES')">
-                                    <i class="fa-solid fa-file-excel"></i> <span>Excel</span>
-                                </button>
-                            </div>
-                            <div class="kasa-table-wrap" style="max-height:340px; overflow-y:auto;">
-                                <table class="kasa-table">
-                                    <thead>
-                                        <tr>
-                                            <th>ARAÇ PLAKASI</th>
-                                            <th>YAKIT / İŞLEM TÜRÜ</th>
-                                            <th style="text-align:right; width:95px;">SON KM</th>
-                                            <th style="text-align:center; width:55px;">ADET</th>
-                                            <th style="text-align:right; width:85px;">TOPLAM LT</th>
-                                            <th style="text-align:right; width:120px;">TOPLAM (₺)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tbody-rep-plates"></tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- 4. İşyeri / İstasyon / Cari Bazlı Ödeme Özeti -->
-                        <div class="kasa-panel">
-                            <div class="kasa-panel-header">
-                                <div class="kasa-panel-title">
-                                    <i class="fa-solid fa-store" style="color:#c084fc;"></i>
-                                    <span>4. İŞYERİ / İSTASYON / CARİ BAZLI ÖDEME ÖZETİ</span>
-                                </div>
-                                <button type="button" class="btn btn-xs btn-success no-print" onclick="exportSingleReportTableExcel('MERCHANTS')">
-                                    <i class="fa-solid fa-file-excel"></i> <span>Excel</span>
-                                </button>
-                            </div>
-                            <div class="kasa-table-wrap" style="max-height:340px; overflow-y:auto;">
-                                <table class="kasa-table">
-                                    <thead>
-                                        <tr>
-                                            <th>İŞYERİ / FİRMA / CARİ ADI</th>
-                                            <th>KONUM / KANAL</th>
-                                            <th style="text-align:center; width:60px;">ADET</th>
-                                            <th style="text-align:right; width:100px;">KDV (₺)</th>
-                                            <th style="text-align:right; width:125px;">TOPLAM (₺)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tbody-rep-merchants"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- SEÇİLİ DÖNEM TÜM HAREKETLER DETAY LİSTESİ -->
-                    <div class="kasa-panel">
-                        <div class="kasa-panel-header">
-                            <div class="kasa-panel-title">
-                                <i class="fa-solid fa-list-check" style="color:var(--dizsan-cyan);"></i>
-                                <span id="rep-detail-table-title">SEÇİLİ DÖNEM HAREKET DETAY LİSTESİ</span>
-                            </div>
-                            <button type="button" class="btn btn-xs btn-success no-print" onclick="exportSingleReportTableExcel('ENTRIES')">
-                                <i class="fa-solid fa-file-excel"></i> <span>Bu Tabloyu Excel (.xls) İndir</span>
-                            </button>
-                        </div>
-                        <div class="kasa-table-wrap">
-                            <table class="kasa-table">
-                                <thead>
-                                    <tr>
-                                        <th style="width:90px;">TARİH</th>
-                                        <th style="width:120px;">KANAL / TÜR</th>
-                                        <th style="width:165px;">KATEGORİ / ALT KATEGORİ</th>
-                                        <th style="width:170px;">İŞYERİ / KART / CARİ</th>
-                                        <th style="width:120px;">PLAKA &amp; KM</th>
-                                        <th>AÇIKLAMA</th>
-                                        <th style="width:115px;">KAYDEDEN</th>
-                                        <th style="width:90px; text-align:right;">KDV (₺)</th>
-                                        <th style="width:125px; text-align:right;">TUTAR (₺)</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tbody-rep-entries"></tbody>
-                            </table>
-                        </div>
-                    </div>
                 </section>
 
                 <!-- ======================================================================
@@ -716,14 +307,9 @@
                                     <option value="ALL">Tümü (TDR + Normal)</option>
                                     <option value="ONLY_TDR">Sadece TDR (Tedarik) Kalemleri</option>
                                 </select>
-                                <div style="display:flex; gap:6px;">
-                                    <button class="btn btn-sm btn-success" onclick="exportArchiveSearchExcel()">
-                                        <i class="fa-solid fa-file-excel"></i> <span>Excel (.xls) İndir</span>
-                                    </button>
-                                    <button class="btn btn-sm" onclick="exportArchiveSearchCSV()">
-                                        <i class="fa-solid fa-download"></i> <span>CSV</span>
-                                    </button>
-                                </div>
+                                <button class="btn btn-sm" onclick="exportArchiveSearchCSV()">
+                                    <i class="fa-solid fa-download"></i> <span>CSV İndir</span>
+                                </button>
                             </div>
                             <div class="kasa-table-wrap">
                                 <table class="kasa-table">
@@ -750,9 +336,6 @@
                                 <i class="fa-solid fa-calendar-days" style="color:#10b981;"></i>
                                 <span>GÜNLÜK KASA DEFTERİ ÖZETLERİ (GEÇMİŞ &amp; GÜNCEL GÜNLER)</span>
                             </div>
-                            <button type="button" class="btn btn-xs btn-success" onclick="exportDailyLedgerSummaryExcel()">
-                                <i class="fa-solid fa-file-excel"></i> <span>Günlük Devir Özeti Excel (.xls) İndir</span>
-                            </button>
                         </div>
                         <div class="kasa-table-wrap">
                             <table class="kasa-table">
@@ -779,38 +362,6 @@
                      SEKME 4: KULLANICILAR, YETKİ MATRİSİ VE DENETİM LOGLARI
                      ====================================================================== -->
                 <section id="tab-admin" class="tab-section">
-                    <!-- CİHAZ KURULUM & ERİŞİM ONAY YÖNETİMİ (ÖMER EREN ONAY PANELİ) -->
-                    <div class="kasa-panel" style="margin-bottom:14px; border-color:rgba(245,158,11,0.45);">
-                        <div class="kasa-panel-header" style="background:linear-gradient(90deg, rgba(245,158,11,0.16), rgba(14,165,233,0.10));">
-                            <div class="kasa-panel-title">
-                                <i class="fa-solid fa-mobile-screen-button" style="color:#fbbf24;"></i>
-                                <span>CİHAZ KURULUM &amp; ERİŞİM ONAY YÖNETİMİ (BAŞKA CİHAZLARA KURULUM İZNİ)</span>
-                            </div>
-                            <button type="button" class="btn btn-xs btn-warning" onclick="openInstallModal()">
-                                <i class="fa-solid fa-qrcode"></i> <span>Kurulum Karekodu &amp; PC Rehberi</span>
-                            </button>
-                        </div>
-                        <div style="padding:10px 12px; font-size:0.84rem; color:var(--text-secondary); border-bottom:1px solid var(--border-subtle);">
-                            Başka telefon veya bilgisayarlara kurulum yapılırken gelen onay talepleri burada listelenir. <strong>Ömer Eren</strong> onayladıktan sonra ilgili cihazda kurulum ve kasa kullanımı aktif olur.
-                        </div>
-                        <div class="kasa-table-wrap">
-                            <table class="kasa-table">
-                                <thead>
-                                    <tr>
-                                        <th>PERSONEL ADI</th>
-                                        <th>CİHAZ TÜRÜ &amp; TARAYICI</th>
-                                        <th>CİHAZ KİMLİK KODU</th>
-                                        <th>ONAY KODU (6 HANE)</th>
-                                        <th>TALEP / ONAY TARİHİ</th>
-                                        <th>DURUM</th>
-                                        <th style="text-align:right;">İŞLEM</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tbody-admin-devices"></tbody>
-                            </table>
-                        </div>
-                    </div>
-
                     <div class="kasa-panel" style="margin-bottom:14px;">
                         <div class="kasa-panel-header">
                             <div class="kasa-panel-title">
@@ -869,30 +420,23 @@
                         <div class="kasa-panel">
                             <div class="kasa-panel-header">
                                 <div class="kasa-panel-title">
-                                    <i class="fa-solid fa-shield-halved" style="color:#10b981;"></i>
-                                    <span>3-KATMANLI YEDEKLEME, VERİ KURTARMA &amp; GÜVENLİK KONTROLÜ</span>
+                                    <i class="fa-solid fa-database" style="color:#10b981;"></i>
+                                    <span>VERİ YEDEKLEME &amp; GERİ YÜKLEME</span>
                                 </div>
-                                <button type="button" class="btn btn-xs btn-success" onclick="runSecurityAndBackupSelfTest(true)">
-                                    <i class="fa-solid fa-vial-circle-check"></i> <span>Güvenlik &amp; Yedek Testi Yap</span>
-                                </button>
                             </div>
                             <div style="padding:14px; display:flex; flex-direction:column; gap:10px;">
-                                <div id="backup-security-health-box" style="padding:10px 12px; border-radius:9px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); font-size:0.72rem; color:var(--text-secondary);">
-                                    Yedekleme ve güvenlik durumu kontrol ediliyor...
-                                </div>
+                                <p style="font-size:0.76rem; color:var(--text-secondary);">
+                                    Tüm günlük kasa föyleriniz %100 manuel olarak girilir; hiçbir dış sistemden veri çekilmez. Verileriniz yerel olarak kaydedilir ve istediğiniz zaman JSON veya Excel yedeği alabilirsiniz.
+                                </p>
                                 <div style="display:flex; flex-wrap:wrap; gap:8px;">
                                     <button class="btn btn-primary btn-sm" onclick="exportFullBackupJSON()">
                                         <i class="fa-solid fa-download"></i> <span>Tam Yedek İndir (.JSON)</span>
                                     </button>
-                                    <button class="btn btn-success btn-sm" onclick="exportReportsExcel()">
-                                        <i class="fa-solid fa-file-excel"></i> <span>Tüm Kasayı Excel (.XLS) Yedekle</span>
-                                    </button>
                                     <label class="btn btn-sm perm-require-admin" style="cursor:pointer;">
-                                        <i class="fa-solid fa-upload"></i> <span>Yedek Dosyası Yükle (.JSON)</span>
+                                        <i class="fa-solid fa-upload"></i> <span>Yedek Dosyası Yükle</span>
                                         <input type="file" accept=".json" style="display:none;" onchange="importFullBackupJSON(event)">
                                     </label>
                                 </div>
-                                <div id="local-snapshots-list-box" style="font-size:0.70rem; color:var(--text-muted);"></div>
                             </div>
                         </div>
                     </div>
@@ -907,14 +451,6 @@
         <button class="mob-nav-item active" data-tab="form" onclick="switchTab('form')">
             <i class="fa-solid fa-cash-register"></i>
             <span>Günlük Kasa</span>
-        </button>
-        <button class="mob-nav-item" data-tab="intercompany" onclick="switchTab('intercompany')">
-            <i class="fa-solid fa-right-left"></i>
-            <span>Şirket Borç</span>
-        </button>
-        <button class="mob-nav-item" data-tab="reports" onclick="switchTab('reports')">
-            <i class="fa-solid fa-chart-pie"></i>
-            <span>Raporlar</span>
         </button>
         <button class="mob-nav-item" data-tab="a4" onclick="switchTab('a4')">
             <i class="fa-solid fa-print"></i>
@@ -1046,70 +582,6 @@
                         </div>
                     </div>
 
-                    <!-- 2A. ŞİRKETLER ARASI BORÇ / ALACAK (DİĞER ŞİRKETTEN GİRİŞ VEYA DİĞER ŞİRKETE ÇIKIŞ SEÇİLDİĞİNDE AÇILAN ÖZEL ALAN) -->
-                    <div id="group-entry-intercompany" style="display:none; padding:11px 12px; border-radius:10px; background:linear-gradient(145deg, rgba(245,158,11,0.13), rgba(14,165,233,0.08)); border:1px solid rgba(251,191,36,0.48); margin-bottom:10px;">
-                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:4px;">
-                            <span style="font-size:0.78rem; font-weight:800; color:#fbbf24;">
-                                <i class="fa-solid fa-right-left"></i> Şirketler Arası Borç / Alacak Bilgileri (Diğer Şirketten Giriş / Çıkış)
-                            </span>
-                            <span class="badge badge-warning" style="font-size:0.62rem;">Sol Barda Otomatik Takip Edilir</span>
-                        </div>
-                        <div class="form-grid-2" style="gap:8px; margin-bottom:8px;">
-                            <div class="form-group" style="margin-bottom:0;">
-                                <label for="entry-ic-counterparty" id="lbl-entry-ic-counterparty" style="color:#fde68a; font-weight:800;">Borç Alınan Şirket / Kişi Adı *</label>
-                                <select id="entry-ic-counterparty" class="form-control" onchange="handleIntercompanyFieldChange()">
-                                    <option value="DİZSAN LOJİSTİK">DİZSAN LOJİSTİK</option>
-                                    <option value="DİZSAN OTOMOTİV">DİZSAN OTOMOTİV</option>
-                                    <option value="KM SOLAR">KM SOLAR</option>
-                                    <option value="DSMOT">DSMOT</option>
-                                    <option value="HASAN EREN">HASAN EREN</option>
-                                    <option value="ÖMER EREN">ÖMER EREN</option>
-                                </select>
-                            </div>
-                            <div class="form-group" style="margin-bottom:0;">
-                                <label for="entry-ic-owner" id="lbl-entry-ic-owner" style="color:#cbd5e1; font-weight:700;">Giriş Yapılan (Borçlu) Şirketimiz / Kişi</label>
-                                <select id="entry-ic-owner" class="form-control" onchange="handleIntercompanyFieldChange()">
-                                    <option value="DİZSAN OTOMOTİV">DİZSAN OTOMOTİV</option>
-                                    <option value="DİZSAN LOJİSTİK">DİZSAN LOJİSTİK</option>
-                                    <option value="KM SOLAR">KM SOLAR</option>
-                                    <option value="DSMOT">DSMOT</option>
-                                    <option value="HASAN EREN">HASAN EREN</option>
-                                    <option value="ÖMER EREN">ÖMER EREN</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-grid-2" style="gap:8px; margin-bottom:8px;">
-                            <div class="form-group" style="margin-bottom:0;">
-                                <label for="entry-ic-currency" style="color:#38bdf8; font-weight:800;">Borç Para Cinsi (Döviz / TL) *</label>
-                                <select id="entry-ic-currency" class="form-control" onchange="handleIntercompanyCurrencyChange(this.value)">
-                                    <option value="USD">USD ($ - Amerikan Doları)</option>
-                                    <option value="EUR">EUR (€ - Euro)</option>
-                                    <option value="TRY">TL (₺ - Türk Lirası)</option>
-                                    <option value="GBP">GBP (£ - İngiliz Sterlini)</option>
-                                    <option value="ALTIN">ALTIN (Gram)</option>
-                                </select>
-                            </div>
-                            <div class="form-group" style="margin-bottom:0;">
-                                <label for="entry-ic-channel" style="color:#cbd5e1; font-weight:700;">Kasa / Banka Giriş-Çıkış Yöntemi</label>
-                                <select id="entry-ic-channel" class="form-control" onchange="handleIntercompanyFieldChange()">
-                                    <option value="CASH">Nakit Olarak Kasaya Girdi / Çıktı</option>
-                                    <option value="BANK">Banka Hesabına Havale / EFT Girdi / Çıktı</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-grid-2" style="gap:8px;">
-                            <div class="form-group" style="margin-bottom:0;">
-                                <label for="entry-ic-fx-amount" id="lbl-entry-ic-fx-amount" style="color:#34d399; font-weight:800;">Borç Alınan Döviz / Para Tutarı *</label>
-                                <input type="text" inputmode="decimal" id="entry-ic-fx-amount" class="form-control tr-money-input" placeholder="Örn: 1.000" oninput="formatMoneyInputLive(this); handleIntercompanyAmountOrRateInput()">
-                            </div>
-                            <div class="form-group" id="group-entry-ic-rate" style="margin-bottom:0;">
-                                <label for="entry-ic-fx-rate" style="color:#cbd5e1; font-weight:700;">Bozdurma Kuru (₺ - İsteğe Bağlı)</label>
-                                <input type="text" inputmode="decimal" id="entry-ic-fx-rate" class="form-control" placeholder="Örn: 34,50 (TL karşılığı için)" oninput="handleIntercompanyAmountOrRateInput()">
-                            </div>
-                        </div>
-                        <div id="entry-ic-summary-preview" style="margin-top:8px; padding:6px 9px; border-radius:7px; background:rgba(15,23,42,0.75); border:1px solid rgba(251,191,36,0.35); font-size:0.71rem; color:#fde68a; font-weight:700;"></div>
-                    </div>
-
                     <!-- 2B. ŞİRKET KREDİ KARTI SEÇİLDİĞİNDE KAYITLI KARTLAR LİSTESİ (BANKA ADI + SON 4 HANE) -->
                     <div class="form-group" id="group-entry-cc-card" style="display:none; padding:10px 12px; border-radius:10px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.28); margin-bottom:10px;">
                         <label for="entry-cc-card-select" style="color:var(--dizsan-cyan); font-weight:800;">
@@ -1127,51 +599,9 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="entry-sub-cat" id="lbl-entry-sub-cat">Alt Kalem (Şahsi / Ofis / Atölye Seçilebilir)</label>
+                            <label for="entry-sub-cat" id="lbl-entry-sub-cat">Alt Kalem</label>
                             <select id="entry-sub-cat" class="form-control" onchange="handleSubCategoryChange(this.value)">
                             </select>
-                            <div style="display:flex; gap:4px; margin-top:5px; flex-wrap:wrap;">
-                                <button type="button" class="btn btn-xs" style="padding:2px 8px; font-size:0.64rem; background:rgba(244,63,94,0.16); border-color:rgba(244,63,94,0.45); color:#fecdd3;" onclick="handleOcrManualSubCatChange('ŞAHSİ')">
-                                    <i class="fa-solid fa-user"></i> ŞAHSİ
-                                </button>
-                                <button type="button" class="btn btn-xs" style="padding:2px 8px; font-size:0.64rem; background:rgba(56,189,248,0.16); border-color:rgba(56,189,248,0.45); color:#e0f2fe;" onclick="handleOcrManualSubCatChange('OFİS')">
-                                    <i class="fa-solid fa-building"></i> OFİS
-                                </button>
-                                <button type="button" class="btn btn-xs" style="padding:2px 8px; font-size:0.64rem; background:rgba(16,185,129,0.16); border-color:rgba(16,185,129,0.45); color:#d1fae5;" onclick="handleOcrManualSubCatChange('ATÖLYE')">
-                                    <i class="fa-solid fa-screwdriver-wrench"></i> ATÖLYE
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 3B. YAKIT / ARAÇ SEÇİLDİĞİNDE OTOMATİK AÇILAN KAYITLI PLAKA LİSTESİ (EN ALTTA ELLE GİRİŞ SEÇENEKLİ) -->
-                    <div id="group-entry-vehicle-plate" style="display:none; padding:10px 12px; border-radius:10px; background:linear-gradient(145deg, rgba(16,185,129,0.12), rgba(14,165,233,0.08)); border:1px solid rgba(52,211,153,0.45); margin-bottom:10px;">
-                        <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:6px; flex-wrap:wrap;">
-                            <label for="entry-plate-select" style="color:#34d399; font-weight:800; font-size:0.76rem; margin:0;">
-                                <i class="fa-solid fa-car-side"></i> Araç Plakası Seçimi (Yakıt Seçildiğinde Otomatik Liste)
-                            </label>
-                            <span style="font-size:0.63rem; color:#a7f3d0;">Listeden seçin veya en alttan <strong>Elle Giriş</strong> yapın</span>
-                        </div>
-                        <div>
-                            <select id="entry-plate-select" class="form-control" onchange="handleVehiclePlateSelectChange(this.value)">
-                                <option value="">-- LİSTEDEN ARAÇ PLAKASI SEÇİNİZ --</option>
-                            </select>
-                        </div>
-                        <div id="entry-plate-quick-chips" style="display:flex; gap:5px; flex-wrap:wrap; margin-top:7px;"></div>
-                        <!-- EN ALTTA ELLE PLAKA GİRİŞ KUTUSU (Listeden "En Altta Elle Giriş" seçilince veya doğrudan yazmak için) -->
-                        <div id="entry-manual-plate-box" style="margin-top:8px; padding-top:7px; border-top:1px dashed rgba(52,211,153,0.35); display:flex; align-items:center; gap:6px;">
-                            <span style="font-size:0.68rem; font-weight:800; color:#fde68a; white-space:nowrap;"><i class="fa-solid fa-keyboard"></i> Elle Plaka Girişi:</span>
-                            <input type="text" id="entry-new-plate-input" class="form-control" placeholder="Plakayı elle yazın (Örn: 19AK404)" style="text-transform:uppercase; font-weight:800; font-size:0.76rem; padding:5px 8px;" oninput="handleManualPlateInputLive(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault(); addNewCompanyVehiclePlate();}">
-                            <button type="button" class="btn btn-xs btn-success" style="white-space:nowrap; padding:6px 10px;" onclick="addNewCompanyVehiclePlate()" title="Yazılan plakayı listeye de kaydet">
-                                <i class="fa-solid fa-check"></i> Listeye Kaydet
-                            </button>
-                        </div>
-                        <!-- BÜTÜN YAKIT ALIMLARINDA ZORUNLU ARAÇ KM BİLGİSİ KUTUSU -->
-                        <div id="entry-km-box" style="margin-top:8px; padding:7px 10px; border-radius:8px; background:rgba(245,158,11,0.12); border:1px solid rgba(251,191,36,0.55); display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
-                            <label for="entry-vehicle-km-input" id="lbl-entry-km-req" style="margin:0; font-size:0.72rem; font-weight:800; color:#fbbf24; white-space:nowrap;">
-                                <i class="fa-solid fa-gauge-high"></i> Araç Güncel KM Bilgisi (Bütün Yakıt Alımlarında Zorunlu) *
-                            </label>
-                            <input type="text" inputmode="numeric" id="entry-vehicle-km-input" class="form-control" placeholder="Güncel KM giriniz (Örn: 145.250)" style="max-width:255px; font-weight:800; font-size:0.78rem; padding:5px 8px; border-color:rgba(251,191,36,0.65); color:#fde68a;" oninput="handleVehicleKmInputLive(this.value)">
                         </div>
                     </div>
 
@@ -1359,90 +789,56 @@
         </div>
     </div>
 
-    <!-- ŞİFREMİ UNUTTUM MODALI (KURUMSAL E-POSTA & DOĞRULAMA) -->
+    <!-- ŞİFREMİ UNUTTUM MODALI -->
     <div id="modal-forgot-password" class="modal-backdrop">
-        <div class="modal-dialog" style="max-width:440px;">
+        <div class="modal-dialog" style="max-width:410px;">
             <div class="modal-header">
-                <h3><i class="fa-solid fa-key" style="color:var(--amber-warn);"></i> <span>Şifre Sıfırlama &amp; Doğrulama</span></h3>
+                <h3><i class="fa-solid fa-unlock-keyhole" style="color:var(--amber-warn);"></i> <span>Şifre Sıfırlama</span></h3>
                 <button class="btn btn-xs" onclick="closeModal('modal-forgot-password')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body">
-                <p style="font-size:0.84rem; color:var(--text-secondary); margin-bottom:14px; line-height:1.5;">
-                    Personel hesabınızı seçip kurumsal e-posta adresinizi doğrulayarak yeni şifrenizi belirleyebilirsiniz. İşlem güvenlik loglarına kaydedilir.
-                </p>
-                <div class="form-group">
-                    <label>Personel Seçin</label>
-                    <select id="forgot-kasa-user-select" class="form-control" onchange="syncKasaForgotEmail()"></select>
+                <div id="forgot-step-1">
+                    <div class="form-group">
+                        <label>Kullanıcı Adınız veya Ad Soyad</label>
+                        <input type="text" id="forgot-username" class="form-control" placeholder="Örn: gokhan.ozbulut">
+                    </div>
+                    <button type="button" class="btn btn-primary" style="width:100%;" onclick="sendPasswordResetCode()">Doğrulama Kodu Oluştur</button>
                 </div>
-                <div class="form-group">
-                    <label>Kurumsal E-Posta Adresiniz</label>
-                    <input type="email" id="forgot-kasa-email" class="form-control" placeholder="oeren@dizsan.com.tr">
-                </div>
-                <div class="form-group">
-                    <label>Yeni Şifreniz</label>
-                    <input type="password" id="forgot-kasa-new-pass" class="form-control" placeholder="Yeni şifrenizi yazın">
-                </div>
-                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
-                    <button type="button" class="btn" onclick="closeModal('modal-forgot-password')">Vazgeç</button>
-                    <button type="button" class="btn btn-primary" onclick="handleKasaForgotPasswordSubmit()">
-                        <i class="fa-solid fa-key"></i> Şifremi Güncelle
-                    </button>
+                <div id="forgot-step-2" style="display:none;">
+                    <div id="forgot-code-display" style="padding:8px 10px; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); border-radius:8px; font-size:0.75rem; margin-bottom:10px;"></div>
+                    <div class="form-group">
+                        <label>Doğrulama Kodu</label>
+                        <input type="text" id="forgot-code-input" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Yeni Şifreniz</label>
+                        <input type="password" id="forgot-new-pass" class="form-control">
+                    </div>
+                    <button type="button" class="btn btn-primary" style="width:100%;" onclick="verifyAndResetPassword()">Şifreyi Yenile</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- KURULUM REHBERİ & UYGULAMA KAREKODU MODALI -->
+    <!-- KURULUM REHBERİ MODALI -->
     <div id="modal-install-guide" class="modal-backdrop">
-        <div class="modal-dialog" style="max-width:560px;">
+        <div class="modal-dialog" style="max-width:460px;">
             <div class="modal-header">
-                <h3><i class="fa-solid fa-qrcode" style="color:var(--dizsan-cyan);"></i> <span>Telefon Karekod (QR) &amp; Bilgisayar (PC) Kurulum Rehberi</span></h3>
+                <h3><i class="fa-solid fa-mobile-screen-button" style="color:var(--dizsan-cyan);"></i> <span>iOS, Android &amp; Windows Kurulumu</span></h3>
                 <button class="btn btn-xs" onclick="closeModal('modal-install-guide')"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="modal-body" style="font-size:0.86rem; color:var(--text-secondary); display:flex; flex-direction:column; gap:12px;">
-                <div style="text-align:center; padding:14px; border-radius:14px; background:rgba(14,165,233,0.08); border:1px solid rgba(56,189,248,0.35);">
-                    <div style="font-weight:800; color:var(--text-white); font-size:0.95rem; margin-bottom:8px;">
-                        📱 TELEFONA UYGULAMA OLARAK KURMAK İÇİN KAREKODU OKUTUN
-                    </div>
-                    <div style="display:inline-block; background:#ffffff; padding:12px; border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,0.25);">
-                        <img src="dizsan_dpro_kasa_qr.png" alt="D-Pro Günlük Kasa Kurulum Karekodu" style="width:210px; height:auto; display:block; border-radius:8px;" onerror="this.src='icon-192.png'">
-                    </div>
-                    <div style="margin-top:8px; font-family:monospace; font-weight:800; font-size:0.84rem; color:var(--dizsan-cyan);">
-                        https://dizsan.github.io/dpro/
-                    </div>
-                    <div style="margin-top:6px; font-size:0.78rem; color:var(--text-secondary);">
-                        <i class="fa-solid fa-shield-halved" style="color:#fbbf24;"></i> Not: Personel ilk kez kurduğunda ekranda <strong>"Ömer Eren'e Onay Linki Gönder"</strong> butonu çıkar; onayınızdan sonra cihaz otomatik açılır.
-                    </div>
+            <div class="modal-body" style="font-size:0.78rem; color:var(--text-secondary); display:flex; flex-direction:column; gap:10px;">
+                <div style="padding:10px; background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid var(--border-subtle);">
+                    <strong style="color:var(--text-white);"><i class="fa-brands fa-apple"></i> iPhone &amp; iPad (iOS Safari):</strong>
+                    <p style="margin-top:4px;">Safari'de alt ortadaki <strong>Paylaş</strong> simgesine dokunun ve <strong>"Ana Ekrana Ekle"</strong> seçeneğini seçin.</p>
                 </div>
-
-                <div style="padding:12px; background:var(--bg-card); border-radius:10px; border:1px solid var(--border-subtle);">
-                    <strong style="color:var(--text-white); font-size:0.92rem;"><i class="fa-brands fa-apple" style="color:#38bdf8;"></i> 1. iPhone &amp; iPad (iOS Safari) Telefona Kurulum:</strong>
-                    <ol style="margin:6px 0 0 18px; line-height:1.55;">
-                        <li>Karekodu telefon kamerasıyla okutun (Safari'de açılır).</li>
-                        <li>Alt ortadaki <strong>Paylaş (⬆️)</strong> simgesine dokunun.</li>
-                        <li>Listeden <strong>"Ana Ekrana Ekle"</strong> seçeneğine basıp sağ üstten <strong>"Ekle"</strong> deyin.</li>
-                        <li>Uygulama telefonunuza kurulur; ilk girişte <strong>Ömer Eren'e Onay Linki Gönder</strong> tuşuna basarak onay alın.</li>
-                    </ol>
+                <div style="padding:10px; background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid var(--border-subtle);">
+                    <strong style="color:var(--text-white);"><i class="fa-brands fa-android"></i> Android Telefon &amp; Tablet:</strong>
+                    <p style="margin-top:4px;">Tarayıcı menüsünden (⋮) <strong>"Uygulamayı Yükle / Ana Ekrana Ekle"</strong> seçeneğine dokunun.</p>
                 </div>
-
-                <div style="padding:12px; background:var(--bg-card); border-radius:10px; border:1px solid var(--border-subtle);">
-                    <strong style="color:var(--text-white); font-size:0.92rem;"><i class="fa-brands fa-android" style="color:#34d399;"></i> 2. Android Telefon &amp; Tablet Kurulum:</strong>
-                    <ol style="margin:6px 0 0 18px; line-height:1.55;">
-                        <li>Karekodu telefon kamerasıyla okutun.</li>
-                        <li>Sağ üst köşedeki <strong>Üç Nokta (⋮)</strong> menüsüne dokunun.</li>
-                        <li><strong>"Uygulamayı Yükle"</strong> veya <strong>"Ana Ekrana Ekle"</strong> seçeneğine dokunun.</li>
-                        <li>İlk girişte ekrandaki butonla <strong>Ömer Eren'e Onay Linki</strong> gönderin; onaylandığı an açılır.</li>
-                    </ol>
-                </div>
-
-                <div style="padding:12px; background:var(--bg-card); border-radius:10px; border:1px solid var(--border-subtle);">
-                    <strong style="color:var(--text-white); font-size:0.92rem;"><i class="fa-solid fa-desktop" style="color:#fbbf24;"></i> 3. Bilgisayara (Windows PC &amp; Mac) Masaüstü Uygulaması Olarak Kurulum:</strong>
-                    <ol style="margin:6px 0 0 18px; line-height:1.55;">
-                        <li>Bilgisayarınızda tarayıcıdan <strong>https://dizsan.github.io/dpro/</strong> adresine girin.</li>
-                        <li><strong>Windows PC (Edge / Chrome):</strong> Adres çubuğunun sağ ucundaki <strong>💻 Uygulamayı Yükle (+)</strong> simgesine tıklayın ve <strong>"Yükle"</strong> deyin (Masaüstüne ve Görev Çubuğuna kısayol eklenir).</li>
-                        <li><strong>Mac (Safari):</strong> Üst menüden <strong>Dosya (File) ➔ Dock'a Ekle (Add to Dock)</strong> seçeneğine tıklayın.</li>
-                        <li>Uygulama açıldığında kullanıcı adınızla giriş yapıp <strong>Ömer Eren'e Onay Linki Gönder</strong> butonuna tıklayın; onaylandıktan sonra bilgisayarınızda tam ekran çalışır.</li>
-                    </ol>
+                <div style="padding:10px; background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid var(--border-subtle);">
+                    <strong style="color:var(--text-white);"><i class="fa-brands fa-windows"></i> Windows &amp; Mac Masaüstü:</strong>
+                    <p style="margin-top:4px;">Adres çubuğunun sağındaki <strong>Uygulamayı Yükle</strong> simgesine tıklayarak masaüstü uygulaması olarak çalıştırabilirsiniz.</p>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1453,8 +849,8 @@
 
     <!-- SCRIPTS -->
     <script src="auto-date-helper.js"></script>
-    <script src="app.js?v=1.3.0"></script>
-    <script src="dizsan-back-navigation.js?v=1.2.5"></script>
-    <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.2.5"></script>
+    <script src="app.js?v=1.0.6"></script>
+    <script src="dizsan-back-navigation.js?v=1.0.6"></script>
+    <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.0.5"></script>
 </body>
 </html>

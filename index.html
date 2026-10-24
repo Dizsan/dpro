@@ -862,6 +862,81 @@
                 display: inline-flex;
             }
         }
+
+        /* ==================== D-PRO KOYU / AÇIK TEMA (SOL BAR DAHİL KOMPLE) ==================== */
+        html[data-theme="light"],
+        body[data-theme="light"] {
+            --bg-primary: #f1f5f9;
+            --bg-secondary: #ffffff;
+            --bg-card: rgba(255, 255, 255, 0.96);
+            --bg-glass: rgba(255, 255, 255, 0.92);
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --border-subtle: rgba(15, 23, 42, 0.14);
+            background-color: #f1f5f9 !important;
+            color: #0f172a !important;
+        }
+        body[data-theme="light"] .sidebar,
+        body[data-theme="light"] #dpro-sidebar {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+            border-right: 1px solid #cbd5e1 !important;
+            box-shadow: 4px 0 20px rgba(15, 23, 42, 0.06) !important;
+        }
+        body[data-theme="light"] .sidebar-brand {
+            background: #f8fafc !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+        }
+        body[data-theme="light"] .sidebar-title-box h1 span:first-child {
+            color: #0f172a !important;
+        }
+        body[data-theme="light"] .sidebar-title-box p {
+            color: #475569 !important;
+        }
+        body[data-theme="light"] .sidebar-user-card {
+            background: #f8fafc !important;
+            border: 1px solid #cbd5e1 !important;
+        }
+        body[data-theme="light"] .user-info-text .name {
+            color: #0f172a !important;
+        }
+        body[data-theme="light"] .user-info-text .role {
+            color: #475569 !important;
+        }
+        body[data-theme="light"] .nav-group-label {
+            color: #475569 !important;
+        }
+        body[data-theme="light"] .nav-item {
+            color: #1e293b !important;
+        }
+        body[data-theme="light"] .nav-item:hover {
+            background: #e2e8f0 !important;
+            color: #0f172a !important;
+        }
+        body[data-theme="light"] .nav-item.active {
+            background: linear-gradient(135deg, #0284c7, #0369a1) !important;
+            color: #ffffff !important;
+        }
+        body[data-theme="light"] .sidebar-footer {
+            background: #f8fafc !important;
+            border-top: 1px solid #e2e8f0 !important;
+        }
+        body[data-theme="light"] .main-wrapper,
+        body[data-theme="light"] .top-header,
+        body[data-theme="light"] .embed-toolbar {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+        }
+        body[data-theme="light"] .btn-sm:not(.primary):not(.danger) {
+            background: #f8fafc !important;
+            color: #0f172a !important;
+            border: 1px solid #cbd5e1 !important;
+        }
+        body[data-theme="light"] #dashboard-welcome-username {
+            color: #0f172a !important;
+            text-shadow: none !important;
+        }
     </style>
 </head>
 <body>
@@ -1093,6 +1168,9 @@
                             </div>
                         </div>
                         <div style="display:flex; align-items:center; gap:8px;">
+                            <button type="button" class="btn-sm" id="dpro-embed-theme-btn" onclick="toggleDProGlobalTheme()" title="Sol Bar Dahil Koyu / Açık Tema Değiştir">
+                                <i class="fa-solid fa-sun" id="dpro-embed-theme-icon" style="color:#fbbf24;"></i> <span id="dpro-embed-theme-text">Açık Tema</span>
+                            </button>
                             <button type="button" class="btn-sm" onclick="toggleBrowserNativeFullscreen()" title="Tarayıcı Tam Ekran (F11)">
                                 <i class="fa-solid fa-expand"></i> Tam Ekran
                             </button>
@@ -2381,7 +2459,38 @@
                 handleDProBackPress();
             } else if (data.type === "DPRO_CHILD_LOG" && data.action) {
                 addAuditLog(data.action, data.detail || "");
+            } else if (data.type === "DPRO_THEME_CHANGED" && data.theme) {
+                applyDProGlobalTheme(data.theme, false);
             }
+        });
+
+        function applyDProGlobalTheme(theme, notifyChild = true) {
+            const norm = theme === "light" ? "light" : "dark";
+            document.documentElement.setAttribute("data-theme", norm);
+            if (document.body) document.body.setAttribute("data-theme", norm);
+            try { localStorage.setItem("dizsan_ziyaret_theme_v1", norm); } catch (e) {}
+            const isLight = norm === "light";
+            const ic = document.getElementById("dpro-embed-theme-icon");
+            const tx = document.getElementById("dpro-embed-theme-text");
+            if (ic) {
+                ic.className = isLight ? "fa-solid fa-moon" : "fa-solid fa-sun";
+                ic.style.color = isLight ? "#0284c7" : "#fbbf24";
+            }
+            if (tx) tx.textContent = isLight ? "Koyu Tema" : "Açık Tema";
+            if (notifyChild) {
+                const ifr = document.getElementById("dpro-app-iframe");
+                if (ifr && ifr.contentWindow) {
+                    try { ifr.contentWindow.postMessage({ type: "DPRO_SET_THEME", theme: norm }, "*"); } catch (e) {}
+                }
+            }
+        }
+
+        function toggleDProGlobalTheme() {
+            const cur = (document.body && document.body.getAttribute("data-theme")) || localStorage.getItem("dizsan_ziyaret_theme_v1") || "dark";
+            applyDProGlobalTheme(cur === "light" ? "dark" : "light", true);
+        }
+        document.addEventListener("DOMContentLoaded", () => {
+            applyDProGlobalTheme(localStorage.getItem("dizsan_ziyaret_theme_v1") || "dark", false);
         });
 
         function exitFullScreenToDPro() {
