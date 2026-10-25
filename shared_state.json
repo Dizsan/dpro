@@ -235,9 +235,9 @@
     "0JINLVPG",
     "CAWCAACV"
   ],
-  "updatedAt": "2026-10-26T00:57:44.926805",
+  "updatedAt": "2026-10-26T00:57:58.191220",
   "version": "v1.8.2",
-  "updatedAtMs": 1792965464926,
+  "updatedAtMs": 1792965478191,
   "permissions": {
     "ömer": {
       "apps": {
@@ -393,7 +393,7 @@
       "submodules": {
         "ziyaret_genel": true,
         "ziyaret_rut_planla": true,
-        "ziyaret_ekstre": false,
+        "ziyaret_ekstre": true,
         "ziyaret_kayit": true,
         "ziyaret_cari": true,
         "ziyaret_gorev": true,
@@ -402,7 +402,7 @@
         "toplanti_genel": true,
         "toplanti_olustur": true,
         "toplanti_aksiyon": true,
-        "toplanti_duyuru": false,
+        "toplanti_duyuru": true,
         "toplanti_rapor": true,
         "kredi_combined": false,
         "kredi_bankalar": false,
