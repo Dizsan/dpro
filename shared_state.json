@@ -235,9 +235,9 @@
     "0JINLVPG",
     "CAWCAACV"
   ],
-  "updatedAt": "2026-10-26T00:48:03.016003",
+  "updatedAt": "2026-10-26T00:48:15.395939",
   "version": "v1.8.2",
-  "updatedAtMs": 1792964883016,
+  "updatedAtMs": 1792964895395,
   "permissions": {
     "ömer": {
       "apps": {
@@ -3300,7 +3300,7 @@
     "emre.hitit": {
       "apps": {
         "Dizsan_Ziyaret_Mobil_Karekod": false,
-        "Dizsan_Toplanti_Mobil_Karekod": false,
+        "Dizsan_Toplanti_Mobil_Karekod": true,
         "Dizsan_Kredi_Mobil_Karekod": false,
         "Dizsan_Odeme_Takvimi": false,
         "Dizsan_Kredi_Karti_Takip": false,
@@ -3318,11 +3318,11 @@
         "ziyaret_gorev": false,
         "ziyaret_rapor": false,
         "ziyaret_raporlar": false,
-        "toplanti_genel": false,
-        "toplanti_olustur": false,
-        "toplanti_aksiyon": false,
+        "toplanti_genel": true,
+        "toplanti_olustur": true,
+        "toplanti_aksiyon": true,
         "toplanti_duyuru": false,
-        "toplanti_rapor": false,
+        "toplanti_rapor": true,
         "kredi_combined": false,
         "kredi_bankalar": false,
         "kredi_odeme_onay": false,
@@ -3371,7 +3371,7 @@
           "financial": false
         },
         "Dizsan_Toplanti_Mobil_Karekod": {
-          "view": false,
+          "view": true,
           "create": false,
           "edit": false,
           "delete": false,
@@ -3439,14 +3439,14 @@
     "enver.hitit": {
       "apps": {
         "Dizsan_Ziyaret_Mobil_Karekod": false,
-        "Dizsan_Toplanti_Mobil_Karekod": false,
+        "Dizsan_Toplanti_Mobil_Karekod": true,
         "Dizsan_Kredi_Mobil_Karekod": false,
         "Dizsan_Odeme_Takvimi": false,
         "Dizsan_Kredi_Karti_Takip": false,
         "Dizsan_VDF_Odeme": false,
         "Dizsan_DMet_Radar": false,
         "Dizsan_DiKas_Finans": false,
-        "Dizsan_Gunluk_Kasa": true
+        "Dizsan_Gunluk_Kasa": false
       },
       "submodules": {
         "ziyaret_genel": false,
@@ -3457,11 +3457,11 @@
         "ziyaret_gorev": false,
         "ziyaret_rapor": false,
         "ziyaret_raporlar": false,
-        "toplanti_genel": false,
-        "toplanti_olustur": false,
-        "toplanti_aksiyon": false,
+        "toplanti_genel": true,
+        "toplanti_olustur": true,
+        "toplanti_aksiyon": true,
         "toplanti_duyuru": false,
-        "toplanti_rapor": false,
+        "toplanti_rapor": true,
         "kredi_combined": false,
         "kredi_bankalar": false,
         "kredi_odeme_onay": false,
@@ -3495,9 +3495,9 @@
         "dikas_collections": false,
         "dikas_instruments": false,
         "dikas_reports": false,
-        "kasa_form": true,
-        "kasa_a4": true,
-        "kasa_archive": true,
+        "kasa_form": false,
+        "kasa_a4": false,
+        "kasa_archive": false,
         "kasa_admin": false
       },
       "appActions": {
@@ -3510,8 +3510,8 @@
           "financial": false
         },
         "Dizsan_Toplanti_Mobil_Karekod": {
-          "view": false,
-          "create": false,
+          "view": true,
+          "create": true,
           "edit": false,
           "delete": false,
           "export": false,
@@ -3566,12 +3566,12 @@
           "financial": false
         },
         "Dizsan_Gunluk_Kasa": {
-          "view": true,
+          "view": false,
           "create": false,
           "edit": false,
           "delete": false,
-          "export": true,
-          "financial": true
+          "export": false,
+          "financial": false
         }
       }
     }
