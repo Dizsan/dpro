@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "25.10.2026 21:49:42",
-  "updatedAtMs": 1792954182450,
-  "stateRevision": 182,
+  "updatedAt": "25.10.2026 21:50:15",
+  "updatedAtMs": 1792954215886,
+  "stateRevision": 183,
   "users": [
     {
       "order": 0,
@@ -842,6 +842,12 @@
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "25.10.2026 21:50:15",
+      "user": "RAFET CANBEK",
+      "category": "OTURUM",
+      "detail": "RAFET CANBEK sisteme giriş yaptı."
+    },
     {
       "timestamp": "25.10.2026 21:49:42",
       "user": "RAFET CANBEK",
