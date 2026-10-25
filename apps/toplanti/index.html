@@ -1,18 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<script id="dpro-omer-exclusive-guard">
-(function(){
-  try {
-    var u = (localStorage.getItem("dizsan_dpro_active_session_v1") || sessionStorage.getItem("dizsan_dpro_active_session_v1") || "").toLowerCase();
-    var zRaw = localStorage.getItem("dizsan_ziyaret_session_v2") || sessionStorage.getItem("dizsan_ziyaret_session_v2") || "";
-    var isOmer = (u === "ömer" || u === "omer" || zRaw.toLowerCase().indexOf("ömer") !== -1 || zRaw.toLowerCase().indexOf("omer") !== -1);
-    if (!isOmer && window.self === window.top) {
-      window.location.replace("../../index.html");
-    }
-  } catch(e) {}
-})();
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#0284c7">
@@ -5146,25 +5134,27 @@ function handleLogin(event) {
         return;
     }
 
-    if (!isOmerEren(matchedUser)) {
-        errBox.style.display = 'block';
-        errBox.innerHTML = '<i class="fa-solid fa-lock"></i> Sistem bakım ve geliştirme modundadır. Şu an yalnızca <b>ÖMER EREN</b> erişim sağlayabilir; diğer kullanıcıların erişimi geçici olarak kapatılmıştır.';
-        return;
-    }
-
     errBox.style.display = 'none';
     currentUser = matchedUser;
 
     if (rememberMe) {
         localStorage.setItem(STORAGE_KEY_REMEMBER, JSON.stringify({
             username: matchedUser.username,
-            savedInput: pVal
+            pinStamp: matchedUser.pinStamp
         }));
         localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(currentUser));
     } else {
         localStorage.removeItem(STORAGE_KEY_REMEMBER);
         sessionStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(currentUser));
     }
+    try {
+        const ssoStore = rememberMe ? localStorage : sessionStorage;
+        const ssoJson = JSON.stringify(currentUser);
+        ['dizsan_ziyaret_active_user', 'dizsan_toplanti_active_user', 'dizsan_kredi_active_user_v1', 'dizgun_current_user', 'dizsan_demet_active_user', 'dizsan_dikas_active_user', 'dizsan_gunluk_kasa_active_user', 'dpro_active_session_v1'].forEach(k => {
+            try { ssoStore.setItem(k, ssoJson); } catch (e) {}
+        });
+        try { ssoStore.setItem('dizsan_dpro_active_session_v1', currentUser.username); } catch (e) {}
+    } catch (e) {}
 
     // Giriş butonuna basıldığı anda (kullanıcı etkileşimi içinde) ses motorunu ve otomatik bildirim kaydını başlat (Android + iOS + PC)
     startSilentAudioKeepAlive();
@@ -5176,11 +5166,6 @@ function handleLogin(event) {
 
 function applyAuthenticatedUser() {
     const overlay = document.getElementById('login-overlay');
-    if (currentUser && !isOmerEren(currentUser)) {
-        currentUser = null;
-        localStorage.removeItem(STORAGE_KEY_SESSION);
-        sessionStorage.removeItem(STORAGE_KEY_SESSION);
-    }
     if (!currentUser) {
         overlay.classList.remove('hidden');
         loadRememberedCredentials();
@@ -10012,9 +9997,9 @@ document.addEventListener('DOMContentLoaded', () => {
     renderQuickUserChips();
     loadRememberedCredentials();
 
-    // Kayıtlı oturum kontrolü (Beni Hatırla, D-Pro SSO veya aktif DizGün oturumu)
+    // Kayıtlı oturum kontrolü (Beni Hatırla, D-Pro SSO veya diğer uygulamalardan geçiş)
     const isDproEmbedded = (window.self !== window.top) || window.location.search.includes('embed=dpro');
-    const savedSession = localStorage.getItem(STORAGE_KEY_SESSION) || sessionStorage.getItem(STORAGE_KEY_SESSION) || localStorage.getItem('dizgun_current_user');
+    const savedSession = localStorage.getItem(STORAGE_KEY_SESSION) || sessionStorage.getItem(STORAGE_KEY_SESSION) || localStorage.getItem('dizsan_ziyaret_active_user') || sessionStorage.getItem('dizsan_ziyaret_active_user') || localStorage.getItem('dizsan_gunluk_kasa_active_user') || sessionStorage.getItem('dizsan_gunluk_kasa_active_user') || localStorage.getItem('dpro_active_session_v1') || sessionStorage.getItem('dpro_active_session_v1') || localStorage.getItem('dizgun_current_user');
     if (savedSession) {
         try {
             const parsedUser = JSON.parse(savedSession);

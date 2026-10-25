@@ -5169,14 +5169,22 @@ window.addEventListener("DOMContentLoaded", async () => {
             if (rem?.username) document.getElementById("login-username").value = rem.username;
             if (rem?.savedPass) document.getElementById("login-password").value = rem.savedPass;
         }
-        const sessRaw = localStorage.getItem(STORAGE_KEY_DIKAS_SESSION) || sessionStorage.getItem(STORAGE_KEY_DIKAS_SESSION);
+        const sessRaw = localStorage.getItem(STORAGE_KEY_DIKAS_SESSION) || sessionStorage.getItem(STORAGE_KEY_DIKAS_SESSION) || localStorage.getItem("dpro_active_session_v1") || sessionStorage.getItem("dpro_active_session_v1") || localStorage.getItem("dizsan_ziyaret_active_user") || sessionStorage.getItem("dizsan_ziyaret_active_user") || localStorage.getItem("dizsan_gunluk_kasa_active_user") || sessionStorage.getItem("dizsan_gunluk_kasa_active_user");
         if (sessRaw) {
             const parsedUser = JSON.parse(sessRaw);
-            const matched = (appState.users || []).find(u => u.username === parsedUser.username);
+            const matched = (appState.users || []).find(u => u.username === parsedUser.username || u.name === parsedUser.name);
             if (matched) {
                 currentUser = matched;
             }
-        } else {
+        }
+        if (!currentUser) {
+            const dproU = localStorage.getItem("dizsan_dpro_active_session_v1") || sessionStorage.getItem("dizsan_dpro_active_session_v1") || (new URLSearchParams(window.location.search || "").get("dproUser")) || "";
+            if (dproU) {
+                const matched = (appState.users || []).find(u => u.username.toLowerCase() === dproU.toLowerCase() || u.name.toLowerCase() === dproU.toLowerCase());
+                if (matched) currentUser = matched;
+            }
+        }
+        if (!currentUser) {
             // Varsayılan hızlı kurumsal erişim: Ömer Eren oturumu hazırla
             currentUser = appState.users[0];
         }

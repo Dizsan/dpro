@@ -826,12 +826,29 @@ function checkExistingSession() {
         const s = sessionStorage.getItem(STORAGE_KEY_DEMET_SESSION)
             || localStorage.getItem(STORAGE_KEY_DEMET_REMEMBER)
             || sessionStorage.getItem("dpro_active_session_v1")
-            || localStorage.getItem("dpro_active_session_v1");
+            || localStorage.getItem("dpro_active_session_v1")
+            || sessionStorage.getItem("dizsan_ziyaret_active_user")
+            || localStorage.getItem("dizsan_ziyaret_active_user")
+            || sessionStorage.getItem("dizsan_gunluk_kasa_active_user")
+            || localStorage.getItem("dizsan_gunluk_kasa_active_user")
+            || sessionStorage.getItem("dizsan_toplanti_active_user")
+            || localStorage.getItem("dizsan_toplanti_active_user");
         if (s) {
             currentUser = JSON.parse(s);
             const ov = document.getElementById("login-overlay");
             if (ov) ov.style.display = "none";
             updateActiveUserHeader();
+            return;
+        }
+        const dproU = localStorage.getItem("dizsan_dpro_active_session_v1") || sessionStorage.getItem("dizsan_dpro_active_session_v1") || (new URLSearchParams(window.location.search || "").get("dproUser")) || "";
+        if (dproU) {
+            const matched = OFFICIAL_PERSONNEL.find(u => u.username.toLowerCase() === dproU.toLowerCase() || u.name.toLowerCase() === dproU.toLowerCase());
+            if (matched) {
+                currentUser = matched;
+                const ov = document.getElementById("login-overlay");
+                if (ov) ov.style.display = "none";
+                updateActiveUserHeader();
+            }
         }
     } catch (e) {}
 }

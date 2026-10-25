@@ -3893,10 +3893,26 @@
                 return;
             }
 
-            // Aktif Beni Hatırla oturumu varsa doğrudan aç
-            const savedUser = localStorage.getItem(DPRO_SESSION_KEY) || sessionStorage.getItem(DPRO_SESSION_KEY);
+            // Aktif Beni Hatırla veya diğer uygulamalardan (Ziyaret, Kasa, Toplantı vb.) gelen SSO oturumu varsa tekrar şifre sormadan doğrudan aç
+            let savedUser = localStorage.getItem(DPRO_SESSION_KEY) || sessionStorage.getItem(DPRO_SESSION_KEY);
+            if (!savedUser) {
+                const ssoKeys = ["dizsan_ziyaret_active_user", "dizsan_gunluk_kasa_active_user", "dizsan_toplanti_active_user", "dizsan_dikas_active_user", "dizsan_demet_active_user", "dizgun_current_user", "dpro_active_session_v1"];
+                for (const sk of ssoKeys) {
+                    const rawSso = localStorage.getItem(sk) || sessionStorage.getItem(sk);
+                    if (rawSso) {
+                        try {
+                            const parsedSso = JSON.parse(rawSso);
+                            if (parsedSso && (parsedSso.username || parsedSso.name)) {
+                                savedUser = parsedSso.username || parsedSso.name;
+                                break;
+                            }
+                        } catch (e) {}
+                    }
+                }
+            }
             if (savedUser) {
-                const u = dproState.users.find(x => x.username === savedUser);
+                const normSaved = String(savedUser).trim().toLowerCase();
+                const u = dproState.users.find(x => String(x.username || "").toLowerCase() === normSaved || String(x.name || "").toLowerCase() === normSaved);
                 if (u && (!ONLY_OMER_EXCLUSIVE_MODE || isOnlyOmerEren(u))) {
                     currentUser = u;
                     syncDProUserSessionToAllApps(currentUser);

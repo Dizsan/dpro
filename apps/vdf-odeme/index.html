@@ -1,18 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<script id="dpro-omer-exclusive-guard">
-(function(){
-  try {
-    var u = (localStorage.getItem("dizsan_dpro_active_session_v1") || sessionStorage.getItem("dizsan_dpro_active_session_v1") || "").toLowerCase();
-    var zRaw = localStorage.getItem("dizsan_ziyaret_session_v2") || sessionStorage.getItem("dizsan_ziyaret_session_v2") || "";
-    var isOmer = (u === "ömer" || u === "omer" || zRaw.toLowerCase().indexOf("ömer") !== -1 || zRaw.toLowerCase().indexOf("omer") !== -1);
-    if (!isOmer && window.self === window.top) {
-      window.location.replace("../../index.html");
-    }
-  } catch(e) {}
-})();
-</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>VDF Ödeme // Dizsan Faktoring &amp; Vade Takip Sistemi</title>

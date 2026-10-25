@@ -9562,6 +9562,15 @@ function handleLogin(e) {
         localStorage.removeItem(STORAGE_KEY_KASA_SESSION);
         sessionStorage.setItem(STORAGE_KEY_KASA_SESSION, JSON.stringify({ username: matched.username, pinStamp: matched.pinStamp }));
     }
+    // Uygulamalar arası geçişte tekrar şifre sormamak için ortak SSO oturumunu senkronize et
+    try {
+        const ssoStore = rem ? localStorage : sessionStorage;
+        const ssoJson = JSON.stringify(matched);
+        ["dizsan_ziyaret_active_user", "dizsan_toplanti_active_user", "dizsan_kredi_active_user_v1", "dizgun_current_user", "dizsan_demet_active_user", "dizsan_dikas_active_user", "dpro_active_session_v1"].forEach(k => {
+            try { ssoStore.setItem(k, ssoJson); } catch (e) {}
+        });
+        try { ssoStore.setItem("dizsan_dpro_active_session_v1", matched.username); } catch (e) {}
+    } catch (e) {}
 
     addAuditLog("OTURUM", `${currentUser.name} sisteme giriş yaptı.`);
     syncStateToServer();
@@ -10017,30 +10026,38 @@ window.addEventListener("DOMContentLoaded", async () => {
                 localStorage.setItem(STORAGE_KEY_KASA_REMEMBER, JSON.stringify(rem));
             }
         }
-        const explicitLogout = sessionStorage.getItem(STORAGE_KEY_KASA_EXPLICIT_LOGOUT) === "1";
+        const isDproEmbedded = (window.self !== window.top) || window.location.search.includes("embed=dpro");
+        const explicitLogout = !isDproEmbedded && sessionStorage.getItem(STORAGE_KEY_KASA_EXPLICIT_LOGOUT) === "1";
         const sessRaw = localStorage.getItem(STORAGE_KEY_KASA_SESSION) || sessionStorage.getItem(STORAGE_KEY_KASA_SESSION);
-        const dproSessionUser = localStorage.getItem("dizsan_dpro_active_session_v1") || sessionStorage.getItem("dizsan_dpro_active_session_v1") || localStorage.getItem("dizsan_dpro_session_v1") || sessionStorage.getItem("dizsan_dpro_session_v1");
+        let dproSessionUser = (new URLSearchParams(window.location.search || "").get("dproUser")) || localStorage.getItem("dizsan_dpro_active_session_v1") || sessionStorage.getItem("dizsan_dpro_active_session_v1") || localStorage.getItem("dizsan_dpro_session_v1") || sessionStorage.getItem("dizsan_dpro_session_v1");
+        if (!dproSessionUser) {
+            const otherKeys = ["dizsan_ziyaret_active_user", "dizsan_toplanti_active_user", "dizsan_dikas_active_user", "dizsan_demet_active_user", "dizgun_current_user", "dpro_active_session_v1"];
+            for (const ok of otherKeys) {
+                const rawOther = localStorage.getItem(ok) || sessionStorage.getItem(ok);
+                if (rawOther) {
+                    try {
+                        const parsedOther = JSON.parse(rawOther);
+                        if (parsedOther && (parsedOther.username || parsedOther.name)) {
+                            dproSessionUser = parsedOther.username || parsedOther.name;
+                            break;
+                        }
+                    } catch (e) {}
+                }
+            }
+        }
 
-        if (sessRaw) {
+        if (sessRaw && !explicitLogout) {
             const parsedUser = JSON.parse(sessRaw);
             const matched = (appState.users || []).find(u => normalizeTR(u.username) === normalizeTR(parsedUser.username) || normalizeTR(u.name) === normalizeTR(parsedUser.name));
-            const pinValid = !parsedUser.pinStamp || parsedUser.pinStamp === matched?.pinStamp;
-            if (matched && pinValid && matched.rolePreset !== "NONE" && getUserPerms(matched).view !== false) {
+            if (matched && matched.rolePreset !== "NONE" && getUserPerms(matched).view !== false) {
                 currentUser = matched;
-            } else {
-                currentUser = null;
-                localStorage.removeItem(STORAGE_KEY_KASA_SESSION);
-                sessionStorage.removeItem(STORAGE_KEY_KASA_SESSION);
             }
-        } else if (dproSessionUser && !explicitLogout) {
+        }
+        if (!currentUser && dproSessionUser && !explicitLogout) {
             const matchedDpro = (appState.users || []).find(u => normalizeTR(u.username) === normalizeTR(dproSessionUser) || normalizeTR(u.name) === normalizeTR(dproSessionUser));
             if (matchedDpro && matchedDpro.rolePreset !== "NONE" && getUserPerms(matchedDpro).view !== false) {
                 currentUser = matchedDpro;
-            } else {
-                currentUser = null;
             }
-        } else {
-            currentUser = null;
         }
     } catch (e) {
         currentUser = null;
