@@ -235,9 +235,9 @@
     "0JINLVPG",
     "CAWCAACV"
   ],
-  "updatedAt": "2026-10-26T00:57:58.191220",
+  "updatedAt": "2026-10-26T00:58:36.898353",
   "version": "v1.8.2",
-  "updatedAtMs": 1792965478191,
+  "updatedAtMs": 1792965516898,
   "permissions": {
     "ömer": {
       "apps": {
@@ -538,7 +538,7 @@
         "ziyaret_gorev": true,
         "ziyaret_rapor": true,
         "ziyaret_raporlar": true,
-        "toplanti_genel": true,
+        "toplanti_genel": false,
         "toplanti_olustur": true,
         "toplanti_aksiyon": true,
         "toplanti_duyuru": false,
