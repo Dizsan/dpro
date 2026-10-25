@@ -3026,7 +3026,7 @@ body[data-theme="light"] .matched-field-callout {
 
                 <div class="navbar-right" style="display:none !important;">
                     <button type="button" class="btn btn-secondary btn-sm app-version-chip" id="app-version-badge" onclick="openVersionModal()" title="Sürüm ve Cihaz Güncelleme Merkezi">
-                        <i class="fa-solid fa-code-branch" style="color:#38bdf8;"></i> <span id="app-current-version-text">v1.7.0</span>
+                        <i class="fa-solid fa-code-branch" style="color:#38bdf8;"></i> <span id="app-current-version-text">v1.7.1</span>
                     </button>
 
                     <button type="button" class="btn btn-secondary btn-sm" onclick="forceRefreshFromGitHub()" id="btn-navbar-refresh" title="Logo ERP Canlı Verilerini Yenile (Son Fatura: 20.08.2026)">
@@ -6482,7 +6482,7 @@ function resolveUserEmail(u) {
 
 // 24 Resmi Personel + Yönetici Ömer Eren (DizGün ve Dizsan Toplantı ile 100% Ortak)
 const OFFICIAL_PERSONNEL_RAW = [
-    { order: 0,  name: "ÖMER EREN",                  username: "ömer",             mailBox: "oeren",     pinStamp: "2697120930-1230232798-23831670", role: "Yönetici", dept: "Yönetim Kurulu / Sistem Yöneticisi", avatar: "dizsan_logo.jpg" },
+    { order: 0,  name: "ÖMER EREN",                  username: "ömer",             mailBox: "oeren",     pinStamp: "621976239-623787727-2631164839", role: "Yönetici", dept: "Yönetim Kurulu / Sistem Yöneticisi", avatar: "dizsan_logo.jpg" },
     { order: 1,  name: "HAKAN AYDIN",                username: "hakan.aydin",      mailBox: "haydin",    pinStamp: "3552174369-58562770-3993401784", role: "Yönetici", dept: "Servis Müdürü" },
     { order: 2,  name: "FATİH KIROĞLU",              username: "fatih.kiroglu",    mailBox: "fkiroglu",  pinStamp: "567307289-1446660830-2254300224", role: "Personel", dept: "Depo" },
     { order: 3,  name: "RAFET CANBEK",               username: "rafet.canbek",     mailBox: "rcanbek",   pinStamp: DEFAULT_PIN_STAMP, role: "Yönetici", dept: "Genel Müdür" },
@@ -7210,11 +7210,90 @@ async function forceRefreshFromGitHub() {
     }
 }
 
+function parseSqlEntryDateObj(val) {
+    if (!val || val === '-') return null;
+    const s = String(val).trim();
+    if (s.includes('.')) {
+        const p = s.split('.');
+        if (p.length === 3) {
+            const d = parseInt(p[0], 10), m = parseInt(p[1], 10), y = parseInt(p[2], 10);
+            if (y > 1950 && m >= 1 && m <= 12 && d >= 1 && d <= 31) return new Date(y, m - 1, d);
+        }
+    } else if (s.includes('-')) {
+        const p = s.slice(0, 10).split('-');
+        if (p.length === 3) {
+            const y = parseInt(p[0], 10), m = parseInt(p[1], 10), d = parseInt(p[2], 10);
+            if (y > 1950 && m >= 1 && m <= 12 && d >= 1 && d <= 31) return new Date(y, m - 1, d);
+        }
+    }
+    return null;
+}
+
+function formatSqlEntryDateTR(dt) {
+    if (!dt || isNaN(dt.getTime())) return '-';
+    return `${String(dt.getDate()).padStart(2, '0')}.${String(dt.getMonth() + 1).padStart(2, '0')}.${dt.getFullYear()}`;
+}
+
+function resolveCustomerLatestSqlDate(c) {
+    if (!c) return '-';
+    let bestDt = parseSqlEntryDateObj(c.lastDate);
+    if (Array.isArray(c.serviceHistory) && c.serviceHistory.length > 0) {
+        c.serviceHistory.sort((a, b) => {
+            const da = parseSqlEntryDateObj(a && a.tarih);
+            const db = parseSqlEntryDateObj(b && b.tarih);
+            return (db ? db.getTime() : 0) - (da ? da.getTime() : 0);
+        });
+        for (const h of c.serviceHistory) {
+            if (!h) continue;
+            const hd = parseSqlEntryDateObj(h.tarih);
+            if (hd) {
+                h.tarih = formatSqlEntryDateTR(hd);
+                if (!bestDt || hd.getTime() > bestDt.getTime()) {
+                    bestDt = hd;
+                    if (h.islem) c.lastOperation = h.islem;
+                }
+            }
+        }
+    }
+    if (bestDt) {
+        const formatted = formatSqlEntryDateTR(bestDt);
+        c.lastDate = formatted;
+        return formatted;
+    }
+    return c.lastDate || '-';
+}
+
+async function triggerAutoSqlLiveSync() {
+    const endpoints = ['/api/logo-live-sync', 'http://localhost:8000/api/logo-live-sync'];
+    for (const ep of endpoints) {
+        try {
+            const ctrl = new AbortController();
+            const timer = setTimeout(() => ctrl.abort(), 3500);
+            const res = await fetch(ep + '?t=' + Date.now(), { cache: 'no-store', signal: ctrl.signal });
+            clearTimeout(timer);
+            if (res.ok) {
+                const data = await res.json();
+                if (data && Array.isArray(data.customers) && data.customers.length > 0) {
+                    data.customers.forEach(c => resolveCustomerLatestSqlDate(c));
+                    if (appState) {
+                        appState.customers = data.customers;
+                        if (data.logoMetadata) appState.logoMetadata = data.logoMetadata;
+                    }
+                    return data;
+                }
+            }
+        } catch (e) {}
+    }
+    return null;
+}
+
 async function fetchLiveGitHubData(isInitial = false) {
     const ts = Date.now();
+    // Uygulamaya girildiği anda otomatik olarak SQL'den son girişleri çek
+    const sqlLiveRes = await triggerAutoSqlLiveSync();
     const primarySources = [
-        'https://raw.githubusercontent.com/Dizsan/ziyaret/main/shared_state.json?t=' + ts,
-        'shared_state.json?t=' + ts
+        'shared_state.json?t=' + ts,
+        'https://raw.githubusercontent.com/Dizsan/ziyaret/main/shared_state.json?t=' + ts
     ];
     const fallbackSources = [
         'customer_database.json?t=' + ts,
@@ -7222,6 +7301,14 @@ async function fetchLiveGitHubData(isInitial = false) {
     ];
 
     let candidates = [];
+    if (sqlLiveRes && Array.isArray(sqlLiveRes.customers) && sqlLiveRes.customers.length > 0) {
+        candidates.push({
+            customers: sqlLiveRes.customers,
+            logoMetadata: sqlLiveRes.logoMetadata,
+            stateRevision: (Number(appState.stateRevision || 0) + 10),
+            updatedAt: new Date().toISOString()
+        });
+    }
     const settled = await Promise.allSettled(
         primarySources.map(src => fetch(src, { cache: 'no-store' }).then(r => r.ok ? r.json() : null))
     );
@@ -7302,8 +7389,11 @@ async function fetchLiveGitHubData(isInitial = false) {
 
         appState.customers = liveData.customers.map(c => {
             if ((!Array.isArray(c.serviceHistory) || c.serviceHistory.length === 0) && existingHistMap.has(c.code)) {
-                return { ...c, serviceHistory: existingHistMap.get(c.code) };
+                const merged = { ...c, serviceHistory: existingHistMap.get(c.code) };
+                resolveCustomerLatestSqlDate(merged);
+                return merged;
             }
+            resolveCustomerLatestSqlDate(c);
             return c;
         });
     }
@@ -8239,7 +8329,7 @@ function renderDashboard() {
                         </div>
                         <strong style="color:#fff; font-size:0.83rem; display:block; cursor:pointer;" onclick="openCustomerDetailModal('${c.code}')">${c.title}</strong>
                         <div style="font-size:0.72rem; color:var(--text-sec); margin-top:2px;">
-                            <i class="fa-solid fa-location-dot" style="color:#38bdf8;"></i> ${c.city} / ${c.district} &bull; Ciro: <strong style="color:#34d399;">${formatMoney(c.totalRevenue)}</strong> &bull; Son: ${c.lastDate || '-'}
+                            <i class="fa-solid fa-location-dot" style="color:#38bdf8;"></i> ${c.city} / ${c.district} &bull; Ciro: <strong style="color:#34d399;">${formatMoney(c.totalRevenue)}</strong> &bull; Son: ${resolveCustomerLatestSqlDate(c)}
                         </div>
                     </div>
                     <div style="display:flex; align-items:center; gap:0.35rem; flex-wrap:wrap;">
@@ -8722,7 +8812,7 @@ function renderLegacyCustomers() {
                 </td>
                 <td style="font-weight:700; color:#34d399; font-size:0.76rem; white-space:nowrap;">${formatMoney(c.totalRevenue)}</td>
                 <td style="font-size:0.72rem; white-space:nowrap;">
-                    <div>${c.lastDate || '-'}</div>
+                    <div>${resolveCustomerLatestSqlDate(c)}</div>
                     <span style="color:#f87171; font-size:0.67rem;">${c.churnDuration || ''}</span>
                 </td>
                 <td style="white-space:nowrap;">
@@ -8939,7 +9029,7 @@ function renderCariEkstreTable(resetPage = true) {
                     <div style="font-weight:700; color:#fff; font-size:0.82rem;">${hlEkstre(c.title || '')}</div>
                     <div style="font-size:0.69rem; color:var(--text-muted); display:flex; gap:0.45rem; align-items:center; margin-top:2px;">
                         ${c.plates && c.plates !== 'Plakasız' ? `<span style="color:#fde68a;"><i class="fa-solid fa-truck"></i> ${hlEkstre(c.plates)}</span>` : ''}
-                        ${c.lastDate ? `<span>Son Fatura: ${c.lastDate}</span>` : ''}
+                        <span>Son Fatura: ${resolveCustomerLatestSqlDate(c)}</span>
                     </div>
                 </td>
                 <td style="max-width:250px; font-size:0.74rem; color:#cbd5e1; white-space:normal; line-height:1.35;">${hlEkstre(c.address || '-')}</td>
@@ -9211,7 +9301,7 @@ function openCustomerDetailModal(code) {
         historyHtml = `
             <div style="background:rgba(255,255,255,0.02); border:1px dashed var(--border-color); border-radius:var(--radius-md); padding:1rem; text-align:center; color:var(--text-sec); font-size:0.82rem;">
                 <i class="fa-solid fa-circle-info" style="color:#38bdf8;"></i> Bu cari karta ait ayrıntılı servis fatura satırı bulunmamaktadır.<br>
-                Logo ERP son hareket tarihi: <strong style="color:#fff;">${customer.lastDate || '-'}</strong> | Bakiye: <strong style="color:#fff;">${formatMoney(Math.abs(acc.bakiye))} ${acc.baCode}</strong>
+                Logo ERP son hareket tarihi: <strong style="color:#fff;">${resolveCustomerLatestSqlDate(customer)}</strong> | Bakiye: <strong style="color:#fff;">${formatMoney(Math.abs(acc.bakiye))} ${acc.baCode}</strong>
             </div>
         `;
     }
@@ -9274,7 +9364,7 @@ function openCustomerDetailModal(code) {
             </div>
             <div class="detail-kpi-card">
                 <span class="detail-kpi-title">Son Fatura &amp; Araç Plakası</span>
-                <span class="detail-kpi-value" style="font-size:0.9rem; color:#fde68a;">${customer.lastDate || '-'}</span>
+                <span class="detail-kpi-value" style="font-size:0.9rem; color:#fde68a;">${resolveCustomerLatestSqlDate(customer)}</span>
                 <span class="detail-kpi-sub">${customer.plates || 'Plakasız'} (${customer.churnDuration || '-'})</span>
             </div>
         </div>

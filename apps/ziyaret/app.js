@@ -99,7 +99,7 @@ function resolveUserEmail(u) {
 
 // 24 Resmi Personel + Yönetici Ömer Eren (DizGün ve Dizsan Toplantı ile 100% Ortak)
 const OFFICIAL_PERSONNEL_RAW = [
-    { order: 0,  name: "ÖMER EREN",                  username: "ömer",             mailBox: "oeren",     pinStamp: "2697120930-1230232798-23831670", role: "Yönetici", dept: "Yönetim Kurulu / Sistem Yöneticisi", avatar: "dizsan_logo.jpg" },
+    { order: 0,  name: "ÖMER EREN",                  username: "ömer",             mailBox: "oeren",     pinStamp: "621976239-623787727-2631164839", role: "Yönetici", dept: "Yönetim Kurulu / Sistem Yöneticisi", avatar: "dizsan_logo.jpg" },
     { order: 1,  name: "HAKAN AYDIN",                username: "hakan.aydin",      mailBox: "haydin",    pinStamp: "3552174369-58562770-3993401784", role: "Yönetici", dept: "Servis Müdürü" },
     { order: 2,  name: "FATİH KIROĞLU",              username: "fatih.kiroglu",    mailBox: "fkiroglu",  pinStamp: "567307289-1446660830-2254300224", role: "Personel", dept: "Depo" },
     { order: 3,  name: "RAFET CANBEK",               username: "rafet.canbek",     mailBox: "rcanbek",   pinStamp: DEFAULT_PIN_STAMP, role: "Yönetici", dept: "Genel Müdür" },

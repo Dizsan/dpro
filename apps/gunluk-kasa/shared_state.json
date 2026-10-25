@@ -20,7 +20,7 @@
         "lockDay": true,
         "manageUsers": true
       },
-      "pinUpdatedAtMs": 1792787040000
+      "pinUpdatedAtMs": 1792886817931
     },
     {
       "order": 1,
@@ -828,34 +828,6 @@
       ],
       "updatedAtMs": 1792841117026,
       "tcmbSlotKey": "2026-10-21_HISTORICAL"
-    },
-    "2026-10-22": {
-      "dateISO": "2026-10-22",
-      "euroRate": "--",
-      "usdRate": "--",
-      "prevInOverride": null,
-      "prevOutOverride": null,
-      "carryoverOverride": null,
-      "carryoverLabel": "21/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
-      "cashierName": "GÖKHAN ÖZBULUT",
-      "controllerName": "RAFET CANBEK",
-      "controllerApproved": false,
-      "isLocked": false,
-      "entries": []
-    },
-    "2026-10-31": {
-      "dateISO": "2026-10-31",
-      "euroRate": "--",
-      "usdRate": "--",
-      "prevInOverride": null,
-      "prevOutOverride": null,
-      "carryoverOverride": null,
-      "carryoverLabel": "30/10/2026 TARİHLİ KASA DEVRİ ( + ) BAKİYESİ",
-      "cashierName": "GÖKHAN ÖZBULUT",
-      "controllerName": "RAFET CANBEK",
-      "controllerApproved": false,
-      "isLocked": false,
-      "entries": []
     }
   },
   "auditLogs": [

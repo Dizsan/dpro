@@ -1359,33 +1359,57 @@
         </div>
     </div>
 
-    <!-- ŞİFREMİ UNUTTUM MODALI (KURUMSAL E-POSTA & DOĞRULAMA) -->
+    <!-- ŞİFREMİ UNUTTUM MODALI (KURUMSAL E-POSTA BAĞLANTI GÖNDERİMİ) -->
     <div id="modal-forgot-password" class="modal-backdrop">
-        <div class="modal-dialog" style="max-width:440px;">
+        <div class="modal-dialog" style="max-width:450px;">
             <div class="modal-header">
-                <h3><i class="fa-solid fa-key" style="color:var(--amber-warn);"></i> <span>Şifre Sıfırlama &amp; Doğrulama</span></h3>
+                <h3><i class="fa-solid fa-envelope-circle-check" style="color:var(--amber-warn);"></i> <span>Şifremi Unuttum (E-Posta Bağlantısı)</span></h3>
                 <button class="btn btn-xs" onclick="closeModal('modal-forgot-password')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body">
                 <p style="font-size:0.84rem; color:var(--text-secondary); margin-bottom:14px; line-height:1.5;">
-                    Personel hesabınızı seçip kurumsal e-posta adresinizi doğrulayarak yeni şifrenizi belirleyebilirsiniz. İşlem güvenlik loglarına kaydedilir.
+                    Personel hesabınızı seçip kayıtlı kurumsal e-posta adresinizi girin. E-posta adresiniz doğrulandığında adresinize <strong>tek kullanımlık şifre yenileme bağlantısı (linki)</strong> gönderilir.
                 </p>
                 <div class="form-group">
                     <label>Personel Seçin</label>
                     <select id="forgot-kasa-user-select" class="form-control" onchange="syncKasaForgotEmail()"></select>
                 </div>
                 <div class="form-group">
-                    <label>Kurumsal E-Posta Adresiniz</label>
-                    <input type="email" id="forgot-kasa-email" class="form-control" placeholder="oeren@dizsan.com.tr">
+                    <label>Kayıtlı Kurumsal E-Posta Adresiniz</label>
+                    <input type="email" id="forgot-kasa-email" class="form-control" placeholder="ornek@dizsan.com.tr" autocomplete="off">
                 </div>
+                <div id="forgot-kasa-status" style="display:none; padding:10px 12px; border-radius:10px; font-size:0.8rem; margin-top:10px; line-height:1.5;"></div>
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+                    <button type="button" class="btn" onclick="closeModal('modal-forgot-password')">Kapat</button>
+                    <button type="button" class="btn btn-primary" onclick="handleKasaForgotPasswordSubmit()">
+                        <i class="fa-solid fa-paper-plane"></i> Şifre Yenileme Linki Gönder
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- E-POSTA LİNKİ İLE YENİ ŞİFRE BELİRLEME MODALI -->
+    <div id="modal-kasa-reset-link" class="modal-backdrop">
+        <div class="modal-dialog" style="max-width:440px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-key" style="color:#34d399;"></i> <span>Yeni Şifre Belirleme</span></h3>
+                <button class="btn btn-xs" onclick="closeModal('modal-kasa-reset-link')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div id="kasa-reset-link-banner" style="padding:10px 12px; border-radius:10px; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); font-size:0.8rem; color:#d1fae5; margin-bottom:14px;"></div>
                 <div class="form-group">
                     <label>Yeni Şifreniz</label>
-                    <input type="password" id="forgot-kasa-new-pass" class="form-control" placeholder="Yeni şifrenizi yazın">
+                    <input type="password" id="kasa-reset-link-new-pass" class="form-control" placeholder="En az 3 karakter">
+                </div>
+                <div class="form-group">
+                    <label>Yeni Şifreniz (Tekrar)</label>
+                    <input type="password" id="kasa-reset-link-confirm-pass" class="form-control" placeholder="Yeni şifrenizi tekrar yazın">
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
-                    <button type="button" class="btn" onclick="closeModal('modal-forgot-password')">Vazgeç</button>
-                    <button type="button" class="btn btn-primary" onclick="handleKasaForgotPasswordSubmit()">
-                        <i class="fa-solid fa-key"></i> Şifremi Güncelle
+                    <button type="button" class="btn" onclick="closeModal('modal-kasa-reset-link')">İptal</button>
+                    <button type="button" class="btn btn-primary" onclick="completeKasaPasswordResetFromLink()">
+                        <i class="fa-solid fa-check-double"></i> Şifremi Güncelle ve Giriş Yap
                     </button>
                 </div>
             </div>

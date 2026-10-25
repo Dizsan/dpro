@@ -9677,10 +9677,38 @@ function syncUserPasswordToDProStorage(userObj) {
     } catch (e) {}
 }
 
-function handleKasaForgotPasswordSubmit() {
+let verifiedKasaResetSession = null;
+
+function buildKasaSignedResetToken(user) {
+    const expMs = Date.now() + 15 * 60 * 1000;
+    const nonce = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const curStamp = user.pinStamp || DEFAULT_PIN_STAMP;
+    const sig = hashPin(`DPRO_RESET_LINK_V1|${user.username}|${expMs}|${nonce}|${curStamp}`);
+    return btoa(unescape(encodeURIComponent(JSON.stringify({ u: user.username, e: expMs, n: nonce, s: sig }))));
+}
+
+function verifyKasaSignedResetToken(tokenStr, usernameParam) {
+    try {
+        const data = JSON.parse(decodeURIComponent(escape(atob(tokenStr))));
+        if (!data || !data.u || !data.e || !data.n || !data.s) return { valid: false, reason: "Geçersiz bağlantı formatı." };
+        if (usernameParam && String(data.u).toLowerCase() !== String(usernameParam).toLowerCase()) return { valid: false, reason: "Kullanıcı eşleşmiyor." };
+        if (Date.now() > Number(data.e)) return { valid: false, reason: "Bağlantının 15 dakikalık geçerlilik süresi dolmuş." };
+        const used = JSON.parse(localStorage.getItem("dizsan_dpro_used_reset_tokens_v1") || "[]");
+        if (used.includes(data.n)) return { valid: false, reason: "Bu şifre sıfırlama bağlantısı daha önce kullanılmış." };
+        const targetUser = (appState.users || []).find(u => String(u.username || "").toLowerCase() === String(data.u).toLowerCase());
+        if (!targetUser) return { valid: false, reason: "Personel hesabı bulunamadı." };
+        const expectedSig = hashPin(`DPRO_RESET_LINK_V1|${targetUser.username}|${data.e}|${data.n}|${targetUser.pinStamp || DEFAULT_PIN_STAMP}`);
+        if (expectedSig !== data.s) return { valid: false, reason: "Bu bağlantı artık geçersiz (Şifreniz zaten güncellenmiş)." };
+        return { valid: true, user: targetUser, nonce: data.n };
+    } catch (e) {
+        return { valid: false, reason: "Bağlantı doğrulanamadı." };
+    }
+}
+
+async function handleKasaForgotPasswordSubmit() {
     const sel = document.getElementById("forgot-kasa-user-select");
     const emailIn = (document.getElementById("forgot-kasa-email")?.value || "").trim().toLowerCase();
-    const newPass = (document.getElementById("forgot-kasa-new-pass")?.value || "").trim();
+    const statusEl = document.getElementById("forgot-kasa-status");
 
     const uname = sel ? sel.value : "";
     const u = (appState.users || []).find(x => x.username === uname);
@@ -9688,36 +9716,108 @@ function handleKasaForgotPasswordSubmit() {
         alert("❌ Lütfen listeden personelinizi seçiniz!");
         return;
     }
-    if (!newPass || newPass.length < 3) {
-        alert("❌ Lütfen en az 3 karakterden oluşan yeni şifrenizi yazınız!");
-        return;
-    }
     const expectedEmail = String(u.email || "").trim().toLowerCase();
     if (!emailIn || emailIn !== expectedEmail) {
         addAuditLog("GÜVENLİK UYARISI", `${u.name} için hatalı kurumsal e-posta (${emailIn || "boş"}) ile şifre sıfırlama denemesi engellendi.`);
-        alert("❌ Kurumsal e-posta adresi hatalı! E-posta adresi seçilen personelin kayıtlı kurumsal e-postası ile birebir eşleşmediği için şifre güncellenemedi.");
+        alert("❌ Kurumsal e-posta adresi hatalı! E-posta adresi seçilen personelin kayıtlı kurumsal e-postası ile birebir eşleşmediği için bağlantı gönderilmedi.");
         return;
     }
 
+    const token = buildKasaSignedResetToken(u);
+    const encUser = encodeURIComponent(u.username);
+    const encTok = encodeURIComponent(token);
+    const appLink = `dpro://reset?resetToken=${encTok}&user=${encUser}`;
+    const localLink = `${window.location.origin}${window.location.pathname}?resetToken=${encTok}&user=${encUser}`;
+    const liveLink = `https://dizsan.github.io/dpro/index.html?resetToken=${encTok}&user=${encUser}`;
+
+    try {
+        fetch("/api/send-reset-link", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: emailIn, userName: u.name, username: u.username, resetToken: token, appLink, localLink, liveLink })
+        }).catch(() => {});
+    } catch (e) {}
+
+    if (statusEl) {
+        statusEl.style.display = "block";
+        statusEl.style.background = "rgba(16,185,129,0.14)";
+        statusEl.style.border = "1px solid rgba(16,185,129,0.4)";
+        statusEl.style.color = "#d1fae5";
+        statusEl.innerHTML = `✅ <strong>${emailIn}</strong> adresine şifre yenileme bağlantısı otomatik olarak gönderildi. Bağlantıya tıkladığınızda yeni şifre oluşturma ekranı açılır ve yeni şifreniz sistem belleğine kaydedilir.`;
+    }
+    addAuditLog("ŞİFRE BAĞLANTISI GÖNDERİLDİ", `${u.name} (${emailIn}) adresine şifre yenileme linki otomatik olarak gönderildi.`);
+}
+
+function checkKasaUrlPasswordResetToken() {
+    const searchStr = window.location.search || "";
+    if (!searchStr.includes("resetToken=")) return false;
+    const params = new URLSearchParams(searchStr);
+    const tok = params.get("resetToken");
+    const usr = params.get("user") || "";
+    if (!tok) return false;
+    const ver = verifyKasaSignedResetToken(tok, usr);
+    try { window.history.replaceState({}, document.title, window.location.pathname + window.location.hash); } catch (e) {}
+    if (!ver.valid) {
+        alert(`❌ ŞİFRE YENİLEME BAĞLANTISI GEÇERSİZ!\n\n${ver.reason}`);
+        return false;
+    }
+    verifiedKasaResetSession = ver;
+    closeModal("modal-forgot-password");
+    const banner = document.getElementById("kasa-reset-link-banner");
+    if (banner) {
+        banner.innerHTML = `✅ <strong>E-Posta Bağlantısı Doğrulandı</strong><br>• Personel: <strong>${ver.user.name}</strong><br>• E-Posta: <strong>${ver.user.email}</strong>`;
+    }
+    openModal("modal-kasa-reset-link");
+    return true;
+}
+
+function completeKasaPasswordResetFromLink() {
+    if (!verifiedKasaResetSession || !verifiedKasaResetSession.user) return;
+    const newPass = (document.getElementById("kasa-reset-link-new-pass")?.value || "").trim();
+    const confPass = (document.getElementById("kasa-reset-link-confirm-pass")?.value || "").trim();
+    if (!newPass || newPass.length < 3 || newPass !== confPass) {
+        alert("❌ Yeni şifreler eşleşmiyor veya en az 3 karakter olmalıdır!");
+        return;
+    }
+    const u = verifiedKasaResetSession.user;
     const nowMs = Date.now();
     u.pinStamp = hashPin(newPass);
     u.pinUpdatedAtMs = nowMs;
     delete u.password;
     delete u.oldPin;
+    try {
+        const used = JSON.parse(localStorage.getItem("dizsan_dpro_used_reset_tokens_v1") || "[]");
+        used.push(verifiedKasaResetSession.nonce);
+        localStorage.setItem("dizsan_dpro_used_reset_tokens_v1", JSON.stringify(used.slice(-200)));
+    } catch (e) {}
     currentUser = u;
     localStorage.setItem(STORAGE_KEY_KASA_REMEMBER, JSON.stringify({ username: u.username }));
     localStorage.setItem(STORAGE_KEY_KASA_SESSION, JSON.stringify({ username: u.username, pinStamp: u.pinStamp }));
     sessionStorage.removeItem(STORAGE_KEY_KASA_SESSION);
     sessionStorage.removeItem(STORAGE_KEY_KASA_EXPLICIT_LOGOUT);
-
     syncUserPasswordToDProStorage(u);
-
-    addAuditLog("ŞİFRE SIFIRLAMA", `${u.name} (${emailIn}) şifresini güncelledi ve giriş yaptı.`);
+    try {
+        fetch("/api/update-user-password", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                username: u.username,
+                name: u.name,
+                email: u.email,
+                pinStamp: u.pinStamp,
+                pinUpdatedAtMs: nowMs,
+                usedNonce: verifiedKasaResetSession.nonce
+            })
+        }).catch(() => {});
+    } catch (e) {}
+    addAuditLog("ŞİFRE SIFIRLAMA (LİNK)", `${u.name} (${u.email}) e-posta bağlantısı üzerinden şifresini güncelledi.`);
     syncStateToServer();
-    closeModal("modal-forgot-password");
-    alert(`✅ ŞİFRENİZ GÜNCELLENDİ!\n\n• Personel: ${u.name}\n• E-Posta: ${emailIn}\n\nEski şifreniz silindi, yeni şifreniz kaydedildi ve giriş yapıldı.`);
+    closeModal("modal-kasa-reset-link");
+    verifiedKasaResetSession = null;
+    alert(`✅ ŞİFRENİZ GÜNCELLENDİ!\n\n• Personel: ${u.name}\n• E-Posta: ${u.email}\n\nYeni şifreniz kaydedildi ve giriş yapıldı.`);
     applyAuthenticatedSession();
 }
+setTimeout(() => { try { checkKasaUrlPasswordResetToken(); } catch (e) {} }, 350);
 
 function openChangePasswordModal() {
     openModal("modal-change-password");

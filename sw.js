@@ -1,24 +1,12 @@
-// D-Pro Kurumsal Yönetim & DizGün Entegre Platformu - Service Worker (v1.8.0)
-const CACHE_NAME = "dizsan-dpro-v1.8.0";
+// D-Pro Kurumsal Yönetim & DizGün Entegre Platformu - Service Worker (v1.8.1)
+const CACHE_NAME = "dizsan-dpro-v1.8.1";
 const ASSETS = [
-  "./",
-  "./index.html",
-  "./mobil.html",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
   "./apple-touch-icon.png",
   "./Dizsan Logo.JPG",
-  "./dizsan_logo.jpg",
-  "./apps/ziyaret/index.html",
-  "./apps/toplanti/index.html",
-  "./apps/kredi/index.html",
-  "./apps/odeme-takvimi/index.html",
-  "./apps/kredi-karti/index.html",
-  "./apps/vdf-odeme/index.html",
-  "./apps/dikas/index.html",
-  "./apps/dmet/index.html",
-  "./apps/gunluk-kasa/index.html"
+  "./dizsan_logo.jpg"
 ];
 
 self.addEventListener("install", (e) => {
@@ -43,20 +31,22 @@ self.addEventListener("activate", (e) => {
 self.addEventListener("fetch", (e) => {
   const url = e.request.url;
   if (
+    e.request.method !== "GET" ||
     url.includes("api.github.com") ||
     url.includes("raw.githubusercontent.com") ||
     url.includes("/api/") ||
-    url.includes("shared_state.json")
+    url.includes("shared_state.json") ||
+    url.includes("customer_database.json")
   ) {
     return;
   }
 
   e.respondWith(
-    fetch(e.request, { cache: "no-store" })
+    fetch(e.request)
       .then((networkRes) => {
-        if (networkRes && networkRes.status === 200 && e.request.method === "GET") {
+        if (networkRes && networkRes.status === 200) {
           const copy = networkRes.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(e.request, copy));
+          caches.open(CACHE_NAME).then((cache) => cache.put(e.request, copy)).catch(() => {});
         }
         return networkRes;
       })
