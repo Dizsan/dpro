@@ -756,12 +756,19 @@ function matchPlateOrTitleInErp(plateStr, textStr) {
 }
 
 // ==================== KULLANICI GİRİŞİ (LOGIN / LOGOUT) ====================
+function isOmerErenDemet(u = currentUser) {
+    if (!u) return false;
+    const un = String(u.username || "").toLowerCase();
+    const fn = String(u.name || "").toLowerCase();
+    return un === "ömer" || un === "omer" || fn.includes("ömer eren") || fn.includes("omer eren");
+}
+
 function renderQuickUserChips() {
     const listEl = document.getElementById("quick-user-list");
     if (!listEl) return;
     listEl.innerHTML = OFFICIAL_PERSONNEL.map(u => `
         <span class="user-chip" onclick="fillQuickUser('${u.username}')">
-            <i class="fa-solid ${u.role === "Yönetici" ? "fa-user-tie" : "fa-user"}"></i> ${u.name}
+            <i class="fa-solid fa-user"></i> ${u.name}
         </span>
     `).join("");
 }
@@ -795,8 +802,7 @@ function handleLogin(e) {
     }
 
     const inputStamp = hashPin(rawPass);
-    // Standart kurumsal şifre veya PIN doğrulaması
-    const isValid = (inputStamp === user.pinStamp) || (inputStamp === DEFAULT_PIN_STAMP) || (rawPass === "123456") || (rawPass === "dizsan19");
+    const isValid = (inputStamp === user.pinStamp);
 
     if (!isValid) {
         if (errEl) {
@@ -861,9 +867,13 @@ window.addEventListener("message", (ev) => {
 
 function updateActiveUserHeader() {
     const badge = document.getElementById("active-user-badge");
+    const isOmer = isOmerErenDemet(currentUser);
     if (badge && currentUser) {
-        badge.innerHTML = `<i class="fa-solid fa-user-check"></i> ${currentUser.name} (${currentUser.role})`;
+        badge.innerHTML = `<i class="fa-solid fa-user-check"></i> ${currentUser.name}`;
     }
+    document.querySelectorAll('[data-tab="sources"], [data-tab="notifications"], [data-tab="logs"]').forEach(el => {
+        el.style.display = isOmer ? "" : "none";
+    });
 }
 
 function handleLogout() {

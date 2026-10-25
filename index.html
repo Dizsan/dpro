@@ -1290,30 +1290,60 @@
                     <div class="grid-cards" id="all-qrcodes-grid"></div>
                 </div>
 
-                <!-- PANE 4: YÖNETİCİ - PERSONEL & UYGULAMA İÇİ MODÜL YETKİ YÖNETİMİ -->
+                <!-- PANE 4A: YÖNETİCİ - 24 PERSONEL × TÜM UYGULAMALAR TOPLU ERİŞİM & YETKİ MATRİSİ (SADECE ÖMER EREN) -->
+                <div class="view-pane" id="pane-admin-access-matrix">
+                    <div class="dpro-card" style="margin-bottom:18px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
+                            <div>
+                                <h3 style="font-family:'Outfit',sans-serif; font-size:1.15rem;">Personel Uygulama Erişim &amp; İşlem Yetkileri Merkezi (Sadece Ömer Eren)</h3>
+                                <p style="font-size:0.8rem; color:var(--text-secondary);">
+                                    Tüm 24 personelin hangi uygulamaları görebileceğini ve erişim verilen uygulamalarda hangi işlemleri (Görüntüleme, Ekleme, Düzenleme, Silme, Çıktı, Finansal Veri) yapabileceğini tek ekrandan yönetin. Diğer hiçbir kullanıcı bu ekranı veya başka bir kullanıcının yetkilerini göremez.
+                                </p>
+                            </div>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <input type="text" id="matrix-user-search" class="form-control" style="width:210px; padding:7px 12px; font-size:0.8rem;" placeholder="Personel ara..." oninput="renderAdminAccessMatrixView()">
+                                <button type="button" class="btn-sm primary" onclick="saveDProStateManual()">
+                                    <i class="fa-solid fa-floppy-disk"></i> Tüm Yetkileri Kaydet &amp; Uygula
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="admin-access-matrix-container"></div>
+                    </div>
+                </div>
+
+                <!-- PANE 4: YÖNETİCİ - PERSONEL & UYGULAMA İÇİ MODÜL YETKİ YÖNETİMİ (SADECE ÖMER EREN) -->
                 <div class="view-pane" id="pane-admin-permissions">
                     <div class="dpro-card" style="margin-bottom:18px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
                             <div>
-                                <h3 style="font-family:'Outfit',sans-serif; font-size:1.15rem;">🛡️ Personel Uygulama &amp; Uygulama İçi Modül Yetkilendirme Matrisi</h3>
+                                <h3 style="font-family:'Outfit',sans-serif; font-size:1.15rem;">Personel Bazlı Uygulama, İşlem &amp; Alt Sekme Yetkilendirme</h3>
                                 <p style="font-size:0.8rem; color:var(--text-secondary);">
-                                    Her personelin sol menüde hangi uygulamaları görebileceğini ve uygulama içindeki hangi alt modüllere erişebileceğini buradan atayın.
+                                    Seçilen personelin hangi uygulamaları görebileceğini, uygulama içinde neler yapabileceğini (Ekleme, Düzenleme, Silme, Çıktı, Finans) ve hangi alt menülere girebileceğini ayrı ayrı belirleyin.
                                 </p>
                             </div>
-                            <button type="button" class="btn-sm success" onclick="openAddUserModal()">
-                                <i class="fa-solid fa-user-plus"></i> Yeni Personel Ekle
-                            </button>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <button type="button" class="btn-sm primary" onclick="openDProTab('admin-access-matrix')">
+                                    <i class="fa-solid fa-table-cells"></i> 24 Personel Toplu Yetki Tablosu
+                                </button>
+                                <button type="button" class="btn-sm success" onclick="openAddUserModal()">
+                                    <i class="fa-solid fa-user-plus"></i> Yeni Personel Ekle
+                                </button>
+                            </div>
                         </div>
+
+                        <div id="perm-personnel-quick-strip" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; padding:10px; background:rgba(15,23,42,0.55); border:1px solid var(--border-color); border-radius:12px;"></div>
 
                         <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
                             <div style="flex:1; min-width:240px;">
-                                <label class="form-label">Yetkisi Düzenlenecek Personeli Seçin:</label>
+                                <label class="form-label">Yetkisi Düzenlenecek Personeli Seçin (24 Personel):</label>
                                 <select id="perm-user-select" class="form-control" onchange="renderUserPermissionEditor()"></select>
                             </div>
-                            <div style="display:flex; align-items:flex-end; gap:8px;">
-                                <button type="button" class="btn-sm primary" onclick="grantAllToSelectedUser()">Tüm Yetkileri Aç</button>
+                            <div style="display:flex; align-items:flex-end; gap:8px; flex-wrap:wrap;">
+                                <button type="button" class="btn-sm primary" onclick="grantAllToSelectedUser()">Tüm Uygulama &amp; Yetkileri Aç</button>
                                 <button type="button" class="btn-sm danger" onclick="revokeAllFromSelectedUser()">Tümünü Kısıtla</button>
                                 <button type="button" class="btn-sm amber" onclick="resetSelectedUserPassword()">Şifresini Değiştir</button>
+                                <button type="button" class="btn-sm success" onclick="saveDProStateManual()">Kaydet</button>
                             </div>
                         </div>
 
@@ -1731,10 +1761,20 @@
             { order: 24, name: "ENVER ( hitit ünv )",    username: "enver.hitit",      email: "rcanbek@dizsan.com.tr",  pinStamp: DEFAULT_PIN_STAMP,                role: "Personel", dept: "Hitit Ünv. Stajyer" }
         ];
 
-        // CANLI ÇALIŞMA MODU: Ömer Eren hariç tüm personel şu an D-Pro'yu açınca SADECE Dizsan Günlük Kasa'yı görür
+        // CANLI ÇALIŞMA MODU: Tüm uygulama erişim ve işlem yetkileri dinamik olarak Ömer Eren tarafından yönetilir
         const ONLY_OMER_EXCLUSIVE_MODE = false;
-        const STAFF_ONLY_KASA_MODE = true;
+        const STAFF_ONLY_KASA_MODE = false;
         const STAFF_ALLOWED_APP_ID = "Dizsan_Gunluk_Kasa";
+        const DPRO_PERMISSIONS_BRIDGE_KEY = "dizsan_dpro_permissions_v1";
+
+        const APP_ACTION_DEFINITIONS = [
+            { key: "view",      label: "Görüntüleme / Okuma",      icon: "fa-solid fa-eye",           color: "#38bdf8" },
+            { key: "create",    label: "Yeni Kayıt Ekleme",        icon: "fa-solid fa-plus-circle",   color: "#10b981" },
+            { key: "edit",      label: "Düzenleme / Güncelleme",   icon: "fa-solid fa-pen-to-square", color: "#f59e0b" },
+            { key: "delete",    label: "Kayıt Silme",              icon: "fa-solid fa-trash-can",     color: "#ef4444" },
+            { key: "export",    label: "Rapor / A4 Çıktı İndirme", icon: "fa-solid fa-print",         color: "#a855f7" },
+            { key: "financial", label: "Finansal / Bakiye Görme",  icon: "fa-solid fa-coins",         color: "#14b8a6" }
+        ];
 
         function isOnlyOmerEren(user) {
             if (!user) return false;
@@ -1745,27 +1785,45 @@
 
         function buildDefaultPermissionsForUser(user) {
             const isOmer = isOnlyOmerEren(user);
-            const perms = { apps: {}, submodules: {} };
+            const uname = String(user?.username || "").toLowerCase();
+            const perms = { apps: {}, submodules: {}, appActions: {} };
+
+            const kasaEditors = ["gokhan.ozbulut", "rafet.canbek"];
+            const kasaContributors = ["ertugrul.erdem", "necati.demirci", ...kasaEditors];
 
             getAllApps().forEach(app => {
-                const allowApp = isOmer || (STAFF_ONLY_KASA_MODE && app.id === STAFF_ALLOWED_APP_ID);
+                const allowApp = isOmer || app.id === STAFF_ALLOWED_APP_ID;
                 perms.apps[app.id] = allowApp;
                 (app.submodules || []).forEach(sub => {
                     perms.submodules[sub.id] = allowApp && (isOmer || sub.id !== "kasa_admin");
                 });
+                perms.appActions[app.id] = {
+                    view: allowApp,
+                    create: isOmer || (allowApp && kasaContributors.includes(uname)),
+                    edit: isOmer || (allowApp && kasaEditors.includes(uname)),
+                    delete: isOmer,
+                    export: allowApp,
+                    financial: allowApp
+                };
             });
             return perms;
         }
 
         let dproState = {
-            version: "v1.8.0",
+            version: "v1.8.1",
             users: [],
-            permissions: {}, // username -> { apps: {}, submodules: {} }
+            permissions: {}, // username -> { apps: {}, submodules: {}, appActions: {} }
             customApps: [],
             logs: [],
             changelog: [
                 {
-                    version: "v1.8.0",
+                    version: "v1.8.1",
+                    date: new Date().toLocaleDateString("tr-TR"),
+                    author: "ÖMER EREN",
+                    notes: "Sadece Ömer Eren'e özel Merkezi Personel Uygulama Erişim & İşlem Yetkileri Matrisi (24 Personel × Tüm Uygulamalar) ve Kullanıcılar Arası Tam Gizlilik Kalkanı devreye alındı."
+                },
+                {
+                    version: "v1.8.1",
                     date: new Date().toLocaleDateString("tr-TR"),
                     author: "ÖMER EREN",
                     notes: "Canlıya Geçiş: Ömer Eren hariç tüm personel için Sadece Günlük Kasa görünümü, Yeni Cihaz Kurulum/Giriş Onay Sistemi, Açık/Koyu Tema ve Sadeleştirilmiş Ekran aktif edildi."
@@ -1843,10 +1901,16 @@
                     console.error("D-Pro state parse error:", e);
                 }
             }
-            dproState.version = "v1.8.0";
+            dproState.version = "v1.8.1";
             if (!Array.isArray(dproState.users) || dproState.users.length === 0) {
                 dproState.users = INITIAL_USERS.map(u => ({ ...u }));
             }
+            // Eksik personel varsa INITIAL_USERS'dan tamamla
+            INITIAL_USERS.forEach(iu => {
+                if (!dproState.users.some(du => String(du.username || "").toLowerCase() === String(iu.username || "").toLowerCase())) {
+                    dproState.users.push({ ...iu });
+                }
+            });
             // Eski pinStamp kalan kullanıcıları INITIAL_USERS ile güncelle
             dproState.users.forEach(du => {
                 const initU = INITIAL_USERS.find(iu => iu.username === du.username);
@@ -1866,27 +1930,32 @@
                     }
                 }
             });
-            // Sistem belleğinden (/api/dpro-users, Bulut shared_state.json ve Günlük Kasa shared_state.json) canlı şifre senkronizasyonu
-            const applySyncedUserPins = (userList) => {
-                if (!Array.isArray(userList)) return;
+            // Sistem belleğinden (/api/dpro-users, Bulut shared_state.json ve Günlük Kasa shared_state.json) canlı şifre ve yetki senkronizasyonu
+            const applySyncedUserPins = (userList, remotePerms = null) => {
                 let changed = false;
-                dproState.users.forEach(du => {
-                    const su = userList.find(x =>
-                        String(x.username || "").toLowerCase() === String(du.username || "").toLowerCase() ||
-                        String(x.name || "").toUpperCase() === String(du.name || "").toUpperCase()
-                    );
-                    if (su && su.pinStamp && su.pinStamp !== du.pinStamp) {
-                        const sMs = Number(su.pinUpdatedAtMs) || 0;
-                        const dMs = Number(du.pinUpdatedAtMs) || 0;
-                        if (sMs >= dMs) {
-                            du.pinStamp = su.pinStamp;
-                            if (sMs > 0) du.pinUpdatedAtMs = sMs;
-                            delete du.password;
-                            delete du.oldPin;
-                            changed = true;
+                if (Array.isArray(userList)) {
+                    dproState.users.forEach(du => {
+                        const su = userList.find(x =>
+                            String(x.username || "").toLowerCase() === String(du.username || "").toLowerCase() ||
+                            String(x.name || "").toUpperCase() === String(du.name || "").toUpperCase()
+                        );
+                        if (su && su.pinStamp && su.pinStamp !== du.pinStamp) {
+                            const sMs = Number(su.pinUpdatedAtMs) || 0;
+                            const dMs = Number(du.pinUpdatedAtMs) || 0;
+                            if (sMs >= dMs) {
+                                du.pinStamp = su.pinStamp;
+                                if (sMs > 0) du.pinUpdatedAtMs = sMs;
+                                delete du.password;
+                                delete du.oldPin;
+                                changed = true;
+                            }
                         }
-                    }
-                });
+                    });
+                }
+                if (remotePerms && typeof remotePerms === "object" && !dproState._permsCustomizedLocalMs) {
+                    dproState.permissions = { ...dproState.permissions, ...remotePerms };
+                    changed = true;
+                }
                 if (changed) {
                     saveDProState(false);
                     populateLoginSelects();
@@ -1894,15 +1963,15 @@
             };
             fetch("/api/dpro-users?t=" + Date.now(), { cache: "no-store" })
                 .then(r => r.ok ? r.json() : null)
-                .then(data => { if (data && Array.isArray(data.users)) applySyncedUserPins(data.users); })
+                .then(data => { if (data) applySyncedUserPins(data.users, data.permissions); })
                 .catch(() => {});
             fetch("shared_state.json?t=" + Date.now(), { cache: "no-store" })
                 .then(r => r.ok ? r.json() : null)
-                .then(data => { if (data && Array.isArray(data.users)) applySyncedUserPins(data.users); })
+                .then(data => { if (data) applySyncedUserPins(data.users, data.permissions); })
                 .catch(() => {});
             fetch("https://raw.githubusercontent.com/Dizsan/dpro/main/shared_state.json?t=" + Date.now(), { cache: "no-store" })
                 .then(r => r.ok ? r.json() : null)
-                .then(data => { if (data && Array.isArray(data.users)) applySyncedUserPins(data.users); })
+                .then(data => { if (data) applySyncedUserPins(data.users, data.permissions); })
                 .catch(() => {});
             fetch("apps/gunluk-kasa/shared_state.json?t=" + Date.now(), { cache: "no-store" })
                 .then(r => r.ok ? r.json() : null)
@@ -1954,34 +2023,84 @@
             if (!dproState.permissions) dproState.permissions = {};
             dproState.users.forEach(u => {
                 const defaults = buildDefaultPermissionsForUser(u);
-                if (STAFF_ONLY_KASA_MODE && !isOnlyOmerEren(u)) {
-                    // Ömer Eren hariç tüm personel şu an D-Pro'yu açınca SADECE Günlük Kasa'yı görsün
+                if (isOnlyOmerEren(u)) {
                     dproState.permissions[u.username] = defaults;
                 } else if (!dproState.permissions[u.username]) {
                     dproState.permissions[u.username] = defaults;
                 } else {
-                    if (!dproState.permissions[u.username].apps) dproState.permissions[u.username].apps = {};
-                    if (!dproState.permissions[u.username].submodules) dproState.permissions[u.username].submodules = {};
-                    Object.keys(defaults.apps).forEach(k => {
-                        dproState.permissions[u.username].apps[k] = true;
+                    const up = dproState.permissions[u.username];
+                    if (!up.apps) up.apps = {};
+                    if (!up.submodules) up.submodules = {};
+                    if (!up.appActions) up.appActions = {};
+                    Object.keys(defaults.apps).forEach(appId => {
+                        if (typeof up.apps[appId] !== "boolean") {
+                            up.apps[appId] = defaults.apps[appId];
+                        }
+                        if (!up.appActions[appId] || typeof up.appActions[appId] !== "object") {
+                            up.appActions[appId] = { ...defaults.appActions[appId], view: !!up.apps[appId] };
+                        } else {
+                            APP_ACTION_DEFINITIONS.forEach(def => {
+                                if (typeof up.appActions[appId][def.key] !== "boolean") {
+                                    up.appActions[appId][def.key] = !!defaults.appActions[appId]?.[def.key];
+                                }
+                            });
+                        }
                     });
-                    Object.keys(defaults.submodules).forEach(k => {
-                        dproState.permissions[u.username].submodules[k] = true;
+                    Object.keys(defaults.submodules).forEach(subId => {
+                        if (typeof up.submodules[subId] !== "boolean") {
+                            up.submodules[subId] = defaults.submodules[subId];
+                        }
+                        if (subId === "kasa_admin") {
+                            up.submodules[subId] = false;
+                        }
                     });
                 }
             });
             saveDProState(false);
         }
 
+        function syncPermissionsToChildAppStates() {
+            try {
+                localStorage.setItem(DPRO_PERMISSIONS_BRIDGE_KEY, JSON.stringify(dproState.permissions || {}));
+                // Günlük Kasa kullanıcı yetkileriyle senkronize et
+                const kasaRaw = localStorage.getItem("dizsan_gunluk_kasa_manual_v2");
+                if (kasaRaw) {
+                    const kasaSt = JSON.parse(kasaRaw);
+                    if (kasaSt && Array.isArray(kasaSt.users)) {
+                        kasaSt.users.forEach(ku => {
+                            const isOmer = isOnlyOmerEren(ku);
+                            if (isOmer) {
+                                ku.rolePreset = "ADMIN";
+                                ku.permissions = { view: true, add: true, edit: true, delete: true, lockDay: true, manageUsers: true };
+                                return;
+                            }
+                            const up = dproState.permissions?.[ku.username];
+                            if (up) {
+                                const canAccessKasa = !!up.apps?.["Dizsan_Gunluk_Kasa"];
+                                const act = up.appActions?.["Dizsan_Gunluk_Kasa"] || {};
+                                const v = canAccessKasa && act.view !== false;
+                                const c = v && !!act.create;
+                                const e = v && !!act.edit;
+                                const d = v && !!act.delete;
+                                ku.permissions = { view: v, add: c, edit: e, delete: d, lockDay: false, manageUsers: false };
+                                ku.rolePreset = !v ? "NONE" : (e ? "EDITOR" : (c ? "CONTRIBUTOR" : "VIEWER"));
+                            }
+                        });
+                        localStorage.setItem("dizsan_gunluk_kasa_manual_v2", JSON.stringify(kasaSt));
+                    }
+                }
+            } catch (e) {}
+        }
+
         function saveDProState(syncBridge = true) {
             localStorage.setItem(DPRO_STORAGE_KEY, JSON.stringify(dproState));
+            syncPermissionsToChildAppStates();
             if (syncBridge) {
-                // DizGün Entegrasyon Köprüsü
                 const bridgePayload = {
                     app: "D-Pro",
                     version: dproState.version,
                     updatedAt: new Date().toISOString(),
-                    activeUser: currentUser ? { username: currentUser.username, name: currentUser.name, role: currentUser.role } : null,
+                    activeUser: currentUser ? { username: currentUser.username, name: currentUser.name } : null,
                     modulesCount: getAllApps().length
                 };
                 localStorage.setItem(DIZGUN_BRIDGE_KEY, JSON.stringify(bridgePayload));
@@ -1994,9 +2113,10 @@
         }
 
         function saveDProStateManual() {
+            dproState._permsCustomizedLocalMs = Date.now();
             saveDProState(true);
-            addAuditLog("MANUEL_KAYIT", "Sistem durumu ve yetki matrisi kaydedildi & DizGün köprüsüyle eşitlendi.");
-            alert("✅ D-Pro ayarları, yetkiler ve log kayıtları başarıyla kaydedildi.");
+            addAuditLog("MANUEL_KAYIT", "Sistem durumu ve 24 personel yetki matrisi kaydedildi & tüm alt uygulamalarla eşitlendi.");
+            alert("D-Pro personel uygulama erişim ve işlem yetkileri başarıyla kaydedildi.");
         }
 
         function addAuditLog(actionType, detailText, explicitUser = null) {
@@ -2024,9 +2144,7 @@
         function canUserAccessApp(user, appId) {
             if (!user) return false;
             if (isOnlyOmerEren(user)) return true;
-            if (STAFF_ONLY_KASA_MODE) return appId === STAFF_ALLOWED_APP_ID;
             if (ONLY_OMER_EXCLUSIVE_MODE && !isOnlyOmerEren(user)) return false;
-            if (isUserAdmin(user)) return true;
             const uPerms = dproState.permissions[user.username];
             if (!uPerms || !uPerms.apps) return false;
             return !!uPerms.apps[appId];
@@ -2035,14 +2153,21 @@
         function canUserAccessSubmodule(user, subId) {
             if (!user) return false;
             if (isOnlyOmerEren(user)) return true;
-            if (STAFF_ONLY_KASA_MODE) {
-                return subId.startsWith("kasa_") && subId !== "kasa_admin";
-            }
+            if (subId === "kasa_admin") return false;
             if (ONLY_OMER_EXCLUSIVE_MODE && !isOnlyOmerEren(user)) return false;
-            if (isUserAdmin(user)) return true;
             const uPerms = dproState.permissions[user.username];
             if (!uPerms || !uPerms.submodules) return false;
             return !!uPerms.submodules[subId];
+        }
+
+        function canUserPerformAppAction(user, appId, actionKey) {
+            if (!user) return false;
+            if (isOnlyOmerEren(user)) return true;
+            if (!canUserAccessApp(user, appId)) return false;
+            const uPerms = dproState.permissions[user.username];
+            const actObj = uPerms?.appActions?.[appId];
+            if (!actObj) return actionKey === "view";
+            return !!actObj[actionKey];
         }
 
         // ==================== GİRİŞ / BENİ HATIRLA / ŞİFREMİ UNUTTUM ====================
@@ -2054,18 +2179,16 @@
             sel.innerHTML = `<option value="">-- Personel Seçin veya Kullanıcı Adı Yazın --</option>`;
             forgotSel.innerHTML = "";
 
+            // GİZLİLİK KURALI: Hiçbir kullanıcının yetkisi, rolü veya özel bilgisi giriş listesinde gösterilmez!
             dproState.users.forEach(u => {
-                const isOmer = isOnlyOmerEren(u);
                 const opt = document.createElement("option");
                 opt.value = u.username;
-                opt.textContent = isOmer
-                    ? `👑 ${u.name} (${u.dept} — Tam Yetki)`
-                    : `💼 ${u.name} (${u.dept} — Günlük Kasa)`;
+                opt.textContent = u.name;
                 sel.appendChild(opt);
 
                 const fOpt = document.createElement("option");
                 fOpt.value = u.username;
-                fOpt.textContent = `${u.name} (${u.dept})`;
+                fOpt.textContent = u.name;
                 forgotSel.appendChild(fOpt);
             });
 
@@ -2530,18 +2653,21 @@
                 }
             }
             document.getElementById("sidebar-user-name").innerText = currentUser.name;
-            document.getElementById("sidebar-user-role").innerText = isUserAdmin(currentUser)
+            document.getElementById("sidebar-user-role").innerText = isOnlyOmerEren(currentUser)
                 ? "👑 Yönetici (Tam Yetki)"
-                : `💼 ${currentUser.dept} (Günlük Kasa)`;
+                : `💼 ${currentUser.dept}`;
 
-            sidebarCollapseState = { apps: false, qrcodes: true, admin: true };
+            sidebarCollapseState = { apps: false, qrcodes: true, admin: false };
             renderSidebarNavigation();
 
             const urlParams = new URLSearchParams(window.location.search || "");
             const hasApproveDeviceParam = urlParams.has("approveDevice") || urlParams.get("app") === "kasa";
+            const accessibleApps = getAllApps().filter(app => canUserAccessApp(currentUser, app.id));
 
-            if (!isOmer || hasApproveDeviceParam) {
+            if (hasApproveDeviceParam && canUserAccessApp(currentUser, "Dizsan_Gunluk_Kasa")) {
                 openEmbeddedApp("Dizsan_Gunluk_Kasa");
+            } else if (!isOmer && accessibleApps.length === 1) {
+                openEmbeddedApp(accessibleApps[0].id);
             } else {
                 openDProTab("dashboard");
             }
@@ -2677,18 +2803,18 @@
                 </div>
             `;
 
-            // 3. SEKME GRUBU: SADECE YÖNETİCİ GÖREBİLİR (Açılır/Kapanır)
-            if (isUserAdmin(currentUser)) {
+            // 3. SEKME GRUBU: SADECE ÖMER EREN GÖREBİLİR (Açılır/Kapanır)
+            if (isOnlyOmerEren(currentUser)) {
                 const admCollapsed = sidebarCollapseState.admin;
                 html += `
-                    <div class="nav-section-label" style="color:#fbbf24;">Yönetim &amp; Denetim</div>
+                    <div class="nav-section-label" style="color:#fbbf24;">Yönetim &amp; Denetim (Sadece Ömer Eren)</div>
                     <div class="nav-accordion-group ${admCollapsed ? 'collapsed' : ''}" style="border-color:rgba(251,191,36,0.2);">
                         <button type="button" class="nav-accordion-header" onclick="toggleSidebarAccordion('admin')">
                             <div class="nav-accordion-left">
                                 <i class="fa-solid fa-crown" style="color:#fbbf24; font-size:1rem;"></i>
                                 <div>
                                     <div style="font-size:0.85rem; font-weight:800; color:#fde68a;">Yönetici Kontrol Merkezi</div>
-                                    <div style="font-size:0.68rem; color:var(--text-secondary); font-weight:500;">Yetki, Log &amp; DizGün SDK</div>
+                                    <div style="font-size:0.68rem; color:var(--text-secondary); font-weight:500;">Erişim Matrisi, Yetki &amp; Log</div>
                                 </div>
                             </div>
                             <span class="nav-accordion-chevron">
@@ -2696,18 +2822,25 @@
                             </span>
                         </button>
                         <div class="nav-accordion-body">
+                            <button type="button" class="nav-sub-btn ${currentActiveTab === 'admin-access-matrix' ? 'active' : ''}" onclick="openDProTab('admin-access-matrix')">
+                                <i class="fa-solid fa-table-cells-large" style="color:#38bdf8; width:18px; text-align:center;"></i>
+                                <div>
+                                    <span style="display:block; font-size:0.8rem;">Personel Erişim &amp; Yetki Matrisi</span>
+                                    <span style="display:block; font-size:0.67rem; color:var(--text-secondary);">24 Personel Uygulama &amp; İşlem Yetkileri</span>
+                                </div>
+                            </button>
                             <button type="button" class="nav-sub-btn ${currentActiveTab === 'admin-permissions' ? 'active' : ''}" onclick="openDProTab('admin-permissions')">
                                 <i class="fa-solid fa-user-shield" style="color:#10b981; width:18px; text-align:center;"></i>
                                 <div>
-                                    <span style="display:block; font-size:0.8rem;">Yetki &amp; Modül Atama</span>
-                                    <span style="display:block; font-size:0.67rem; color:var(--text-secondary);">Personel &amp; İç Modül Yetkileri</span>
+                                    <span style="display:block; font-size:0.8rem;">Bireysel Yetki &amp; Modül Atama</span>
+                                    <span style="display:block; font-size:0.67rem; color:var(--text-secondary);">Personel Detaylı Yetki &amp; Şifre</span>
                                 </div>
                             </button>
                             <button type="button" class="nav-sub-btn ${currentActiveTab === 'admin-logs' ? 'active' : ''}" onclick="openDProTab('admin-logs')">
                                 <i class="fa-solid fa-clipboard-list" style="color:#f43f5e; width:18px; text-align:center;"></i>
                                 <div>
                                     <span style="display:block; font-size:0.8rem;">Sistem Log Kayıtları</span>
-                                    <span style="display:block; font-size:0.67rem; color:var(--text-secondary);">Sadece Yöneticiye Özel</span>
+                                    <span style="display:block; font-size:0.67rem; color:var(--text-secondary);">Sadece Ömer Eren'e Özel</span>
                                 </div>
                             </button>
                             <button type="button" class="nav-sub-btn ${currentActiveTab === 'admin-dizgun' ? 'active' : ''}" onclick="openDProTab('admin-dizgun')">
@@ -2969,10 +3102,10 @@
         function openDProTab(tabName, autoFullscreen = true) {
             toggleMobileSidebar(false);
 
-            // Admin-only guard
-            if (tabName.startsWith("admin-") && !isUserAdmin(currentUser)) {
-                addAuditLog("YETKISIZ_ERISIM_ENGELI", `${currentUser.name} yönetici sekmesine (${tabName}) erişmeye çalıştı.`);
-                alert("⛔ Bu bölüme sadece Yönetici erişebilir!");
+            // Admin-only guard (Strictly Ömer Eren)
+            if (tabName.startsWith("admin-") && !isOnlyOmerEren(currentUser)) {
+                addAuditLog("YETKISIZ_ERISIM_ENGELI", `${currentUser ? currentUser.name : 'Misafir'} yönetici sekmesine (${tabName}) erişmeye çalıştı.`);
+                alert("⛔ Bu bölüme sadece Ana Sistem Yöneticisi (Ömer Eren) erişebilir!");
                 return;
             }
 
@@ -3012,10 +3145,16 @@
                     ? `${filteredApp.displayTitle} — iOS & Android Mobil Kurulum Karekodu`
                     : "Dizsan Ziyaret, Toplantı ve Kredi Takip Mobil Kurulum Karekodları";
                 renderAllQrCodesView();
+            } else if (tabName === "admin-access-matrix") {
+                const matPane = document.getElementById("pane-admin-access-matrix");
+                if (matPane) matPane.classList.add("active");
+                document.getElementById("active-page-title").innerText = "🛡️ Personel Uygulama Erişim & Yetki Matrisi";
+                document.getElementById("active-page-subtitle").innerText = "24 personelin hangi uygulamaları görebileceğini ve uygulama içinde hangi işlemleri yapabileceğini tek ekrandan yönetin";
+                renderAdminAccessMatrixView();
             } else if (tabName === "admin-permissions") {
                 document.getElementById("pane-admin-permissions").classList.add("active");
-                document.getElementById("active-page-title").innerText = "🛡️ Personel & Uygulama İçi Modül Yetkileri";
-                document.getElementById("active-page-subtitle").innerText = "Hangi personelin hangi uygulamayı ve iç modülü görebileceğini yönetin";
+                document.getElementById("active-page-title").innerText = "🛡️ Bireysel Personel & Uygulama İçi Yetki Atama";
+                document.getElementById("active-page-subtitle").innerText = "Hangi personelin hangi uygulamayı, işlem yetkilerini ve iç modülü görebileceğini yönetin";
                 initAdminPermissionView();
             } else if (tabName === "admin-logs") {
                 document.getElementById("pane-admin-logs").classList.add("active");
@@ -3264,16 +3403,54 @@
             }
         }, true);
 
-        // Hide restricted internal modules if user is not Admin
-        const isAdminUser = ${isAdm ? "true" : "false"};
+        // Hide restricted internal modules and admin/settings areas if user is not Ömer Eren
+        const isAdminUser = ${isOnlyOmerEren(currentUser) ? "true" : "false"};
         const restricted = ${JSON.stringify(restrictedTargets)};
-        if (!isAdminUser && restricted.length > 0) {
-            restricted.forEach(function(t) {
-                document.querySelectorAll('[data-tab="' + t + '"], [data-target="' + t + '"], #nav-' + t).forEach(function(el) {
+        const canCreate = ${canUserPerformAppAction(currentUser, app.id, "create") ? "true" : "false"};
+        const canEdit = ${canUserPerformAppAction(currentUser, app.id, "edit") ? "true" : "false"};
+        const canDelete = ${canUserPerformAppAction(currentUser, app.id, "delete") ? "true" : "false"};
+        const canExport = ${canUserPerformAppAction(currentUser, app.id, "export") ? "true" : "false"};
+        const canFinancial = ${canUserPerformAppAction(currentUser, app.id, "financial") ? "true" : "false"};
+
+        function enforceChildAppGuards() {
+            if (!isAdminUser) {
+                restricted.forEach(function(t) {
+                    document.querySelectorAll('[data-tab="' + t + '"], [data-target="' + t + '"], #nav-' + t).forEach(function(el) {
+                        el.style.display = "none";
+                    });
+                });
+                document.querySelectorAll('#nav-item-admin, .mob-nav-item[data-tab="admin"], #tab-admin, [data-tab="personnel-tab"], #personnel-tab, [data-section="admin"], #section-admin, #omer-version-admin-card, #role-permission-banner, [data-tab="sources"], [data-tab="notifications"], [data-tab="logs"]').forEach(function(el) {
                     el.style.display = "none";
                 });
-            });
+            }
+            if (!canCreate) {
+                document.querySelectorAll('#btn-new-entry, [data-tab="entry"], .mob-nav-item[data-tab="entry"], [onclick*="openEntryModal"], [onclick*="openAddModal"], [onclick*="saveVisit"], [onclick*="addTransaction"], #save-visit-btn').forEach(function(el) {
+                    el.style.display = "none";
+                });
+            }
+            if (!canEdit) {
+                document.querySelectorAll('.btn-action.edit, [onclick*="editEntry"], [onclick*="openEditModal"], [onclick*="editVisit"], [onclick*="editRecord"]').forEach(function(el) {
+                    el.style.display = "none";
+                });
+            }
+            if (!canDelete) {
+                document.querySelectorAll('.btn-action.delete, [onclick*="deleteEntry"], [onclick*="deleteVisit"], [onclick*="deleteRecord"], [onclick*="deleteTransaction"], [onclick*="removeEntry"]').forEach(function(el) {
+                    el.style.display = "none";
+                });
+            }
+            if (!canExport) {
+                document.querySelectorAll('[onclick*="export"], [onclick*="Export"], [onclick*="print"], [onclick*="Print"], [onclick*="downloadPdf"], #btn-export-excel, #btn-export-pdf, #btn-print-report').forEach(function(el) {
+                    el.style.display = "none";
+                });
+            }
+            if (!canFinancial) {
+                document.querySelectorAll('.kpi-balance-card, [data-financial-summary="1"], #financial-summary-panel').forEach(function(el) {
+                    el.style.display = "none";
+                });
+            }
         }
+        enforceChildAppGuards();
+        setTimeout(enforceChildAppGuards, 350);
     });
 })();
 <` + `/script>
@@ -3345,14 +3522,50 @@
                             childLoginOv.style.display = "none";
                         }
                         if (cd.body) cd.body.classList.add("dpro-embedded");
-                        // Hide restricted submodules for non-admins
-                        if (!isUserAdmin(currentUser) && restrictedSubs.length > 0) {
-                            restrictedSubs.forEach(s => {
-                                cd.querySelectorAll(`[data-tab="${s.targetTab}"], [data-target="${s.targetTab}"], #nav-${s.targetTab}`).forEach(el => {
+                        const canCreate = canUserPerformAppAction(currentUser, appId, "create");
+                        const canEdit = canUserPerformAppAction(currentUser, appId, "edit");
+                        const canDelete = canUserPerformAppAction(currentUser, appId, "delete");
+                        const canExport = canUserPerformAppAction(currentUser, appId, "export");
+                        const canFinancial = canUserPerformAppAction(currentUser, appId, "financial");
+                        const applyChildDomSecurity = () => {
+                            if (!isOnlyOmerEren(currentUser)) {
+                                restrictedSubs.forEach(s => {
+                                    cd.querySelectorAll(`[data-tab="${s.targetTab}"], [data-target="${s.targetTab}"], #nav-${s.targetTab}`).forEach(el => {
+                                        el.style.display = "none";
+                                    });
+                                });
+                                cd.querySelectorAll('#nav-item-admin, .mob-nav-item[data-tab="admin"], #tab-admin, [data-tab="personnel-tab"], #personnel-tab, [data-section="admin"], #section-admin, #omer-version-admin-card, #role-permission-banner, [data-tab="sources"], [data-tab="notifications"], [data-tab="logs"]').forEach(el => {
                                     el.style.display = "none";
                                 });
-                            });
-                        }
+                            }
+                            if (!canCreate) {
+                                cd.querySelectorAll('#btn-new-entry, [data-tab="entry"], .mob-nav-item[data-tab="entry"], [onclick*="openEntryModal"], [onclick*="openAddModal"], [onclick*="saveVisit"], [onclick*="addTransaction"], #save-visit-btn').forEach(el => {
+                                    el.style.display = "none";
+                                });
+                            }
+                            if (!canEdit) {
+                                cd.querySelectorAll('.btn-action.edit, [onclick*="editEntry"], [onclick*="openEditModal"], [onclick*="editVisit"], [onclick*="editRecord"]').forEach(el => {
+                                    el.style.display = "none";
+                                });
+                            }
+                            if (!canDelete) {
+                                cd.querySelectorAll('.btn-action.delete, [onclick*="deleteEntry"], [onclick*="deleteVisit"], [onclick*="deleteRecord"], [onclick*="deleteTransaction"], [onclick*="removeEntry"]').forEach(el => {
+                                    el.style.display = "none";
+                                });
+                            }
+                            if (!canExport) {
+                                cd.querySelectorAll('[onclick*="export"], [onclick*="Export"], [onclick*="print"], [onclick*="Print"], [onclick*="downloadPdf"], #btn-export-excel, #btn-export-pdf, #btn-print-report').forEach(el => {
+                                    el.style.display = "none";
+                                });
+                            }
+                            if (!canFinancial) {
+                                cd.querySelectorAll('.kpi-balance-card, [data-financial-summary="1"], #financial-summary-panel').forEach(el => {
+                                    el.style.display = "none";
+                                });
+                            }
+                        };
+                        applyChildDomSecurity();
+                        setTimeout(applyChildDomSecurity, 400);
                         // Hook relative links so they switch inside D-Pro
                         cd.addEventListener("click", function(ev) {
                             const a = ev.target && ev.target.closest ? ev.target.closest("a[href]") : null;
@@ -3401,7 +3614,7 @@
                     const parentQuery = (window.location.search || "").replace(/^\?/, "");
                     const extraQuery = parentQuery ? "&" + parentQuery : "";
                     const dproUserParam = currentUser ? "&dproUser=" + encodeURIComponent(currentUser.username) : "";
-                    iframe.src = app.localUrl + "?embed=dpro" + dproUserParam + "&v=" + encodeURIComponent(dproState.version || "1.8.0") + extraQuery;
+                    iframe.src = app.localUrl + "?embed=dpro" + dproUserParam + "&v=" + encodeURIComponent(dproState.version || "1.8.1") + extraQuery;
                 } else if (app.bundleB64) {
                     iframe.removeAttribute("src");
                     iframe.srcdoc = buildChildAppSrcDoc(app, restrictedSubs);
@@ -3529,13 +3742,14 @@
             `).join("");
         }
 
-        // ==================== YÖNETİCİ: PERSONEL & İÇ MODÜL YETKİLENDİRME ====================
+        // ==================== YÖNETİCİ: PERSONEL & İÇ MODÜL YETKİLENDİRME (SADECE ÖMER EREN) ====================
         function initAdminPermissionView() {
+            if (!isOnlyOmerEren(currentUser)) return;
             const sel = document.getElementById("perm-user-select");
             if (!sel) return;
             const prev = sel.value;
             sel.innerHTML = dproState.users.map(u => `
-                <option value="${u.username}">${u.name} (${u.dept} - ${u.role})</option>
+                <option value="${u.username}">${u.order}. ${u.name} (${u.dept})</option>
             `).join("");
             if (prev && dproState.users.some(u => u.username === prev)) {
                 sel.value = prev;
@@ -3546,7 +3760,9 @@
         }
 
         function renderUserPermissionEditor() {
-            const uname = document.getElementById("perm-user-select").value;
+            if (!isOnlyOmerEren(currentUser)) return;
+            const sel = document.getElementById("perm-user-select");
+            const uname = sel ? sel.value : "";
             const box = document.getElementById("user-permission-editor-box");
             const user = dproState.users.find(u => u.username === uname);
             if (!user || !box) return;
@@ -3555,20 +3771,37 @@
                 dproState.permissions[uname] = buildDefaultPermissionsForUser(user);
             }
             const uPerms = dproState.permissions[uname];
+            if (!uPerms.appActions) uPerms.appActions = {};
             const apps = getAllApps();
 
             box.innerHTML = `
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(290px, 1fr)); gap:14px;">
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(310px, 1fr)); gap:14px;">
                     ${apps.map(app => {
                         const appChecked = !!uPerms.apps[app.id];
+                        if (!uPerms.appActions[app.id]) {
+                            uPerms.appActions[app.id] = { view: appChecked, create: appChecked, edit: false, delete: false, export: appChecked, financial: false };
+                        }
+                        const actObj = uPerms.appActions[app.id];
+                        const actionsHtml = APP_ACTION_DEFINITIONS.map(act => {
+                            const actChecked = !!actObj[act.key];
+                            return `
+                                <label style="display:flex; align-items:center; justify-content:space-between; padding:6px 9px; border-radius:8px; background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.16); cursor:pointer; font-size:0.75rem;">
+                                    <span style="display:flex; align-items:center; gap:6px; font-weight:700;"><i class="${act.icon}" style="color:${act.color}; width:14px;"></i> ${act.label}</span>
+                                    <input type="checkbox" ${actChecked ? 'checked' : ''}
+                                        onchange="toggleUserAppActionPerm('${uname}', '${app.id}', '${act.key}', this.checked)"
+                                        style="width:16px; height:16px; accent-color:${act.color};">
+                                </label>
+                            `;
+                        }).join("");
+
                         const subsHtml = (app.submodules || []).map(sub => {
                             const subChecked = !!uPerms.submodules[sub.id];
                             return `
-                                <label style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-radius:8px; background:rgba(255,255,255,0.03); margin-top:6px; cursor:pointer; font-size:0.8rem;">
+                                <label style="display:flex; align-items:center; justify-content:space-between; padding:7px 10px; border-radius:8px; background:rgba(255,255,255,0.03); margin-top:5px; cursor:pointer; font-size:0.78rem;">
                                     <span>${sub.name}</span>
                                     <input type="checkbox" ${subChecked ? 'checked' : ''}
                                         onchange="toggleUserSubmodulePerm('${uname}', '${app.id}', '${sub.id}', this.checked)"
-                                        style="width:17px; height:17px; accent-color:#10b981;">
+                                        style="width:16px; height:16px; accent-color:#10b981;">
                                 </label>
                             `;
                         }).join("");
@@ -3578,14 +3811,20 @@
                                 <label style="display:flex; align-items:center; justify-content:space-between; padding-bottom:10px; border-bottom:1px solid var(--border-color); cursor:pointer;">
                                     <div>
                                         <div style="font-weight:800; font-size:0.9rem; color:#fff;">${app.title}</div>
-                                        <div style="font-size:0.74rem; color:var(--text-secondary);">${app.displayTitle} Ana Erişimi</div>
+                                        <div style="font-size:0.73rem; color:var(--text-secondary);">${app.displayTitle} Uygulamayı Görme / Açma Yetkisi</div>
                                     </div>
                                     <input type="checkbox" ${appChecked ? 'checked' : ''}
                                         onchange="toggleUserAppPerm('${uname}', '${app.id}', this.checked)"
                                         style="width:20px; height:20px; accent-color:${app.color};">
                                 </label>
-                                <div style="margin-top:8px;">
-                                    <div style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Uygulama İçi Alt Modül Yetkileri:</div>
+                                <div style="margin-top:10px;">
+                                    <div style="font-size:0.68rem; font-weight:800; color:#38bdf8; text-transform:uppercase; margin-bottom:6px;">Uygulama İçi İşlem Yetkileri (Neler Yapabilir?):</div>
+                                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                                        ${actionsHtml}
+                                    </div>
+                                </div>
+                                <div style="margin-top:10px;">
+                                    <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Uygulama İçi Sekme / Alt Modül Yetkileri:</div>
                                     ${subsHtml}
                                 </div>
                             </div>
@@ -3595,23 +3834,208 @@
             `;
         }
 
-        function toggleUserAppPerm(uname, appId, checked) {
+        function renderAdminAccessMatrixView() {
+            if (!isOnlyOmerEren(currentUser)) return;
+            const container = document.getElementById("admin-access-matrix-container");
+            const appSelect = document.getElementById("matrix-app-filter");
+            if (!container) return;
+
+            const allApps = getAllApps();
+            if (appSelect && appSelect.options.length <= 1) {
+                appSelect.innerHTML = `<option value="ALL">🌐 Tüm Uygulamalar (${allApps.length} Uygulama)</option>` +
+                    allApps.map(a => `<option value="${a.id}">📱 ${a.displayTitle} (${a.title})</option>`).join("");
+            }
+
+            const q = (document.getElementById("matrix-user-search")?.value || "").trim().toLocaleLowerCase("tr-TR");
+            const selectedAppFilter = appSelect ? appSelect.value : "ALL";
+            const visibleApps = selectedAppFilter === "ALL" ? allApps : allApps.filter(a => a.id === selectedAppFilter);
+            const filteredUsers = dproState.users.filter(u => {
+                if (!q) return true;
+                return `${u.name} ${u.username} ${u.dept}`.toLocaleLowerCase("tr-TR").includes(q);
+            });
+
+            container.innerHTML = filteredUsers.map(u => {
+                const isOmer = isOnlyOmerEren(u);
+                if (!dproState.permissions[u.username]) {
+                    dproState.permissions[u.username] = buildDefaultPermissionsForUser(u);
+                }
+                const uPerms = dproState.permissions[u.username];
+                if (!uPerms.appActions) uPerms.appActions = {};
+                const enabledAppCount = allApps.filter(a => isOmer || !!uPerms.apps[a.id]).length;
+
+                return `
+                    <div style="background:rgba(9,13,26,0.78); border:1px solid ${isOmer ? 'rgba(251,191,36,0.45)' : 'var(--border-color)'}; border-radius:14px; padding:14px; margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding-bottom:10px; border-bottom:1px solid var(--border-color);">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div style="width:36px; height:36px; border-radius:10px; background:${isOmer ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'rgba(56,189,248,0.15)'}; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.85rem;">
+                                    ${u.order}
+                                </div>
+                                <div>
+                                    <div style="font-weight:800; font-size:0.95rem; color:#f8fafc;">
+                                        ${u.name}
+                                        ${isOmer ? '<span style="margin-left:8px; font-size:0.7rem; padding:2px 8px; border-radius:999px; background:rgba(251,191,36,0.2); color:#fde68a;">👑 Ana Sistem Yöneticisi (Tam Yetki)</span>' : `<span style="margin-left:8px; font-size:0.72rem; padding:2px 8px; border-radius:999px; background:rgba(56,189,248,0.12); color:#38bdf8;">${enabledAppCount} / ${allApps.length} Uygulama Açık</span>`}
+                                    </div>
+                                    <div style="font-size:0.74rem; color:var(--text-secondary);">Kullanıcı Adı: <strong>${u.username}</strong> • Birim: <strong>${u.dept}</strong> • E-Posta: <strong>${u.email}</strong></div>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                <button type="button" class="btn-sm primary" onclick="openIndividualUserPermFromMatrix('${u.username}')">
+                                    <i class="fa-solid fa-sliders"></i> Alt Modül &amp; Şifre Detayı
+                                </button>
+                                ${!isOmer ? `
+                                <button type="button" class="btn-sm success" onclick="applyPresetToUser('${u.username}', 'ALL_ON')">
+                                    <i class="fa-solid fa-check-double"></i> Tümünü Aç
+                                </button>
+                                <button type="button" class="btn-sm" onclick="applyPresetToUser('${u.username}', 'KASA_ONLY')">
+                                    <i class="fa-solid fa-cash-register"></i> Sadece Kasa
+                                </button>
+                                <button type="button" class="btn-sm danger" onclick="applyPresetToUser('${u.username}', 'ALL_OFF')">
+                                    <i class="fa-solid fa-ban"></i> Tümünü Kapat
+                                </button>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(265px, 1fr)); gap:10px; margin-top:12px;">
+                            ${visibleApps.map(app => {
+                                const appAllowed = isOmer ? true : !!uPerms.apps[app.id];
+                                if (!uPerms.appActions[app.id]) {
+                                    uPerms.appActions[app.id] = { view: appAllowed, create: appAllowed, edit: false, delete: false, export: appAllowed, financial: false };
+                                }
+                                const actObj = uPerms.appActions[app.id];
+                                return `
+                                    <div style="background:${appAllowed ? 'rgba(16,185,129,0.06)' : 'rgba(15,23,42,0.55)'}; border:1px solid ${appAllowed ? app.color : 'rgba(255,255,255,0.07)'}; border-radius:11px; padding:10px;">
+                                        <label style="display:flex; align-items:center; justify-content:space-between; gap:8px; cursor:${isOmer ? 'default' : 'pointer'}; padding-bottom:7px; border-bottom:1px dashed rgba(255,255,255,0.1);">
+                                            <div style="display:flex; align-items:center; gap:7px; overflow:hidden;">
+                                                <i class="${app.icon}" style="color:${app.color}; font-size:0.9rem;"></i>
+                                                <div style="overflow:hidden;">
+                                                    <div style="font-weight:800; font-size:0.8rem; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${app.displayTitle}</div>
+                                                    <div style="font-size:0.66rem; color:${appAllowed ? '#34d399' : '#94a3b8'};">${appAllowed ? '✅ Erişim Açık (Görebilir)' : '🔒 Erişim Kapalı (Göremez)'}</div>
+                                                </div>
+                                            </div>
+                                            <input type="checkbox" ${appAllowed ? 'checked' : ''} ${isOmer ? 'disabled' : ''}
+                                                onchange="toggleUserAppPerm('${u.username}', '${app.id}', this.checked, true)"
+                                                style="width:18px; height:18px; accent-color:${app.color};">
+                                        </label>
+                                        <div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; opacity:${appAllowed ? '1' : '0.45'};">
+                                            ${APP_ACTION_DEFINITIONS.map(act => {
+                                                const isActOn = isOmer ? true : (appAllowed && !!actObj[act.key]);
+                                                return `
+                                                    <label style="display:inline-flex; align-items:center; gap:4px; padding:3px 7px; border-radius:6px; font-size:0.68rem; font-weight:700; background:${isActOn ? 'rgba(56,189,248,0.15)' : 'rgba(255,255,255,0.04)'}; border:1px solid ${isActOn ? act.color : 'rgba(255,255,255,0.08)'}; color:${isActOn ? '#f8fafc' : '#94a3b8'}; cursor:${isOmer ? 'default' : 'pointer'};">
+                                                        <input type="checkbox" ${isActOn ? 'checked' : ''} ${isOmer ? 'disabled' : ''}
+                                                            onchange="toggleUserAppActionPerm('${u.username}', '${app.id}', '${act.key}', this.checked, true)"
+                                                            style="width:13px; height:13px; accent-color:${act.color};">
+                                                        <span>${act.label}</span>
+                                                    </label>
+                                                `;
+                                            }).join("")}
+                                        </div>
+                                    </div>
+                                `;
+                            }).join("")}
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        function openIndividualUserPermFromMatrix(uname) {
+            openDProTab("admin-permissions");
+            const sel = document.getElementById("perm-user-select");
+            if (sel) {
+                sel.value = uname;
+                renderUserPermissionEditor();
+            }
+        }
+
+        function applyPresetToUser(uname, presetType) {
+            if (!isOnlyOmerEren(currentUser)) return;
+            const user = dproState.users.find(u => u.username === uname);
+            if (!user || isOnlyOmerEren(user)) return;
+            if (!dproState.permissions[uname]) {
+                dproState.permissions[uname] = buildDefaultPermissionsForUser(user);
+            }
+            const uPerms = dproState.permissions[uname];
+            if (!uPerms.appActions) uPerms.appActions = {};
+
+            getAllApps().forEach(app => {
+                const enable = presetType === "ALL_ON" ? true : (presetType === "KASA_ONLY" ? app.id === "Dizsan_Gunluk_Kasa" : false);
+                uPerms.apps[app.id] = enable;
+                uPerms.appActions[app.id] = {
+                    view: enable,
+                    create: enable,
+                    edit: presetType === "ALL_ON",
+                    delete: presetType === "ALL_ON",
+                    export: enable,
+                    financial: presetType === "ALL_ON"
+                };
+                (app.submodules || []).forEach(s => {
+                    const isRestrictedSub = s.targetTab === "admin" || s.targetTab === "personnel-tab";
+                    uPerms.submodules[s.id] = enable && !isRestrictedSub;
+                });
+            });
+            saveDProState();
+            addAuditLog("YETKI_TOPLU_ATAMA", `${user.name} için '${presetType}' yetki şablonu uygulandı.`);
+            renderAdminAccessMatrixView();
+        }
+
+        function toggleUserAppPerm(uname, appId, checked, fromMatrix = false) {
+            if (!isOnlyOmerEren(currentUser)) return;
+            const user = dproState.users.find(u => u.username === uname);
+            if (user && isOnlyOmerEren(user)) return;
             const uPerms = dproState.permissions[uname];
             if (!uPerms) return;
             uPerms.apps[appId] = checked;
+            if (!uPerms.appActions) uPerms.appActions = {};
+            if (!uPerms.appActions[appId]) {
+                uPerms.appActions[appId] = { view: checked, create: checked, edit: false, delete: false, export: checked, financial: false };
+            } else {
+                uPerms.appActions[appId].view = checked;
+                if (checked && !uPerms.appActions[appId].create) uPerms.appActions[appId].create = true;
+                if (!checked) {
+                    APP_ACTION_DEFINITIONS.forEach(a => { uPerms.appActions[appId][a.key] = false; });
+                }
+            }
             const app = getAllApps().find(a => a.id === appId);
             if (app && app.submodules) {
                 app.submodules.forEach(s => {
-                    uPerms.submodules[s.id] = checked;
+                    const isRestrictedSub = s.targetTab === "admin" || s.targetTab === "personnel-tab";
+                    uPerms.submodules[s.id] = checked && !isRestrictedSub;
                 });
             }
             saveDProState();
             addAuditLog("YETKI_GUNCELLEME", `${uname} kullanıcısı için ${appId} uygulama erişimi ${checked ? 'AÇILDI' : 'KAPATILDI'}.`);
-            renderUserPermissionEditor();
+            if (fromMatrix) renderAdminAccessMatrixView();
+            else renderUserPermissionEditor();
             if (currentUser && currentUser.username === uname) renderSidebarNavigation();
         }
 
+        function toggleUserAppActionPerm(uname, appId, actionKey, checked, fromMatrix = false) {
+            if (!isOnlyOmerEren(currentUser)) return;
+            const user = dproState.users.find(u => u.username === uname);
+            if (user && isOnlyOmerEren(user)) return;
+            const uPerms = dproState.permissions[uname];
+            if (!uPerms) return;
+            if (!uPerms.appActions) uPerms.appActions = {};
+            if (!uPerms.appActions[appId]) {
+                uPerms.appActions[appId] = { view: true, create: false, edit: false, delete: false, export: false, financial: false };
+            }
+            uPerms.appActions[appId][actionKey] = checked;
+            if (checked) {
+                uPerms.apps[appId] = true;
+                uPerms.appActions[appId].view = true;
+            } else if (actionKey === "view") {
+                uPerms.apps[appId] = false;
+                APP_ACTION_DEFINITIONS.forEach(a => { uPerms.appActions[appId][a.key] = false; });
+            }
+            saveDProState();
+            addAuditLog("ISLEM_YETKISI_GUNCELLEME", `${uname} kullanıcısı için ${appId} -> ${actionKey} işlem yetkisi ${checked ? 'VERİLDİ' : 'KALDIRILDI'}.`);
+            if (fromMatrix) renderAdminAccessMatrixView();
+            else renderUserPermissionEditor();
+        }
+
         function toggleUserSubmodulePerm(uname, appId, subId, checked) {
+            if (!isOnlyOmerEren(currentUser)) return;
             const uPerms = dproState.permissions[uname];
             if (!uPerms) return;
             uPerms.submodules[subId] = checked;
@@ -3622,12 +4046,18 @@
         }
 
         function grantAllToSelectedUser() {
+            if (!isOnlyOmerEren(currentUser)) return;
             const uname = document.getElementById("perm-user-select").value;
             const uPerms = dproState.permissions[uname];
             if (!uPerms) return;
+            if (!uPerms.appActions) uPerms.appActions = {};
             getAllApps().forEach(app => {
                 uPerms.apps[app.id] = true;
-                (app.submodules || []).forEach(s => { uPerms.submodules[s.id] = true; });
+                uPerms.appActions[app.id] = { view: true, create: true, edit: true, delete: true, export: true, financial: true };
+                (app.submodules || []).forEach(s => {
+                    const isRestrictedSub = s.targetTab === "admin" || s.targetTab === "personnel-tab";
+                    uPerms.submodules[s.id] = !isRestrictedSub;
+                });
             });
             saveDProState();
             addAuditLog("YETKI_TAM_ACILDI", `${uname} kullanıcısına tüm uygulama ve iç modül yetkileri verildi.`);
@@ -3635,15 +4065,19 @@
         }
 
         function revokeAllFromSelectedUser() {
+            if (!isOnlyOmerEren(currentUser)) return;
             const uname = document.getElementById("perm-user-select").value;
-            if (uname === "ömer") {
+            const user = dproState.users.find(u => u.username === uname);
+            if (user && isOnlyOmerEren(user)) {
                 alert("Ana Sistem Yöneticisi (Ömer Eren) yetkileri kısıtlanamaz!");
                 return;
             }
             const uPerms = dproState.permissions[uname];
             if (!uPerms) return;
+            if (!uPerms.appActions) uPerms.appActions = {};
             getAllApps().forEach(app => {
                 uPerms.apps[app.id] = false;
+                uPerms.appActions[app.id] = { view: false, create: false, edit: false, delete: false, export: false, financial: false };
                 (app.submodules || []).forEach(s => { uPerms.submodules[s.id] = false; });
             });
             saveDProState();

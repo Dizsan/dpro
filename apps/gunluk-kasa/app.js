@@ -271,14 +271,39 @@ const DEFAULT_USERS = [
 
 function getUserPerms(u = currentUser) {
     if (!u) return { view: false, add: false, edit: false, delete: false, lockDay: false, manageUsers: false };
-    if (normalizeTR(u.username) === "ömer" || normalizeTR(u.name) === "ömer eren") {
+    if (isOmerAdminUser(u)) {
         return { view: true, add: true, edit: true, delete: true, lockDay: true, manageUsers: true };
     }
     const preset = ROLE_PRESETS[u.rolePreset] || ROLE_PRESETS.VIEWER;
-    return {
+    const basePerms = {
         ...preset.permissions,
-        ...(u.permissions || {})
+        ...(u.permissions || {}),
+        manageUsers: false
     };
+    try {
+        const dproPermRaw = localStorage.getItem("dizsan_dpro_permissions_v1");
+        if (dproPermRaw) {
+            const allPerms = JSON.parse(dproPermRaw);
+            const uPerms = allPerms && allPerms[u.username];
+            if (uPerms) {
+                if (uPerms.apps && uPerms.apps["Dizsan_Gunluk_Kasa"] === false) {
+                    return { view: false, add: false, edit: false, delete: false, lockDay: false, manageUsers: false };
+                }
+                const act = (uPerms.appActions && uPerms.appActions["Dizsan_Gunluk_Kasa"]) || null;
+                if (act) {
+                    return {
+                        view: act.view !== false,
+                        add: Boolean(act.create),
+                        edit: Boolean(act.edit),
+                        delete: Boolean(act.delete),
+                        lockDay: Boolean(act.edit),
+                        manageUsers: false
+                    };
+                }
+            }
+        }
+    } catch (e) {}
+    return basePerms;
 }
 
 function hasPermission(permKey, u = currentUser) {
@@ -1525,21 +1550,34 @@ window.forceKasaCloudSyncNow = forceKasaCloudSyncNow;
 function applyRolePermissionsToDOM() {
     const perms = getUserPerms(currentUser);
     const preset = ROLE_PRESETS[currentUser?.rolePreset] || ROLE_PRESETS.VIEWER;
+    const isOmer = isOmerAdminUser(currentUser);
 
     const roleBadge = document.getElementById("active-role-badge");
     const sideRole = document.getElementById("sidebar-user-role");
     const banner = document.getElementById("role-permission-banner");
+    const navAdmin = document.getElementById("nav-item-admin");
+    const mobAdmin = document.querySelector('.mob-nav-item[data-tab="admin"]');
+
+    if (navAdmin) navAdmin.style.display = isOmer ? "" : "none";
+    if (mobAdmin) mobAdmin.style.display = isOmer ? "" : "none";
 
     if (roleBadge) {
-        roleBadge.className = `badge ${preset.badgeClass}`;
-        roleBadge.innerHTML = `<i class="fa-solid fa-shield-halved"></i> ${escapeHtml(preset.label)}`;
+        if (isOmer) {
+            roleBadge.style.display = "";
+            roleBadge.className = `badge ${preset.badgeClass}`;
+            roleBadge.innerHTML = `<i class="fa-solid fa-shield-halved"></i> ${escapeHtml(preset.label)}`;
+        } else {
+            roleBadge.style.display = "none";
+        }
     }
     if (sideRole) {
-        sideRole.textContent = `${preset.label} • ${currentUser?.dept || ""}`;
+        sideRole.textContent = isOmer ? `${preset.label} • ${currentUser?.dept || ""}` : `${currentUser?.dept || "Personel"}`;
     }
 
     if (banner) {
-        if (!perms.view) {
+        if (!isOmer) {
+            banner.style.display = "none";
+        } else if (!perms.view) {
             banner.style.display = "flex";
             banner.style.background = "rgba(244, 63, 94, 0.22)";
             banner.style.border = "1px solid rgba(244, 63, 94, 0.55)";
@@ -4507,8 +4545,12 @@ function renderArchiveSection() {
 
 // ==================== 13. KULLANICI & YETKİ YÖNETİMİ RENDER MOTORU ====================
 function renderAdminSection() {
-    const perms = getUserPerms(currentUser);
     const tbodyUsers = document.getElementById("tbody-admin-users");
+    if (!isOmerAdminUser(currentUser)) {
+        if (tbodyUsers) tbodyUsers.innerHTML = "";
+        return;
+    }
+    const perms = getUserPerms(currentUser);
     if (tbodyUsers) {
         tbodyUsers.innerHTML = (appState.users || []).map(u => {
             const up = getUserPerms(u);
@@ -9491,12 +9533,9 @@ function renderQuickUserChips() {
     const box = document.getElementById("quick-user-list");
     if (!box) return;
     box.innerHTML = (appState.users || []).map(u => {
-        const p = ROLE_PRESETS[u.rolePreset] || ROLE_PRESETS.VIEWER;
-        const shortTag = p.code === "ADMIN" ? "Tam" : p.code === "EDITOR" ? "Düzenle" : p.code === "CONTRIBUTOR" ? "Ekle" : p.code === "NONE" ? "Engelli" : "İzle";
         return `
-            <button type="button" class="user-chip" onclick="fillQuickLogin('${escapeHtml(u.username)}')" title="Yetki: ${escapeHtml(p.label)}">
+            <button type="button" class="user-chip" onclick="fillQuickLogin('${escapeHtml(u.username)}')">
                 <span>${escapeHtml(u.name)}</span>
-                <span style="font-size:0.68rem; color:${p.code === "NONE" ? "#fb7185" : "var(--dizsan-cyan)"};">(${escapeHtml(shortTag)})</span>
             </button>
         `;
     }).join("");
@@ -9639,7 +9678,7 @@ function openForgotPasswordModal() {
 
     if (sel) {
         sel.innerHTML = (appState.users || []).map(u =>
-            `<option value="${escapeHtml(u.username)}">${escapeHtml(u.name)} (${escapeHtml(u.dept || "Personel")})</option>`
+            `<option value="${escapeHtml(u.username)}">${escapeHtml(u.name)}</option>`
         ).join("");
         const matched = (appState.users || []).find(u => normalizeTR(u.username) === loginUserVal || normalizeTR(u.name) === loginUserVal);
         if (matched) sel.value = matched.username;
@@ -9911,6 +9950,10 @@ function toggleLightDarkTheme() {
 window.toggleLightDarkTheme = toggleLightDarkTheme;
 
 function switchTab(tabId) {
+    if (tabId === "admin" && !isOmerAdminUser(currentUser)) {
+        alert("⛔ Kullanıcı & Yetki Yönetimi ekranına yalnızca Sistem Yöneticisi (Ömer Eren) erişebilir!");
+        return;
+    }
     uiState.activeTab = tabId;
     document.querySelectorAll(".tab-section").forEach(sec => {
         sec.classList.toggle("active", sec.id === `tab-${tabId}`);
