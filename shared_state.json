@@ -235,9 +235,9 @@
     "0JINLVPG",
     "CAWCAACV"
   ],
-  "updatedAt": "2026-10-26T00:46:53.511437",
+  "updatedAt": "2026-10-26T00:47:00.013491",
   "version": "v1.8.2",
-  "updatedAtMs": 1792964813511,
+  "updatedAtMs": 1792964820013,
   "permissions": {
     "ömer": {
       "apps": {
@@ -2399,7 +2399,7 @@
         },
         "Dizsan_Toplanti_Mobil_Karekod": {
           "view": true,
-          "create": true,
+          "create": false,
           "edit": false,
           "delete": false,
           "export": false,
