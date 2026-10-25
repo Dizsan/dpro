@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "25.10.2026 21:50:15",
-  "updatedAtMs": 1792954215886,
-  "stateRevision": 183,
+  "updatedAt": "25.10.2026 21:52:26",
+  "updatedAtMs": 1792954346178,
+  "stateRevision": 184,
   "users": [
     {
       "order": 0,
@@ -220,7 +220,7 @@
       "controllerApproved": false,
       "isLocked": false,
       "entries": [],
-      "tcmbSlotKey": "2026-10-24_AFTER_1630",
+      "tcmbSlotKey": "2026-10-24_HISTORICAL",
       "updatedAtMs": 1792832760368
     },
     "2026-10-25": {
