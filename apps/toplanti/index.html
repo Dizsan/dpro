@@ -10012,16 +10012,27 @@ document.addEventListener('DOMContentLoaded', () => {
     renderQuickUserChips();
     loadRememberedCredentials();
 
-    // Kayıtlı oturum kontrolü (Beni Hatırla veya aktif DizGün oturumu)
+    // Kayıtlı oturum kontrolü (Beni Hatırla, D-Pro SSO veya aktif DizGün oturumu)
+    const isDproEmbedded = (window.self !== window.top) || window.location.search.includes('embed=dpro');
     const savedSession = localStorage.getItem(STORAGE_KEY_SESSION) || sessionStorage.getItem(STORAGE_KEY_SESSION) || localStorage.getItem('dizgun_current_user');
     if (savedSession) {
         try {
             const parsedUser = JSON.parse(savedSession);
-            if (parsedUser && parsedUser.name) {
+            if (parsedUser && (parsedUser.name || parsedUser.username)) {
                 const matched = appState.users.find(u => normalizeTR(u.name) === normalizeTR(parsedUser.name) || normalizeTR(u.username) === normalizeTR(parsedUser.username));
                 if (matched) currentUser = matched;
             }
         } catch (e) {}
+    }
+    if (!currentUser) {
+        const dproUser = localStorage.getItem('dizsan_dpro_active_session_v1') || sessionStorage.getItem('dizsan_dpro_active_session_v1') || (new URLSearchParams(window.location.search || '').get('dproUser')) || '';
+        if (dproUser) {
+            const matchedDpro = appState.users.find(u => normalizeTR(u.username) === normalizeTR(dproUser) || normalizeTR(u.name) === normalizeTR(dproUser) || (dproUser.toLowerCase().includes('omer') && isOmerEren(u)));
+            if (matchedDpro) currentUser = matchedDpro;
+        }
+        if (!currentUser && isDproEmbedded) {
+            currentUser = appState.users.find(u => isOmerEren(u)) || appState.users[0];
+        }
     }
 
     applyAuthenticatedUser();

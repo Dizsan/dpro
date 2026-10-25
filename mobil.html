@@ -610,6 +610,29 @@
             filter: brightness(1.06);
         }
 
+        .btn-refresh-dpro {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            padding: 8px 14px;
+            border-radius: 11px;
+            font-size: 0.83rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3);
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .btn-refresh-dpro:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.5);
+            filter: brightness(1.06);
+        }
+
         .top-header {
             height: var(--header-h);
             background: rgba(11, 16, 33, 0.88);
@@ -1167,9 +1190,12 @@
         <!-- ANA İÇERİK -->
         <div class="main-wrapper">
             <header class="top-header">
-                <div style="display:flex; align-items:center; gap:12px;">
+                <div style="display:flex; align-items:center; gap:10px;">
                     <button type="button" id="header-back-btn" class="btn-back-dpro" style="display:none;" onclick="handleDProBackPress()">
                         <i class="fa-solid fa-arrow-left"></i> Geri Dön
+                    </button>
+                    <button type="button" id="header-refresh-btn" class="btn-refresh-dpro" onclick="refreshDProActiveApp(this)" title="Uygulamayı Yenile">
+                        <i class="fa-solid fa-arrows-rotate"></i> Yenile
                     </button>
                     <button type="button" class="mobile-menu-btn" onclick="toggleMobileSidebar(true)">
                         <i class="fa-solid fa-bars"></i>
@@ -1214,9 +1240,12 @@
                 <!-- PANE 2: GÖMÜLÜ UYGULAMA EKRANI (ZİYARET / TOPLANTI / KREDİ / EK UYGULAMALAR) -->
                 <div class="view-pane" id="pane-embedded-app">
                     <div class="embed-toolbar">
-                        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                             <button type="button" class="btn-back-dpro" onclick="handleDProBackPress()">
                                 <i class="fa-solid fa-arrow-left"></i> Geri Dön
+                            </button>
+                            <button type="button" class="btn-refresh-dpro" onclick="refreshDProActiveApp(this)" title="Uygulamayı Yenile">
+                                <i class="fa-solid fa-arrows-rotate"></i> Yenile
                             </button>
                             <span id="embed-app-badge" style="display:none;"></span>
                             <div class="submodule-pills" id="embed-submodule-pills" style="display:none;">
@@ -2080,6 +2109,30 @@
             inp.type = inp.type === "password" ? "text" : "password";
         }
 
+        function syncDProUserSessionToAllApps(userObj) {
+            if (!userObj) return;
+            try {
+                const uJson = JSON.stringify(userObj);
+                const keys = [
+                    "dizsan_ziyaret_active_user",
+                    "dizsan_toplanti_active_user",
+                    "dizsan_kredi_active_user_v1",
+                    "dizgun_current_user",
+                    "dizsan_demet_active_user",
+                    "dizsan_demet_remember_login",
+                    "dizsan_dikas_active_user",
+                    "dizsan_dikas_remember_login",
+                    "dizsan_gunluk_kasa_active_user",
+                    "dpro_active_session_v1"
+                ];
+                keys.forEach(k => {
+                    try { localStorage.setItem(k, uJson); } catch (e) {}
+                    try { sessionStorage.setItem(k, uJson); } catch (e) {}
+                });
+                try { sessionStorage.removeItem("dizsan_gunluk_kasa_explicit_logout"); } catch (e) {}
+            } catch (e) {}
+        }
+
         function handleDProLogin(e) {
             e.preventDefault();
             const uNameInput = document.getElementById("login-username").value.trim().toLowerCase();
@@ -2110,12 +2163,13 @@
 
             currentUser = foundUser;
             if (remember) {
-                localStorage.setItem(DPRO_REMEMBER_KEY, JSON.stringify({ username: foundUser.username, password: passInput }));
+                localStorage.setItem(DPRO_REMEMBER_KEY, JSON.stringify({ username: foundUser.username, pinStamp: foundUser.pinStamp }));
                 localStorage.setItem(DPRO_SESSION_KEY, foundUser.username);
             } else {
                 localStorage.removeItem(DPRO_REMEMBER_KEY);
                 sessionStorage.setItem(DPRO_SESSION_KEY, foundUser.username);
             }
+            syncDProUserSessionToAllApps(currentUser);
 
             addAuditLog("GIRIS_BASARILI", `${foundUser.name} D-Pro platformuna giriş yaptı.`, foundUser);
             launchAppShell();
@@ -2858,6 +2912,31 @@
             applyDProGlobalTheme(localStorage.getItem("dizsan_ziyaret_theme_v1") || "dark", false);
         });
 
+        function refreshDProActiveApp(btnEl) {
+            try {
+                const icon = btnEl ? btnEl.querySelector("i") : null;
+                if (icon) icon.classList.add("fa-spin");
+                const embedPane = document.getElementById("pane-embedded-app");
+                const ifr = document.getElementById("dpro-app-iframe");
+                if (embedPane && embedPane.classList.contains("active") && ifr) {
+                    const loadedAppId = ifr.getAttribute("data-loaded-app");
+                    if (loadedAppId && typeof openEmbeddedApp === "function") {
+                        ifr.removeAttribute("data-loaded-app");
+                        openEmbeddedApp(loadedAppId);
+                        setTimeout(() => { if (icon) icon.classList.remove("fa-spin"); }, 450);
+                        return;
+                    }
+                    if (ifr.contentWindow) {
+                        ifr.contentWindow.location.reload();
+                        setTimeout(() => { if (icon) icon.classList.remove("fa-spin"); }, 450);
+                        return;
+                    }
+                }
+            } catch (e) {}
+            window.location.reload();
+        }
+        window.refreshDProActiveApp = refreshDProActiveApp;
+
         function exitFullScreenToDPro() {
             if (currentUser && STAFF_ONLY_KASA_MODE && !isOnlyOmerEren(currentUser)) {
                 openEmbeddedApp("Dizsan_Gunluk_Kasa");
@@ -3252,32 +3331,20 @@
 
             const loadSignature = appId + ":" + (currentUser ? currentUser.username : "guest");
             if (!specificSubmoduleId || iframe.getAttribute("data-loaded-app") !== loadSignature) {
-                try {
-                    if (currentUser) {
-                        const uJson = JSON.stringify(currentUser);
-                        localStorage.setItem("dizsan_ziyaret_active_user", uJson);
-                        localStorage.setItem("dizsan_toplanti_active_user", uJson);
-                        localStorage.setItem("dizsan_kredi_active_user_v1", uJson);
-                        localStorage.setItem("dizgun_current_user", uJson);
-                        localStorage.setItem("dizsan_demet_active_user", uJson);
-                        localStorage.setItem("dizsan_demet_remember_login", uJson);
-                        localStorage.setItem("dizsan_dikas_active_user", uJson);
-                        localStorage.setItem("dizsan_dikas_remember_login", uJson);
-                        localStorage.setItem("dizsan_gunluk_kasa_active_user", uJson);
-                        sessionStorage.setItem("dizsan_ziyaret_active_user", uJson);
-                        sessionStorage.setItem("dizsan_toplanti_active_user", uJson);
-                        sessionStorage.setItem("dizsan_kredi_active_user_v1", uJson);
-                        sessionStorage.setItem("dizsan_demet_active_user", uJson);
-                        sessionStorage.setItem("dizsan_dikas_active_user", uJson);
-                        sessionStorage.setItem("dizsan_gunluk_kasa_active_user", uJson);
-                    }
-                } catch (e) {}
+                syncDProUserSessionToAllApps(currentUser);
 
                 iframe.onload = function() {
                     try {
                         const cw = iframe.contentWindow;
                         const cd = iframe.contentDocument || (cw && cw.document);
                         if (!cw || !cd) return;
+                        // Ensure child app never shows a second login/password screen inside D-Pro
+                        const childLoginOv = cd.getElementById("login-overlay");
+                        if (childLoginOv) {
+                            childLoginOv.classList.add("hidden");
+                            childLoginOv.style.display = "none";
+                        }
+                        if (cd.body) cd.body.classList.add("dpro-embedded");
                         // Hide restricted submodules for non-admins
                         if (!isUserAdmin(currentUser) && restrictedSubs.length > 0) {
                             restrictedSubs.forEach(s => {
@@ -3333,7 +3400,8 @@
                     iframe.removeAttribute("srcdoc");
                     const parentQuery = (window.location.search || "").replace(/^\?/, "");
                     const extraQuery = parentQuery ? "&" + parentQuery : "";
-                    iframe.src = app.localUrl + "?embed=dpro&v=" + encodeURIComponent(dproState.version || "1.8.0") + extraQuery;
+                    const dproUserParam = currentUser ? "&dproUser=" + encodeURIComponent(currentUser.username) : "";
+                    iframe.src = app.localUrl + "?embed=dpro" + dproUserParam + "&v=" + encodeURIComponent(dproState.version || "1.8.0") + extraQuery;
                 } else if (app.bundleB64) {
                     iframe.removeAttribute("src");
                     iframe.srcdoc = buildChildAppSrcDoc(app, restrictedSubs);
@@ -3831,6 +3899,7 @@
                 const u = dproState.users.find(x => x.username === savedUser);
                 if (u && (!ONLY_OMER_EXCLUSIVE_MODE || isOnlyOmerEren(u))) {
                     currentUser = u;
+                    syncDProUserSessionToAllApps(currentUser);
                     launchAppShell();
                     pushDProHistoryGuard(true);
                 } else {
