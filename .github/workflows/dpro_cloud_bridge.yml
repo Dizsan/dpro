@@ -1,0 +1,174 @@
+name: D-Pro 7-24 Cloud Mail & Password Sync Bridge
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'send_reset_link or update_user_password'
+        required: true
+        type: string
+      payload:
+        description: 'JSON payload'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  bridge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Execute D-Pro Cloud Action
+        env:
+          ACTION_TYPE: ${{ inputs.action }}
+          PAYLOAD_JSON: ${{ inputs.payload }}
+          SMTP_PASS: ${{ secrets.DPRO_SMTP_PASS }}
+        run: |
+          python3 - << 'EOF'
+          import os, json, re, smtplib, ssl
+          from datetime import datetime
+          from email.mime.text import MIMEText
+          from email.mime.multipart import MIMEMultipart
+          from email.header import Header
+          from email.utils import formataddr, formatdate, make_msgid
+
+          action = os.environ.get("ACTION_TYPE", "").strip()
+          payload = json.loads(os.environ.get("PAYLOAD_JSON", "{}"))
+          smtp_pass = os.environ.get("SMTP_PASS", "").strip()
+
+          if action == "send_reset_link":
+              to_email = (payload.get("email") or "").strip()
+              user_name = (payload.get("userName") or "").strip()
+              username = (payload.get("username") or "").strip()
+              live_link = (payload.get("liveLink") or "").strip()
+              local_link = (payload.get("localLink") or "").strip()
+              app_link = (payload.get("appLink") or "").strip()
+
+              smtp_host = "mail.dizsan.com.tr"
+              smtp_user = "info@dizsan.com.tr"
+
+              msg = MIMEMultipart("alternative")
+              msg["Subject"] = str(Header(f"D-Pro // Şifre Yenileme Bağlantısı ({user_name})", "utf-8"))
+              msg["From"] = formataddr((str(Header("Dizsan D-Pro Güvenlik", "utf-8")), smtp_user))
+              msg["To"] = formataddr((str(Header(user_name or to_email, "utf-8")), to_email))
+              msg["Date"] = formatdate(localtime=True)
+              msg["Message-ID"] = make_msgid(domain="dizsan.com.tr")
+
+              text_body = (
+                  f"Sayın {user_name},\n\n"
+                  f"D-Pro hesabınız ({username}) için şifre yenileme talebinde bulundunuz.\n"
+                  f"Yeni şifrenizi oluşturmak için aşağıdaki tek kullanımlık bağlantıya tıklayın (15 dakika geçerlidir):\n\n"
+                  f"Yeni Şifre Oluştur (Web / Mobil): {live_link}\n\n"
+                  f"Yeni Şifre Oluştur (Yerel): {local_link}\n\n"
+                  f"Masaüstü Uygulamasında Aç: {app_link}\n\n"
+                  f"Oluşturduğunuz yeni şifre sistem belleğine otomatik olarak kaydedilecektir."
+              )
+              html_body = f"""
+              <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;background:#0b1120;color:#f8fafc;padding:28px;border-radius:16px;border:1px solid #1e293b;">
+                  <h2 style="margin:0 0 12px 0;color:#38bdf8;font-size:20px;">🔐 D-Pro Şifre Yenileme Bağlantısı</h2>
+                  <p style="color:#cbd5e1;font-size:14px;line-height:1.6;">
+                      Sayın <strong>{user_name}</strong> (<code>{username}</code>),<br>
+                      D-Pro hesabınız için şifre yenileme talebinde bulundunuz. Yeni şifrenizi oluşturmak için aşağıdaki bağlantıya tıklayınız:
+                  </p>
+                  <div style="margin:22px 0;">
+                      <a href="{live_link}" style="display:inline-block;background:linear-gradient(135deg,#10b981,#059669);color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:10px;font-weight:bold;font-size:14px;margin-right:10px;margin-bottom:10px;">
+                          🔑 Yeni Şifremi Oluştur (7/24 Web / Mobil)
+                      </a>
+                      <a href="{local_link}" style="display:inline-block;background:linear-gradient(135deg,#0284c7,#2563eb);color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:10px;font-weight:bold;font-size:14px;margin-bottom:10px;">
+                          💻 Yeni Şifremi Oluştur (Yerel Sunucu)
+                      </a>
+                  </div>
+                  <p style="color:#94a3b8;font-size:12px;line-height:1.5;border-top:1px solid #1e293b;padding-top:14px;margin-top:18px;">
+                      • Bu bağlantı tek kullanımlıktır ve 15 dakika boyunca geçerlidir.<br>
+                      • Oluşturduğunuz yeni şifre tüm cihazlarınız ve sistem belleğiyle otomatik senkronize edilir.
+                  </p>
+              </div>
+              """
+              msg.attach(MIMEText(text_body, "plain", "utf-8"))
+              msg.attach(MIMEText(html_body, "html", "utf-8"))
+
+              ctx = ssl.create_default_context()
+              ctx.check_hostname = False
+              ctx.verify_mode = ssl.CERT_NONE
+
+              with smtplib.SMTP(smtp_host, 587, timeout=15) as server:
+                  server.ehlo()
+                  server.starttls(context=ctx)
+                  server.ehlo()
+                  server.login(smtp_user, smtp_pass)
+                  server.sendmail(smtp_user, [to_email], msg.as_string())
+              print("7/24 Cloud Reset Email Sent Successfully to:", to_email)
+
+          elif action == "update_user_password":
+              username = (payload.get("username") or "").strip().lower()
+              pin_stamp = (payload.get("pinStamp") or "").strip()
+              updated_ms = int(payload.get("pinUpdatedAtMs") or int(datetime.now().timestamp() * 1000))
+              used_nonce = (payload.get("usedNonce") or "").strip()
+
+              state_file = "shared_state.json"
+              st = {}
+              if os.path.exists(state_file):
+                  with open(state_file, "r", encoding="utf-8") as rf:
+                      st = json.load(rf)
+
+              users = st.get("users") if isinstance(st.get("users"), list) else []
+              found = False
+              for u in users:
+                  if str(u.get("username", "")).strip().lower() == username:
+                      u["pinStamp"] = pin_stamp
+                      u["pinUpdatedAtMs"] = updated_ms
+                      u.pop("password", None)
+                      u.pop("oldPin", None)
+                      found = True
+              if not found and username:
+                  users.append({
+                      "username": username,
+                      "name": payload.get("name") or username.upper(),
+                      "email": payload.get("email") or "",
+                      "pinStamp": pin_stamp,
+                      "pinUpdatedAtMs": updated_ms
+                  })
+              st["users"] = users
+
+              pin_map = st.get("userPasswords") if isinstance(st.get("userPasswords"), dict) else {}
+              pin_map[username] = {
+                  "pinStamp": pin_stamp,
+                  "pinUpdatedAtMs": updated_ms,
+                  "updatedAtIso": datetime.now().isoformat()
+              }
+              st["userPasswords"] = pin_map
+
+              if used_nonce:
+                  used_list = st.get("usedResetTokens") if isinstance(st.get("usedResetTokens"), list) else []
+                  if used_nonce not in used_list:
+                      used_list.append(used_nonce)
+                  st["usedResetTokens"] = used_list[-500:]
+
+              with open(state_file, "w", encoding="utf-8") as wf:
+                  json.dump(st, wf, ensure_ascii=False, indent=2)
+
+              pat = re.compile(
+                  r'(\{\s*username:\s*"' + re.escape(username) + r'"[^}]*?pinStamp:\s*")[0-9a-fA-F]+(")',
+                  re.DOTALL
+              )
+              for html_file in ("index.html", "mobil.html"):
+                  if os.path.exists(html_file):
+                      with open(html_file, "r", encoding="utf-8") as hf:
+                          txt = hf.read()
+                      new_txt, cnt = pat.subn(r'\g<1>' + pin_stamp + r'\g<2>', txt)
+                      if cnt > 0:
+                          with open(html_file, "w", encoding="utf-8") as wf:
+                              wf.write(new_txt)
+
+              os.system('git config user.name "Dizsan D-Pro Güvenlik"')
+              os.system('git config user.email "info@dizsan.com.tr"')
+              os.system('git add shared_state.json index.html mobil.html')
+              os.system(f'git commit -m "chore(security): 7/24 cloud password update for {username}" || true')
+              os.system('git push origin main || true')
+          EOF
