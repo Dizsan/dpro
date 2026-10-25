@@ -235,9 +235,9 @@
     "0JINLVPG",
     "CAWCAACV"
   ],
-  "updatedAt": "2026-10-26T00:41:03.121242",
+  "updatedAt": "2026-10-26T00:41:12.091559",
   "version": "v1.8.2",
-  "updatedAtMs": 1792964463121,
+  "updatedAtMs": 1792964472091,
   "permissions": {
     "ömer": {
       "apps": {
@@ -381,7 +381,7 @@
     "hakan.aydin": {
       "apps": {
         "Dizsan_Ziyaret_Mobil_Karekod": true,
-        "Dizsan_Toplanti_Mobil_Karekod": false,
+        "Dizsan_Toplanti_Mobil_Karekod": true,
         "Dizsan_Kredi_Mobil_Karekod": false,
         "Dizsan_Odeme_Takvimi": false,
         "Dizsan_Kredi_Karti_Takip": false,
@@ -399,11 +399,11 @@
         "ziyaret_gorev": true,
         "ziyaret_rapor": true,
         "ziyaret_raporlar": true,
-        "toplanti_genel": false,
-        "toplanti_olustur": false,
-        "toplanti_aksiyon": false,
+        "toplanti_genel": true,
+        "toplanti_olustur": true,
+        "toplanti_aksiyon": true,
         "toplanti_duyuru": false,
-        "toplanti_rapor": false,
+        "toplanti_rapor": true,
         "kredi_combined": false,
         "kredi_bankalar": false,
         "kredi_odeme_onay": false,
@@ -452,9 +452,9 @@
           "financial": false
         },
         "Dizsan_Toplanti_Mobil_Karekod": {
-          "view": false,
-          "create": false,
-          "edit": false,
+          "view": true,
+          "create": true,
+          "edit": true,
           "delete": false,
           "export": false,
           "financial": false
