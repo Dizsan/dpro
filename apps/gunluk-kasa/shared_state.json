@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "25.10.2026 22:13:32",
-  "updatedAtMs": 1792955612824,
-  "stateRevision": 189,
+  "updatedAt": "26.10.2026 02:07:47",
+  "updatedAtMs": 1792969667701,
+  "stateRevision": 190,
   "users": [
     {
       "order": 0,
@@ -35,7 +35,7 @@
         "add": true,
         "edit": true,
         "delete": false,
-        "lockDay": true,
+        "lockDay": false,
         "manageUsers": false
       }
     },
@@ -52,7 +52,7 @@
         "add": true,
         "edit": true,
         "delete": false,
-        "lockDay": true,
+        "lockDay": false,
         "manageUsers": false
       }
     },
@@ -251,7 +251,7 @@
       "controllerApproved": false,
       "isLocked": false,
       "entries": [],
-      "tcmbSlotKey": "2026-10-26_HISTORICAL"
+      "tcmbSlotKey": "2026-10-26_BEFORE_1630"
     },
     "2026-10-27": {
       "dateISO": "2026-10-27",
