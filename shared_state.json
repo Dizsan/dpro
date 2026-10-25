@@ -235,9 +235,9 @@
     "0JINLVPG",
     "CAWCAACV"
   ],
-  "updatedAt": "2026-10-26T00:49:22.191462",
+  "updatedAt": "2026-10-26T00:57:44.926805",
   "version": "v1.8.2",
-  "updatedAtMs": 1792964962191,
+  "updatedAtMs": 1792965464926,
   "permissions": {
     "ömer": {
       "apps": {
@@ -393,7 +393,7 @@
       "submodules": {
         "ziyaret_genel": true,
         "ziyaret_rut_planla": true,
-        "ziyaret_ekstre": true,
+        "ziyaret_ekstre": false,
         "ziyaret_kayit": true,
         "ziyaret_cari": true,
         "ziyaret_gorev": true,
