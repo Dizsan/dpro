@@ -5389,14 +5389,6 @@ function applyAuthenticatedUser() {
     }
 
     // Sürüm güncelleme ve yönetici yetkisi kontrolü (Sadece Ömer Eren)
-    const isOmer = isOmerEren(currentUser);
-    document.querySelectorAll('[data-tab="personnel-tab"], #omer-version-admin-card').forEach(el => {
-        el.style.display = isOmer ? '' : 'none';
-    });
-    if (!isOmer) {
-        const pTab = document.getElementById('personnel-tab');
-        if (pTab) pTab.classList.remove('active');
-    }
     updateVersionAdminPermissionUI();
     syncUserAndStateToServiceWorker();
     initBackgroundAlarmWorker();
