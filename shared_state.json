@@ -235,9 +235,9 @@
     "0JINLVPG",
     "CAWCAACV"
   ],
-  "updatedAt": "2026-10-26T00:45:44.221989",
+  "updatedAt": "2026-10-26T00:45:53.575255",
   "version": "v1.8.2",
-  "updatedAtMs": 1792964744222,
+  "updatedAtMs": 1792964753575,
   "permissions": {
     "ömer": {
       "apps": {
@@ -1631,8 +1631,8 @@
     },
     "mustafa.ilgen": {
       "apps": {
-        "Dizsan_Ziyaret_Mobil_Karekod": false,
-        "Dizsan_Toplanti_Mobil_Karekod": false,
+        "Dizsan_Ziyaret_Mobil_Karekod": true,
+        "Dizsan_Toplanti_Mobil_Karekod": true,
         "Dizsan_Kredi_Mobil_Karekod": false,
         "Dizsan_Odeme_Takvimi": false,
         "Dizsan_Kredi_Karti_Takip": false,
@@ -1642,19 +1642,19 @@
         "Dizsan_Gunluk_Kasa": false
       },
       "submodules": {
-        "ziyaret_genel": false,
-        "ziyaret_rut_planla": false,
-        "ziyaret_ekstre": false,
-        "ziyaret_kayit": false,
-        "ziyaret_cari": false,
-        "ziyaret_gorev": false,
-        "ziyaret_rapor": false,
-        "ziyaret_raporlar": false,
-        "toplanti_genel": false,
-        "toplanti_olustur": false,
-        "toplanti_aksiyon": false,
+        "ziyaret_genel": true,
+        "ziyaret_rut_planla": true,
+        "ziyaret_ekstre": true,
+        "ziyaret_kayit": true,
+        "ziyaret_cari": true,
+        "ziyaret_gorev": true,
+        "ziyaret_rapor": true,
+        "ziyaret_raporlar": true,
+        "toplanti_genel": true,
+        "toplanti_olustur": true,
+        "toplanti_aksiyon": true,
         "toplanti_duyuru": false,
-        "toplanti_rapor": false,
+        "toplanti_rapor": true,
         "kredi_combined": false,
         "kredi_bankalar": false,
         "kredi_odeme_onay": false,
@@ -1695,7 +1695,7 @@
       },
       "appActions": {
         "Dizsan_Ziyaret_Mobil_Karekod": {
-          "view": false,
+          "view": true,
           "create": false,
           "edit": false,
           "delete": false,
@@ -1703,7 +1703,7 @@
           "financial": false
         },
         "Dizsan_Toplanti_Mobil_Karekod": {
-          "view": false,
+          "view": true,
           "create": false,
           "edit": false,
           "delete": false,
