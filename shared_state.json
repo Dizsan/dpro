@@ -235,9 +235,9 @@
     "0JINLVPG",
     "CAWCAACV"
   ],
-  "updatedAt": "2026-10-26T00:42:28.759102",
+  "updatedAt": "2026-10-26T00:42:32.727417",
   "version": "v1.8.2",
-  "updatedAtMs": 1792964548759,
+  "updatedAtMs": 1792964552727,
   "permissions": {
     "ömer": {
       "apps": {
@@ -862,7 +862,7 @@
       "appActions": {
         "Dizsan_Ziyaret_Mobil_Karekod": {
           "view": true,
-          "create": true,
+          "create": false,
           "edit": false,
           "delete": false,
           "export": false,
