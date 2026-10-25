@@ -11988,14 +11988,16 @@ function requestDeleteVisit(visitId) {
 
     if (isOmerEren(currentUser)) {
         if (!confirm(`'${v.customerTitle}' ziyaret / görüşme kaydını silmek istediğinize emin misiniz? (Yönetici Yetkisi)`)) return;
-        registerDeletedRecordId(visitId);
-        appState.visits = (appState.visits || []).filter(x => x.id !== visitId);
+        purgeVisitEverywhere(v);
         addAuditLog("ZİYARET SİLME", `${v.customerTitle} kaydı Yönetici ÖMER EREN tarafından silindi.`, true);
         renderDashboard();
         renderActiveVisits();
+        if (typeof renderSavedCustomRoutesList === 'function') renderSavedCustomRoutesList();
+        if (typeof renderActiveRouteExecutionPanel === 'function') renderActiveRouteExecutionPanel();
+        if (typeof renderReportsTab === 'function') renderReportsTab();
         updateRouteAndReportsBadges();
         syncToServer();
-        showToast(`🗑️ '${v.customerTitle}' kaydı silindi.`, 'success');
+        showToast(`🗑️ '${v.customerTitle}' kaydı tüm ekranlardan ve raporlardan silindi.`, 'success');
         return;
     }
 
@@ -12312,9 +12314,11 @@ function approveRequest(reqId) {
     if (!req || req.status !== 'PENDING') return;
 
     if (req.type === 'DELETE_VISIT') {
-        registerDeletedRecordId(req.targetId);
-        appState.visits = (appState.visits || []).filter(v => v.id !== req.targetId);
+        purgeVisitEverywhere(req.targetId);
         addAuditLog("ONAY İŞLEMİ", `${req.customerTitle} ziyaret kaydı silme talebi Yönetici ÖMER EREN tarafından ONAYLANDI ve kayıt silindi.`, true);
+    } else if (req.type === 'DELETE_ROUTE') {
+        executeDeleteCustomRoutePlan(req.targetId);
+        addAuditLog("ONAY İŞLEMİ", `${req.customerTitle} rut planı silme talebi Yönetici ÖMER EREN tarafından ONAYLANDI ve rut planı silindi.`, true);
     } else if (req.type === 'DELETE_TASK') {
         registerDeletedRecordId(req.targetId);
         appState.tasks = (appState.tasks || []).filter(t => t.id !== req.targetId);
@@ -14394,6 +14398,23 @@ async function executeDeleteCustomRoutePlan(routeId) {
 
     registerDeletedRecordId(routeId);
     appState.customRoutes = (appState.customRoutes || []).filter(r => r.id !== routeId);
+
+    // Bu ruta bağlı tüm ziyaret ve bildirim kayıtlarını da temizle (Raporlarda yetim kayıt kalmasın)
+    if (Array.isArray(appState.visits)) {
+        appState.visits.forEach(v => {
+            if (v && (v.routeId === routeId || (v.id && v.id.includes(routeId)) || (rt.name && v.routeName === rt.name))) {
+                if (v.id) registerDeletedRecordId(v.id);
+            }
+        });
+        appState.visits = appState.visits.filter(v => !v || !(v.routeId === routeId || (v.id && v.id.includes(routeId)) || (rt.name && v.routeName === rt.name)));
+    }
+    if (Array.isArray(appState.customers)) {
+        appState.customers.forEach(c => {
+            if (c && Array.isArray(c.visitHistory)) {
+                c.visitHistory = c.visitHistory.filter(h => !h || !(h.routeId === routeId || (h.id && String(h.id).includes(routeId))));
+            }
+        });
+    }
     if (Array.isArray(appState.routeNotifications)) {
         appState.routeNotifications.forEach(n => {
             if (n && n.routeId === routeId && n.id) registerDeletedRecordId(n.id);
@@ -14407,11 +14428,26 @@ async function executeDeleteCustomRoutePlan(routeId) {
     syncCustomRoutesToCustomers();
     renderSavedCustomRoutesList();
     renderActiveRouteExecutionPanel();
+    if (typeof renderActiveVisits === 'function') renderActiveVisits();
+    if (typeof renderReportsTab === 'function') renderReportsTab();
     updateRouteAndReportsBadges();
 
-    addAuditLog('RUT SİLME', `"${rt.name}" rut planı silindi.`, true);
-    showToast(`"${rt.name}" rut planı silindi.`, 'info');
+    addAuditLog('RUT SİLME', `"${rt.name}" rut planı ve bağlı rapor kayıtları silindi.`, true);
+    showToast(`"${rt.name}" rut planı ve rapor kayıtları silindi.`, 'info');
     await syncToServer();
+}
+
+async function deleteCustomRoutePlan(routeId) {
+    const rt = (appState.customRoutes || []).find(r => r.id === routeId);
+    if (!rt) return;
+
+    if (!isOmerEren(currentUser)) {
+        openApprovalRequestModal('DELETE_ROUTE', routeId, `Rut Planı: ${rt.name}`);
+        return;
+    }
+
+    if (!confirm(`"${rt.name}" rut planını ve bu rut planına bağlı rapor kayıtlarını silmek istediğinize emin misiniz?`)) return;
+    await executeDeleteCustomRoutePlan(routeId);
 }
 
 function filterLegacyByCustomRoute(routeName) {

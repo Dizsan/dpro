@@ -1,7 +1,7 @@
 {
-  "version": "1.7.4",
-  "build": 174,
-  "releasedAt": "2026-10-25 21:21:00",
-  "releaseNotes": "Kredi Ödemeleri Takip Mobil PWA ve Canlı GitHub Senkronizasyonu (v1.7.4)",
+  "version": "1.7.9",
+  "build": 179,
+  "releasedAt": "2026-10-25 23:34:39",
+  "releaseNotes": "D-Pro Tek Oturum (SSO) Geçişi: D-Pro platformuna şifreyle girildikten sonra sandviç menüden Dizsan Ziyaret ve diğer uygulamalara geçişte ikinci kez şifre sorma ekranı kaldırıldı.",
   "author": "Ömer Eren & DİZSAN"
 }
