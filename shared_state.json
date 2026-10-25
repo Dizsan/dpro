@@ -235,9 +235,9 @@
     "0JINLVPG",
     "CAWCAACV"
   ],
-  "updatedAt": "2026-10-26T00:41:12.091559",
+  "updatedAt": "2026-10-26T00:41:27.093219",
   "version": "v1.8.2",
-  "updatedAtMs": 1792964472091,
+  "updatedAtMs": 1792964487093,
   "permissions": {
     "ömer": {
       "apps": {
@@ -385,8 +385,8 @@
         "Dizsan_Kredi_Mobil_Karekod": false,
         "Dizsan_Odeme_Takvimi": false,
         "Dizsan_Kredi_Karti_Takip": false,
-        "Dizsan_VDF_Odeme": false,
-        "Dizsan_DMet_Radar": false,
+        "Dizsan_VDF_Odeme": true,
+        "Dizsan_DMet_Radar": true,
         "Dizsan_DiKas_Finans": false,
         "Dizsan_Gunluk_Kasa": true
       },
@@ -417,18 +417,18 @@
         "kart_tumu": false,
         "kart_sirket": false,
         "kart_sahsi": false,
-        "vdf_kokpit": false,
-        "vdf_takvim": false,
-        "vdf_tablo": false,
-        "vdf_odemeler": false,
-        "vdf_limitler": false,
-        "vdf_otomasyon": false,
-        "dmet_radar": false,
-        "dmet_ailab": false,
-        "dmet_hinterland": false,
-        "dmet_sources": false,
-        "dmet_notifications": false,
-        "dmet_logs": false,
+        "vdf_kokpit": true,
+        "vdf_takvim": true,
+        "vdf_tablo": true,
+        "vdf_odemeler": true,
+        "vdf_limitler": true,
+        "vdf_otomasyon": true,
+        "dmet_radar": true,
+        "dmet_ailab": true,
+        "dmet_hinterland": true,
+        "dmet_sources": true,
+        "dmet_notifications": true,
+        "dmet_logs": true,
         "dikas_dashboard": false,
         "dikas_calendar": false,
         "dikas_forecast": false,
@@ -456,7 +456,7 @@
           "create": true,
           "edit": true,
           "delete": false,
-          "export": false,
+          "export": true,
           "financial": false
         },
         "Dizsan_Kredi_Mobil_Karekod": {
@@ -484,16 +484,16 @@
           "financial": false
         },
         "Dizsan_VDF_Odeme": {
-          "view": false,
-          "create": false,
+          "view": true,
+          "create": true,
           "edit": false,
           "delete": false,
           "export": false,
           "financial": false
         },
         "Dizsan_DMet_Radar": {
-          "view": false,
-          "create": false,
+          "view": true,
+          "create": true,
           "edit": false,
           "delete": false,
           "export": false,
