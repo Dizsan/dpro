@@ -235,9 +235,9 @@
     "0JINLVPG",
     "CAWCAACV"
   ],
-  "updatedAt": "2026-10-26T00:41:33.571417",
+  "updatedAt": "2026-10-26T00:41:43.940301",
   "version": "v1.8.2",
-  "updatedAtMs": 1792964493571,
+  "updatedAtMs": 1792964503940,
   "permissions": {
     "ömer": {
       "apps": {
@@ -388,7 +388,7 @@
         "Dizsan_VDF_Odeme": false,
         "Dizsan_DMet_Radar": false,
         "Dizsan_DiKas_Finans": false,
-        "Dizsan_Gunluk_Kasa": true
+        "Dizsan_Gunluk_Kasa": false
       },
       "submodules": {
         "ziyaret_genel": true,
@@ -437,9 +437,9 @@
         "dikas_collections": false,
         "dikas_instruments": false,
         "dikas_reports": false,
-        "kasa_form": true,
-        "kasa_a4": true,
-        "kasa_archive": true,
+        "kasa_form": false,
+        "kasa_a4": false,
+        "kasa_archive": false,
         "kasa_admin": false
       },
       "appActions": {
@@ -508,12 +508,12 @@
           "financial": false
         },
         "Dizsan_Gunluk_Kasa": {
-          "view": true,
+          "view": false,
           "create": false,
           "edit": false,
           "delete": false,
-          "export": true,
-          "financial": true
+          "export": false,
+          "financial": false
         }
       }
     },
@@ -527,7 +527,7 @@
         "Dizsan_VDF_Odeme": false,
         "Dizsan_DMet_Radar": false,
         "Dizsan_DiKas_Finans": false,
-        "Dizsan_Gunluk_Kasa": true
+        "Dizsan_Gunluk_Kasa": false
       },
       "submodules": {
         "ziyaret_genel": false,
@@ -576,9 +576,9 @@
         "dikas_collections": false,
         "dikas_instruments": false,
         "dikas_reports": false,
-        "kasa_form": true,
-        "kasa_a4": true,
-        "kasa_archive": true,
+        "kasa_form": false,
+        "kasa_a4": false,
+        "kasa_archive": false,
         "kasa_admin": false
       },
       "appActions": {
@@ -647,12 +647,12 @@
           "financial": false
         },
         "Dizsan_Gunluk_Kasa": {
-          "view": true,
+          "view": false,
           "create": false,
           "edit": false,
           "delete": false,
-          "export": true,
-          "financial": true
+          "export": false,
+          "financial": false
         }
       }
     },
