@@ -844,6 +844,12 @@
   },
   "auditLogs": [
     {
+      "timestamp": "25.10.2026 21:58:55",
+      "user": "RAFET CANBEK",
+      "category": "EXCEL ÇIKTI",
+      "detail": "25.10.2026 tarihli Günlük Kasa Formu Excel (.xls) olarak indirildi."
+    },
+    {
       "timestamp": "25.10.2026 21:50:15",
       "user": "RAFET CANBEK",
       "category": "OTURUM",
