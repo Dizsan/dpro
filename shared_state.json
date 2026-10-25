@@ -235,9 +235,9 @@
     "0JINLVPG",
     "CAWCAACV"
   ],
-  "updatedAt": "2026-10-26T00:48:15.395939",
+  "updatedAt": "2026-10-26T00:48:44.212535",
   "version": "v1.8.2",
-  "updatedAtMs": 1792964895395,
+  "updatedAtMs": 1792964924212,
   "permissions": {
     "ömer": {
       "apps": {
@@ -862,7 +862,7 @@
       "appActions": {
         "Dizsan_Ziyaret_Mobil_Karekod": {
           "view": true,
-          "create": false,
+          "create": true,
           "edit": false,
           "delete": false,
           "export": false,
@@ -3511,7 +3511,7 @@
         },
         "Dizsan_Toplanti_Mobil_Karekod": {
           "view": true,
-          "create": true,
+          "create": false,
           "edit": false,
           "delete": false,
           "export": false,
