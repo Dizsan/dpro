@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "25.10.2026 20:47:51",
-  "updatedAtMs": 1792950471993,
-  "stateRevision": 178,
+  "updatedAt": "25.10.2026 20:49:06",
+  "updatedAtMs": 1792950546361,
+  "stateRevision": 179,
   "users": [
     {
       "order": 0,
@@ -176,9 +176,7 @@
       "approvedBy": "ÖMER EREN (Otomatik Yönetici Cihazı)",
       "approvedAt": "24.10.2026 20:22:13",
       "approvedAtMs": 1792862533999
-    }
-  },
-  "pendingDevices": {
+    },
     "DEV-552333-7MMA": {
       "deviceId": "DEV-552333-7MMA",
       "username": "rafet.canbek",
@@ -186,10 +184,12 @@
       "dept": "Genel Müdür / Kontrol Eden",
       "platform": "Android Telefon/Tablet • Chrome",
       "approvalCode": "151571",
-      "requestedAt": "25.10.2026 20:47:50",
-      "requestedAtMs": 1792950470629
+      "approvedBy": "ÖMER EREN",
+      "approvedAt": "25.10.2026 20:49:06",
+      "approvedAtMs": 1792950546361
     }
   },
+  "pendingDevices": {},
   "revokedDevices": {},
   "days": {
     "2026-10-23": {
@@ -842,6 +842,12 @@
     }
   },
   "auditLogs": [
+    {
+      "timestamp": "25.10.2026 20:49:06",
+      "user": "ÖMER EREN",
+      "category": "CİHAZ ONAYLANDI",
+      "detail": "Ömer Eren tarafından RAFET CANBEK (Android Telefon/Tablet • Chrome — DEV-552333-7MMA) cihazının kurulumu onaylandı."
+    },
     {
       "timestamp": "25.10.2026 20:47:50",
       "user": "RAFET CANBEK",
