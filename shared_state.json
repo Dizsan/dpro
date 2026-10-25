@@ -1,0 +1,28 @@
+{
+  "pendingResetLinks": {
+    "ömer": {
+      "email": "oeren@dizsan.com.tr",
+      "userName": "ÖMER EREN",
+      "username": "ömer",
+      "resetToken": "eyJ1Ijoiw7ZtZXIiLCJlIjoxNzkyODg3Njk2ODUxLCJuIjoiQ0FXQ0FBQ1YiLCJzIjoiMzI1MjE4MzMxNi0xNDQzODg5MDYtMjAxMTkzOTkwNCJ9",
+      "localLink": "http://localhost:8000/D-Pro/index.html?resetToken=eyJ1Ijoiw7ZtZXIiLCJlIjoxNzkyODg3Njk2ODUxLCJuIjoiQ0FXQ0FBQ1YiLCJzIjoiMzI1MjE4MzMxNi0xNDQzODg5MDYtMjAxMTkzOTkwNCJ9&user=%C3%B6mer",
+      "liveLink": "https://dizsan.github.io/dpro/index.html?resetToken=eyJ1Ijoiw7ZtZXIiLCJlIjoxNzkyODg3Njk2ODUxLCJuIjoiQ0FXQ0FBQ1YiLCJzIjoiMzI1MjE4MzMxNi0xNDQzODg5MDYtMjAxMTkzOTkwNCJ9&user=%C3%B6mer",
+      "appLink": "dpro://reset?resetToken=eyJ1Ijoiw7ZtZXIiLCJlIjoxNzkyODg3Njk2ODUxLCJuIjoiQ0FXQ0FBQ1YiLCJzIjoiMzI1MjE4MzMxNi0xNDQzODg5MDYtMjAxMTkzOTkwNCJ9&user=%C3%B6mer",
+      "createdAt": "2026-10-25T03:06:36.857643"
+    }
+  },
+  "users": [
+    {
+      "username": "ömer",
+      "name": "ÖMER EREN",
+      "pinStamp": "621976239-623787727-2631164839",
+      "pinUpdatedAtMs": 1792886817931
+    }
+  ],
+  "usedResetTokens": [
+    "K23FW4E1",
+    "0JINLVPG",
+    "CAWCAACV"
+  ],
+  "updatedAt": "2026-10-25T03:06:57.938179"
+}
