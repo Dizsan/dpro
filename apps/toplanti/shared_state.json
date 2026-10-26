@@ -234,8 +234,8 @@
         "GÖKHAN ÖZBULUT"
       ],
       "externalParticipants": [],
-      "notes": "1. Genel Borç şablonu çıkartıldı durum değerlendirmesi yapıldı",
-      "decisions": "1. Yarın Sgk ve Personel ödeme detayları verilecek",
+      "notes": "1. Genel Borç şablonu çıkartıldı durum değerlendirmesi yapıldı [Konuşuldu]\n   ↳ Açıklama: Genel Durum Çıkartıldı",
+      "decisions": "",
       "attachments": [
         {
           "id": "ATT-TOP-2026-002-PDF",
@@ -252,11 +252,30 @@
       "approvalStatus": "Onaylandı",
       "omerApprovedStamp": true,
       "approvedBy": "ÖMER EREN",
-      "approvedAt": "26.10.2026 20:56:05",
+      "approvedAt": "26.10.2026 22:50:30",
       "createdBy": "ÖMER EREN",
       "createdAt": "26.10.2026 20:56:05",
       "updatedBy": "ÖMER EREN",
-      "updatedAt": "26.10.2026 21:00:00"
+      "updatedAt": "26.10.2026 22:50:30",
+      "invitedParticipants": [
+        "ÖMER EREN",
+        "GÖKHAN ÖZBULUT"
+      ],
+      "attendedParticipants": [
+        "ÖMER EREN",
+        "GÖKHAN ÖZBULUT"
+      ],
+      "absentParticipants": [],
+      "agendaItems": [
+        {
+          "id": "agd-0-3702",
+          "title": "Genel Borç şablonu çıkartıldı durum değerlendirmesi yapıldı",
+          "discussed": true,
+          "explanation": "Genel Durum Çıkartıldı",
+          "transferredToMeetingId": ""
+        }
+      ],
+      "decisionItems": []
     },
     {
       "id": "TOP-2026-001",
@@ -272,6 +291,7 @@
         "FATİH KIROĞLU",
         "RAFET CANBEK",
         "GÖKHAN ÖZBULUT",
+        "ERTUĞRUL ERDEM",
         "NECATİ DEMİRCİ",
         "MURAT KARAOĞLU",
         "MURAT SALMAN",
@@ -279,41 +299,187 @@
         "MUSTAFA İLGEN"
       ],
       "externalParticipants": [],
-      "notes": "1. Vdf Çalışma Prensibi\n2. Tespit Edilen Eksiklerin Giderilmesi\n3. İşleyiş ve İş Akış Şablonu",
-      "decisions": "1. Vdf Çalışma Prensibinden Bahsedildi \n2. Kayıp Müşteri Raporu Aktarıldı\n3. İşleyiş Anlatıldı\n4. Turgut Gülerin Pleyt arızası konuşuldu ilgi ve iletişimden bahsedildi",
+      "notes": "1. Vdf Çalışma Prensibi [Konuşuldu]\n   ↳ Açıklama: Çalışmöa Prensibi Aktarıldı Vadelerden bahsedildi\n2. Tespit Edilen Eksiklerin Giderilmesi [Konuşuldu]\n   ↳ Açıklama: Müşteri ilgi alaka iletişim işi sonlandırma\n3. İşleyiş ve İş Akış Şablonu [Konuşuldu]\n   ↳ Açıklama: Genel Prensipten bahsedildi",
+      "decisions": "1. Vdf Çalışma Prensibinden Bahsedildi (Sorumlu: ÖMER EREN | Termin: 26.10.2026)\n2. Kayıp Müşteri Raporu Aktarıldı (Sorumlu: ÖMER EREN | Termin: 26.10.2026)\n3. İşleyiş Anlatıldı (Sorumlu: ÖMER EREN | Termin: 26.10.2026)\n4. Turgut Gülerin Pleyt arızası konuşuldu ilgi ve iletişimden bahsedildi (Sorumlu: ÖMER EREN | Termin: 26.10.2026)",
       "attachments": [],
       "approvalStatus": "Onaylandı",
       "omerApprovedStamp": true,
       "approvedBy": "ÖMER EREN",
-      "approvedAt": "26.10.2026 20:56:38",
+      "approvedAt": "26.10.2026 22:29:05",
       "createdBy": "ÖMER EREN",
       "createdAt": "26.10.2026 16:40:09",
       "updatedBy": "ÖMER EREN",
-      "updatedAt": "26.10.2026 20:56:38"
+      "updatedAt": "26.10.2026 22:29:05",
+      "invitedParticipants": [
+        "ÖMER EREN",
+        "HAKAN AYDIN",
+        "FATİH KIROĞLU",
+        "RAFET CANBEK",
+        "GÖKHAN ÖZBULUT",
+        "ERTUĞRUL ERDEM",
+        "NECATİ DEMİRCİ",
+        "MURAT KARAOĞLU",
+        "MURAT SALMAN",
+        "YILDIRAY KARAGÖZ",
+        "MUSTAFA İLGEN"
+      ],
+      "attendedParticipants": [
+        "ÖMER EREN",
+        "HAKAN AYDIN",
+        "FATİH KIROĞLU",
+        "RAFET CANBEK",
+        "GÖKHAN ÖZBULUT",
+        "NECATİ DEMİRCİ",
+        "MURAT KARAOĞLU",
+        "MURAT SALMAN",
+        "YILDIRAY KARAGÖZ",
+        "MUSTAFA İLGEN"
+      ],
+      "absentParticipants": [
+        {
+          "name": "ERTUĞRUL ERDEM",
+          "reason": "Özel Nedenler"
+        }
+      ],
+      "agendaItems": [
+        {
+          "id": "agd-0-2558",
+          "title": "Vdf Çalışma Prensibi",
+          "discussed": true,
+          "explanation": "Çalışmöa Prensibi Aktarıldı Vadelerden bahsedildi",
+          "transferredToMeetingId": ""
+        },
+        {
+          "id": "agd-1-3770",
+          "title": "Tespit Edilen Eksiklerin Giderilmesi",
+          "discussed": true,
+          "explanation": "Müşteri ilgi alaka iletişim işi sonlandırma",
+          "transferredToMeetingId": ""
+        },
+        {
+          "id": "agd-2-2436",
+          "title": "İşleyiş ve İş Akış Şablonu",
+          "discussed": true,
+          "explanation": "Genel Prensipten bahsedildi",
+          "transferredToMeetingId": ""
+        }
+      ],
+      "decisionItems": [
+        {
+          "id": "dec-0-8766",
+          "text": "Vdf Çalışma Prensibinden Bahsedildi",
+          "responsible": "ÖMER EREN",
+          "dueDate": "2026-10-26",
+          "status": "Bekliyor"
+        },
+        {
+          "id": "dec-1-6625",
+          "text": "Kayıp Müşteri Raporu Aktarıldı",
+          "responsible": "ÖMER EREN",
+          "dueDate": "2026-10-26",
+          "status": "Bekliyor"
+        },
+        {
+          "id": "dec-2-1137",
+          "text": "İşleyiş Anlatıldı",
+          "responsible": "ÖMER EREN",
+          "dueDate": "2026-10-26",
+          "status": "Bekliyor"
+        },
+        {
+          "id": "dec-3-8702",
+          "text": "Turgut Gülerin Pleyt arızası konuşuldu ilgi ve iletişimden bahsedildi",
+          "responsible": "ÖMER EREN",
+          "dueDate": "2026-10-26",
+          "status": "Bekliyor"
+        }
+      ]
     }
   ],
   "actions": [
     {
-      "id": "AKS-101",
+      "id": "AKS-102",
       "meetingId": "TOP-2026-002",
       "meetingTitle": "Finans ve Ödeme Toplantısı Planlama",
-      "title": "Gökhan Özbulut",
-      "assignee": "ÖMER EREN",
+      "title": "Yarın Sgk ve Personel ödeme detayları verilecek",
+      "assignee": "GÖKHAN ÖZBULUT",
       "manager": "ÖMER EREN",
       "priority": "Kritik",
       "dueDate": "2026-10-27",
-      "dueTime": "09:00",
+      "dueTime": "17:00",
       "status": "Bekliyor",
       "note": "",
+      "completedDate": "",
+      "completedTime": "",
+      "completedAt": "",
       "remindOneDayBefore": true,
       "remindSameDay": true,
+      "remindNextDay": true,
+      "remindEveryOtherDay": true,
+      "createdDate": "2026-10-26",
       "createdBy": "ÖMER EREN",
-      "createdAt": "26.10.2026 20:56:07",
-      "updatedBy": "",
-      "updatedAt": ""
+      "createdAt": "26.10.2026 22:25:00",
+      "updatedBy": "ÖMER EREN",
+      "updatedAt": "26.10.2026 22:25:54"
     }
   ],
   "logs": [
+    {
+      "id": "LOG-1793044230610",
+      "timestamp": "26.10.2026 22:50:30",
+      "user": "ÖMER EREN",
+      "category": "TOPLANTI",
+      "detail": "TOP-2026-002 kodlu 'Finans ve Ödeme Toplantısı Planlama' kaydı Yönetici ÖMER EREN tarafından güncellendi (Davetli: 2, Gelen: 2, Gelmeyen: 0).",
+      "platform": "macOS / Masaüstü"
+    },
+    {
+      "id": "LOG-1793043237328",
+      "timestamp": "26.10.2026 22:33:57",
+      "user": "ÖMER EREN",
+      "category": "AKSİYON",
+      "detail": "AKS-101 kodlu aksiyon Yönetici ÖMER EREN tarafından silindi.",
+      "platform": "macOS / Masaüstü"
+    },
+    {
+      "id": "LOG-1793042945047",
+      "timestamp": "26.10.2026 22:29:05",
+      "user": "ÖMER EREN",
+      "category": "TOPLANTI",
+      "detail": "TOP-2026-001 kodlu 'Genel Değerlendirme ve Bilgilendirme Toplantısı' kaydı Yönetici ÖMER EREN tarafından güncellendi (Davetli: 11, Gelen: 10, Gelmeyen: 1).",
+      "platform": "macOS / Masaüstü"
+    },
+    {
+      "id": "LOG-1793042756203",
+      "timestamp": "26.10.2026 22:25:56",
+      "user": "ÖMER EREN",
+      "category": "TOPLANTI",
+      "detail": "TOP-2026-002 kodlu 'Finans ve Ödeme Toplantısı Planlama' kaydı Yönetici ÖMER EREN tarafından güncellendi (Davetli: 2, Gelen: 2, Gelmeyen: 0).",
+      "platform": "macOS / Masaüstü"
+    },
+    {
+      "id": "LOG-1793042754776",
+      "timestamp": "26.10.2026 22:25:54",
+      "user": "ÖMER EREN",
+      "category": "AKSİYON",
+      "detail": "AKS-102 aksiyonu ÖMER EREN tarafından güncellendi (Sorumlu: GÖKHAN ÖZBULUT, Durum: Bekliyor, Tamamlama Hedefi: 27.10.2026 17:00).",
+      "platform": "macOS / Masaüstü"
+    },
+    {
+      "id": "LOG-1793042700670",
+      "timestamp": "26.10.2026 22:25:00",
+      "user": "ÖMER EREN",
+      "category": "AKSİYON",
+      "detail": "AKS-102 kodlu aksiyon 'ÖMER EREN' personeline ve Yönetici ÖMER EREN'e ertesi gün ve gün aşırı hatırlatıcılı olarak atandı (Tamamlama: 27.10.2026 17:00).",
+      "platform": "macOS / Masaüstü"
+    },
+    {
+      "id": "LOG-1793042700651",
+      "timestamp": "26.10.2026 22:25:00",
+      "user": "ÖMER EREN",
+      "category": "TOPLANTI",
+      "detail": "TOP-2026-002 kodlu 'Finans ve Ödeme Toplantısı Planlama' kaydı Yönetici ÖMER EREN tarafından güncellendi (Davetli: 2, Gelen: 2, Gelmeyen: 0).",
+      "platform": "macOS / Masaüstü"
+    },
     {
       "id": "LOG-1793026603378",
       "timestamp": "26.10.2026 17:56:43",
