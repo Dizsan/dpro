@@ -1,6 +1,6 @@
 {
   "version": "v1.8.5",
-  "updatedAt": "2026-10-26T13:41:02.990Z",
+  "updatedAt": "2026-10-26T13:44:39.629Z",
   "users": [
     {
       "order": 0,
@@ -1094,8 +1094,47 @@
       "resolvedBy": "ÖMER EREN"
     }
   ],
-  "stateRevision": 60,
+  "stateRevision": 62,
   "pushSubscriptions": [
+    {
+      "id": "SUB-1793022275064-601",
+      "username": "gokhan.ozbulut",
+      "userFullName": "GÖKHAN ÖZBULUT",
+      "endpoint": "https://fcm.googleapis.com/fcm/send/denL_skrby4:APA91bFPBotvQ1MAGPJ64VmwPnq5j173gS2ZRP_B6JWIF0_C00ZUYK9VaJtmoiGVKdyN4EVjS080tLosB1Xb_cvla0brVxbrbC25XeSDiDBs8dMUOP2qLl_Xs8rKZB2UDQfVvkcB17lv",
+      "p256dh": "BJp169PHIsj1qWe098oA0QQvxGFrn54Kwemh7Xsc03Nesxagfk3ki71eQu1RjjfbX7IkENEobUpDaieXp-Ex-Zk",
+      "auth": "OhuR3MUtiYYYrwMukfjmRw",
+      "browser": "Samsung Internet",
+      "platform": "Android",
+      "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/30.0 Chrome/143.0.0.0 Mobile Safari/537.36",
+      "isActive": true,
+      "updatedAt": "26.10.2026 16:44:35"
+    },
+    {
+      "id": "SUB-1793022279628-264",
+      "username": "hakan.aydin",
+      "userFullName": "HAKAN AYDIN",
+      "endpoint": "https://web.push.apple.com/QModrMqXbtgUFteSloGdn3hDwwfGmrOXzKqPCxIPi_2iea0fwGffBa3dIR9Ur5bmDuNnGqEB5O0dGYrSeMCF3DbVlyNio0z3J5J3yPuSj8O9Xj0LfQchMDViJYXhF17w9KdtZf_GanxImRV9XpQ19HDhiImYRwjxwZjAQGWGD94",
+      "p256dh": "BDZKvTsv2pRCw--nqGdQHgKA-36Z5JJQjR4jOc0cCebLSA-SWu76vn80q35xA5T6CfwX-LQKaq-DP1FjVp6q_ko",
+      "auth": "oib6-QlXClwuCGcghpzEuQ",
+      "browser": "Apple Web App (Ana Ekran)",
+      "platform": "iOS (Apple iPhone)",
+      "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.6.1 Mobile/15E148 Safari/604.1",
+      "isActive": true,
+      "updatedAt": "26.10.2026 16:44:39"
+    },
+    {
+      "id": "SUB-1793022232697-877",
+      "username": "rafet.canbek",
+      "userFullName": "RAFET CANBEK",
+      "endpoint": "https://fcm.googleapis.com/fcm/send/fW62DivZlyM:APA91bGNM6qRgZGTpD-qdCoKbFT7C7v-qUQmIQ1mChHJoWNKgWW9oeFc1Si2nRSgBMI4b7PtoYq9lXXEv0YCTpcEd2G3ftRLQeyKwU4VQhfQS1sMHbpHNS_7fpeNsdepOsSw4i9ATq9z",
+      "p256dh": "BDKp5zHxx42Ufg7g-u-Ew7oydrIfUw1MGfOhqqZlzAouxpKtaFiar97aCwsb1BregUq9gd1WCPAHcoToq4WVTOw",
+      "auth": "aFah_QROF6fUZgZ-MJcE1Q",
+      "browser": "Google Chrome",
+      "platform": "Android",
+      "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36",
+      "isActive": true,
+      "updatedAt": "26.10.2026 16:43:52"
+    },
     {
       "id": "SUB-1793012063308-127",
       "username": "rafet.canbek",
