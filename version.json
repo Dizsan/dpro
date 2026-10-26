@@ -1,9 +1,9 @@
 {
   "appId": "dpro",
   "appName": "Dizsan D-Pro Kurumsal Platform",
-  "version": "4.9.2",
-  "build": 492,
-  "releasedAt": "2026-10-26 22:10:04",
-  "releaseNotes": "Dizsan Toplantı & Aksiyon v4.9.2 güncellemesi (Kart detayı, yoklama/mazeret, tiklemeli gündem açıklaması, konuşulmayan maddeleri planlama, kararlar ve aksiyon ertesi gün / gün aşırı hatırlatma) yayınlandı",
+  "version": "4.9.3",
+  "build": 493,
+  "releasedAt": "2026-10-26 22:19:48",
+  "releaseNotes": "1998-2026 Tüm SQL Yedekleri (001..426) ve Kuruluş Arşivi Tam Kapsam Güncellemesi (5.889 Müşteri)",
   "author": "Ömer Eren & DİZSAN"
 }

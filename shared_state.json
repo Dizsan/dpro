@@ -235,8 +235,8 @@
     "0JINLVPG",
     "CAWCAACV"
   ],
-  "updatedAt": "2026-10-26T19:10:04.890Z",
-  "version": "v4.9.2",
+  "updatedAt": "2026-10-26T19:19:48.113Z",
+  "version": "v4.9.3",
   "updatedAtMs": 1792965795956,
   "permissions": {
     "ömer": {
@@ -3577,13 +3577,13 @@
     }
   },
   "customApps": [],
-  "appVersion": "4.9.2",
-  "stateRevision": 2,
+  "appVersion": "4.9.3",
+  "stateRevision": 3,
   "latestVersion": {
-    "version": "4.9.2",
-    "releaseNotes": "Dizsan Toplantı & Aksiyon v4.9.2 güncellemesi (Kart detayı, yoklama/mazeret, tiklemeli gündem açıklaması, konuşulmayan maddeleri planlama, kararlar ve aksiyon ertesi gün / gün aşırı hatırlatma) yayınlandı",
-    "releasedAt": "2026-10-26 22:10:04"
+    "version": "4.9.3",
+    "releaseNotes": "1998-2026 Tüm SQL Yedekleri (001..426) ve Kuruluş Arşivi Tam Kapsam Güncellemesi (5.889 Müşteri)",
+    "releasedAt": "2026-10-26 22:19:48"
   },
-  "versionUpdatedAt": "2026-10-26 22:10:04",
-  "versionReleaseNotes": "Dizsan Toplantı & Aksiyon v4.9.2 güncellemesi (Kart detayı, yoklama/mazeret, tiklemeli gündem açıklaması, konuşulmayan maddeleri planlama, kararlar ve aksiyon ertesi gün / gün aşırı hatırlatma) yayınlandı"
+  "versionUpdatedAt": "2026-10-26 22:19:48",
+  "versionReleaseNotes": "1998-2026 Tüm SQL Yedekleri (001..426) ve Kuruluş Arşivi Tam Kapsam Güncellemesi (5.889 Müşteri)"
 }
