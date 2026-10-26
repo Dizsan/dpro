@@ -1,9 +1,9 @@
 {
   "appId": "dpro",
   "appName": "Dizsan D-Pro Kurumsal Platform",
-  "version": "4.9.3",
-  "build": 493,
-  "releasedAt": "2026-10-26 22:19:48",
-  "releaseNotes": "1998-2026 Tüm SQL Yedekleri (001..426) ve Kuruluş Arşivi Tam Kapsam Güncellemesi (5.889 Müşteri)",
+  "version": "4.9.4",
+  "build": 494,
+  "releasedAt": "2026-10-26 22:51:22",
+  "releaseNotes": "Toplantı/Eğitim formu profesyonel hizalama, mavi tikli katılımcı yoklaması ve düzenlemede bildirim/ses kapatma güncellemesi (v4.9.4)",
   "author": "Ömer Eren & DİZSAN"
 }

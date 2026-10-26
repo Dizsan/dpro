@@ -1,5 +1,5 @@
 // D-Pro Kurumsal Yönetim & DizGün Entegre Platformu - Service Worker (v1.8.1)
-const CACHE_NAME = 'dizsan-dpro-v4.9.3';
+const CACHE_NAME = 'dizsan-dpro-v4.9.4';
 const ASSETS = [
   "./manifest.json",
   "./icon-192.png",

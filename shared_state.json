@@ -235,9 +235,9 @@
     "0JINLVPG",
     "CAWCAACV"
   ],
-  "updatedAt": "2026-10-26T19:19:48.113Z",
+  "updatedAt": "26.10.2026 22:51:22",
   "version": "v4.9.3",
-  "updatedAtMs": 1792965795956,
+  "updatedAtMs": 1793044282325,
   "permissions": {
     "ömer": {
       "apps": {
@@ -3577,13 +3577,13 @@
     }
   },
   "customApps": [],
-  "appVersion": "4.9.3",
-  "stateRevision": 3,
+  "appVersion": "4.9.4",
+  "stateRevision": 4,
   "latestVersion": {
     "version": "4.9.3",
     "releaseNotes": "1998-2026 Tüm SQL Yedekleri (001..426) ve Kuruluş Arşivi Tam Kapsam Güncellemesi (5.889 Müşteri)",
     "releasedAt": "2026-10-26 22:19:48"
   },
-  "versionUpdatedAt": "2026-10-26 22:19:48",
-  "versionReleaseNotes": "1998-2026 Tüm SQL Yedekleri (001..426) ve Kuruluş Arşivi Tam Kapsam Güncellemesi (5.889 Müşteri)"
+  "versionUpdatedAt": "2026-10-26 22:51:22",
+  "versionReleaseNotes": "Toplantı/Eğitim formu profesyonel hizalama, mavi tikli katılımcı yoklaması ve düzenlemede bildirim/ses kapatma güncellemesi (v4.9.4)"
 }
