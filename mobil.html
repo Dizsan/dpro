@@ -3481,7 +3481,9 @@
             try { window.parent.postMessage({ type: "DPRO_CHILD_PUSH_GUARD" }, "*"); } catch (err) {}
             const a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
             if (!a) return;
-            const href = a.getAttribute("href") || "";
+            if (a.hasAttribute("download") || a.hasAttribute("data-no-dpro-nav") || a.getAttribute("target") === "_blank" || a.id === "attachment-download-btn" || a.id === "attachment-open-newtab-btn") return;
+            const href = (a.getAttribute("href") || "").trim();
+            if (!href || href.length > 350 || /^(data:|blob:|#|javascript:|mailto:|tel:)/i.test(href) || href.includes("attachments/")) return;
             if (href.includes("D-Pro/index.html") || href === "../index.html") {
                 e.preventDefault();
                 window.parent.postMessage({ type: "DPRO_BACK_TO_MAIN" }, "*");
@@ -3666,11 +3668,13 @@
                         };
                         applyChildDomSecurity();
                         setTimeout(applyChildDomSecurity, 400);
-                        // Hook relative links so they switch inside D-Pro
+                        // Hook relative links so they switch inside D-Pro (never intercept data/blob/download/attachment links!)
                         cd.addEventListener("click", function(ev) {
                             const a = ev.target && ev.target.closest ? ev.target.closest("a[href]") : null;
                             if (!a) return;
-                            const href = a.getAttribute("href") || "";
+                            if (a.hasAttribute("download") || a.hasAttribute("data-no-dpro-nav") || a.getAttribute("target") === "_blank" || a.id === "attachment-download-btn" || a.id === "attachment-open-newtab-btn") return;
+                            const href = (a.getAttribute("href") || "").trim();
+                            if (!href || href.length > 350 || /^(data:|blob:|#|javascript:|mailto:|tel:)/i.test(href) || href.includes("attachments/")) return;
                             if (href.includes("D-Pro/index.html") || href === "../index.html") {
                                 ev.preventDefault();
                                 exitFullScreenToDPro();
@@ -3683,10 +3687,10 @@
                             } else if (href.includes("VDF Ödeme") || href.includes("vdf-odeme")) {
                                 ev.preventDefault();
                                 openEmbeddedApp("Dizsan_VDF_Odeme");
-                            } else if (href.includes("DEMET") || href.includes("dmet")) {
+                            } else if (href.includes("DEMET/index.html") || href.includes("apps/dmet") || /(^|\/)dmet(\/|\.html|$)/i.test(href)) {
                                 ev.preventDefault();
                                 openEmbeddedApp("Dizsan_DMet_Radar");
-                            } else if (href.includes("DiKas") || href.includes("dikas")) {
+                            } else if (href.includes("DiKas/index.html") || href.includes("apps/dikas") || /(^|\/)dikas(\/|\.html|$)/i.test(href)) {
                                 ev.preventDefault();
                                 openEmbeddedApp("Dizsan_DiKas_Finans");
                             } else if (href.includes("Dizsan Kasa") || href.includes("gunluk-kasa")) {
