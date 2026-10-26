@@ -1,6 +1,9 @@
 {
-  "version": "1.8.3",
-  "updatedAt": "2026-10-23T15:30:00Z",
-  "notes": "v1.8.0 — D-Pro Canlı Kasa Modu (Ömer Eren hariç tüm personel sadece Günlük Kasa'yı görür), Cihaz Kurulum Onay Linki, Açık/Koyu Tema ve Mobil/PC Kurulum Karekodu",
-  "mandatory": true
+  "appId": "dpro",
+  "appName": "Dizsan D-Pro Kurumsal Platform",
+  "version": "4.9.2",
+  "build": 492,
+  "releasedAt": "2026-10-26 22:10:04",
+  "releaseNotes": "Dizsan Toplantı & Aksiyon v4.9.2 güncellemesi (Kart detayı, yoklama/mazeret, tiklemeli gündem açıklaması, konuşulmayan maddeleri planlama, kararlar ve aksiyon ertesi gün / gün aşırı hatırlatma) yayınlandı",
+  "author": "Ömer Eren & DİZSAN"
 }
