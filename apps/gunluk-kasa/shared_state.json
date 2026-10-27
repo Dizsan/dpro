@@ -1,8 +1,8 @@
 {
   "version": "1.3.0",
-  "updatedAt": "26.10.2026 18:44:12",
-  "updatedAtMs": 1793029452221,
-  "stateRevision": 194,
+  "updatedAt": "27.10.2026 20:33:59",
+  "updatedAtMs": 1793122439677,
+  "stateRevision": 195,
   "users": [
     {
       "order": 0,
@@ -255,8 +255,8 @@
     },
     "2026-10-27": {
       "dateISO": "2026-10-27",
-      "euroRate": "--",
-      "usdRate": "--",
+      "euroRate": "55,5465",
+      "usdRate": "49,7948",
       "prevInOverride": null,
       "prevOutOverride": null,
       "carryoverOverride": null,
@@ -265,7 +265,8 @@
       "controllerName": "RAFET CANBEK",
       "controllerApproved": false,
       "isLocked": false,
-      "entries": []
+      "entries": [],
+      "tcmbSlotKey": "2026-10-27_AFTER_1630"
     },
     "2026-10-28": {
       "dateISO": "2026-10-28",
