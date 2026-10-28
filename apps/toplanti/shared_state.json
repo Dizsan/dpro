@@ -1,6 +1,6 @@
 {
-  "version": "5.0.2",
-  "updatedAt": "2026-10-28T19:40:56.923Z",
+  "version": "v5.0.3",
+  "updatedAt": "2026-10-28T22:07:59.830Z",
   "users": [
     {
       "order": 0,
@@ -222,6 +222,225 @@
   ],
   "meetings": [
     {
+      "id": "TOP-2026-004",
+      "recordType": "Toplantı",
+      "title": "Stok Değerlendirme ve Strateji Toplantısı",
+      "dept": "SSH & Servis",
+      "date": "2026-10-28",
+      "time": "17:30",
+      "location": "Dizsan Toplantı Salonu",
+      "participants": [
+        "ÖMER EREN",
+        "HAKAN AYDIN",
+        "FATİH KIROĞLU",
+        "RAFET CANBEK",
+        "GÖKHAN ÖZBULUT",
+        "ERTUĞRUL ERDEM",
+        "MURAT KARAOĞLU",
+        "MURAT SALMAN",
+        "MUSTAFA İLGEN"
+      ],
+      "invitedParticipants": [
+        "ÖMER EREN",
+        "HAKAN AYDIN",
+        "FATİH KIROĞLU",
+        "RAFET CANBEK",
+        "GÖKHAN ÖZBULUT",
+        "ERTUĞRUL ERDEM",
+        "MURAT KARAOĞLU",
+        "MURAT SALMAN",
+        "MUSTAFA İLGEN"
+      ],
+      "attendedParticipants": [
+        "ÖMER EREN",
+        "FATİH KIROĞLU",
+        "RAFET CANBEK",
+        "GÖKHAN ÖZBULUT",
+        "MURAT KARAOĞLU",
+        "MURAT SALMAN",
+        "MUSTAFA İLGEN"
+      ],
+      "absentParticipants": [
+        {
+          "name": "HAKAN AYDIN",
+          "reason": "Hastalık İzinli"
+        },
+        {
+          "name": "ERTUĞRUL ERDEM",
+          "reason": "Traktör İşi İçin İzinli"
+        }
+      ],
+      "externalParticipants": [],
+      "agendaItems": [
+        {
+          "id": "agd-1793224144808",
+          "title": "Genel Stok Durumu Bildirimi Yapılacak",
+          "discussed": true,
+          "explanation": "1.1 Stok Oranları Yıllara Sair Alımlarına Bakıldı\n1.2 Garantiden Değişecek 16 Adet Kontrol Ünitesi stokta duruyor bunun tespiti yapıldı\n1.3 Gösterge ekran beyni stokta duruyor acil satışa dönecek\n1.4 Ölü Stokta Pto tespiti yapıldı satışa çıkartılacak",
+          "subItems": [
+            {
+              "id": "agd-1793224144808_sub_1",
+              "code": "1.1",
+              "text": "Stok Oranları Yıllara Sair Alımlarına Bakıldı",
+              "hasAction": false
+            },
+            {
+              "id": "agd-1793224144808_sub_1793224353801_220",
+              "code": "1.2",
+              "text": "Garantiden Değişecek 16 Adet Kontrol Ünitesi stokta duruyor bunun tespiti yapıldı",
+              "hasAction": true
+            },
+            {
+              "id": "agd-1793224144808_sub_1793224377519_725",
+              "code": "1.3",
+              "text": "Gösterge ekran beyni stokta duruyor acil satışa dönecek",
+              "hasAction": true
+            },
+            {
+              "id": "agd-1793224144808_sub_1793224406899_573",
+              "code": "1.4",
+              "text": "Ölü Stokta Pto tespiti yapıldı satışa çıkartılacak",
+              "hasAction": true
+            }
+          ],
+          "hasAction": true,
+          "transferredToMeetingId": ""
+        },
+        {
+          "id": "agd-1793224620473-523",
+          "title": "Temel Stok Bilgilendirmesi",
+          "discussed": true,
+          "explanation": "2.1 Temel Stok Ds ve Dos olarak listelendi kontrolleri kabaca yapıldı detaylıca incelenecek",
+          "subItems": [
+            {
+              "id": "agd-1793224620473-523_sub_1",
+              "code": "2.1",
+              "text": "Temel Stok Ds ve Dos olarak listelendi kontrolleri kabaca yapıldı detaylıca incelenecek",
+              "hasAction": true
+            }
+          ],
+          "hasAction": true,
+          "transferredToMeetingId": ""
+        },
+        {
+          "id": "agd-1793224725506-970",
+          "title": "Yeni Stok Çalışması Değerlendirmesi",
+          "discussed": true,
+          "explanation": "3.1 Sipariş verilecek liste oluşturuldu kabaca hazır elde olan olmayan çıkartılıp ona göre siparişleri ayarlanacak",
+          "subItems": [
+            {
+              "id": "agd-1793224725506-970_sub_1",
+              "code": "3.1",
+              "text": "Sipariş verilecek liste oluşturuldu kabaca hazır elde olan olmayan çıkartılıp ona göre siparişleri ayarlanacak",
+              "hasAction": true
+            }
+          ],
+          "hasAction": true,
+          "transferredToMeetingId": ""
+        }
+      ],
+      "decisionItems": [],
+      "notes": "1. Genel Stok Durumu Bildirimi Yapılacak [Konuşuldu]\n   ↳ Açıklama: 1.1 Stok Oranları Yıllara Sair Alımlarına Bakıldı\n1.2 Garantiden Değişecek 16 Adet Kontrol Ünitesi stokta duruyor bunun tespiti yapıldı\n1.3 Gösterge ekran beyni stokta duruyor acil satışa dönecek\n1.4 Ölü Stokta Pto tespiti yapıldı satışa çıkartılacak\n2. Temel Stok Bilgilendirmesi [Konuşuldu]\n   ↳ Açıklama: 2.1 Temel Stok Ds ve Dos olarak listelendi kontrolleri kabaca yapıldı detaylıca incelenecek\n3. Yeni Stok Çalışması Değerlendirmesi [Konuşuldu]\n   ↳ Açıklama: 3.1 Sipariş verilecek liste oluşturuldu kabaca hazır elde olan olmayan çıkartılıp ona göre siparişleri ayarlanacak",
+      "decisions": "",
+      "attachments": [
+        {
+          "id": "ATT-1793225043935-48",
+          "kind": "IMAGE",
+          "name": "WhatsApp Image 2026-10-28 at 18.30.40 (1).jpeg",
+          "type": "image/jpeg",
+          "note": "Toplantı / Kağıt Tutanak Fotoğrafı",
+          "dataUrl": "",
+          "addedBy": "ÖMER EREN",
+          "addedAt": "29.10.2026 01:04:03",
+          "fileUrl": "attachments/ATT-1793225043935-48.jpg"
+        },
+        {
+          "id": "ATT-1793225043958-562",
+          "kind": "IMAGE",
+          "name": "WhatsApp Image 2026-10-28 at 18.30.40.jpeg",
+          "type": "image/jpeg",
+          "note": "Toplantı / Kağıt Tutanak Fotoğrafı",
+          "dataUrl": "",
+          "addedBy": "ÖMER EREN",
+          "addedAt": "29.10.2026 01:04:03",
+          "fileUrl": "attachments/ATT-1793225043958-562.jpg"
+        },
+        {
+          "id": "ATT-1793225043977-161",
+          "kind": "IMAGE",
+          "name": "PHOTO-2026-10-28-18-27-39.jpg",
+          "type": "image/jpeg",
+          "note": "Toplantı / Kağıt Tutanak Fotoğrafı",
+          "dataUrl": "",
+          "addedBy": "ÖMER EREN",
+          "addedAt": "29.10.2026 01:04:03",
+          "fileUrl": "attachments/ATT-1793225043977-161.jpg"
+        },
+        {
+          "id": "ATT-1793225133315-712",
+          "kind": "IMAGE",
+          "name": "20261028_173816.jpg",
+          "type": "image/jpeg",
+          "note": "Toplantı / Kağıt Tutanak Fotoğrafı",
+          "dataUrl": "",
+          "addedBy": "ÖMER EREN",
+          "addedAt": "29.10.2026 01:05:33",
+          "fileUrl": "attachments/ATT-1793225133315-712.jpg"
+        },
+        {
+          "id": "ATT-1793225133364-972",
+          "kind": "IMAGE",
+          "name": "20261028_173824.jpg",
+          "type": "image/jpeg",
+          "note": "Toplantı / Kağıt Tutanak Fotoğrafı",
+          "dataUrl": "",
+          "addedBy": "ÖMER EREN",
+          "addedAt": "29.10.2026 01:05:33",
+          "fileUrl": "attachments/ATT-1793225133364-972.jpg"
+        },
+        {
+          "id": "ATT-1793225133433-70",
+          "kind": "IMAGE",
+          "name": "20261028_173811.jpg",
+          "type": "image/jpeg",
+          "note": "Toplantı / Kağıt Tutanak Fotoğrafı",
+          "dataUrl": "",
+          "addedBy": "ÖMER EREN",
+          "addedAt": "29.10.2026 01:05:33",
+          "fileUrl": "attachments/ATT-1793225133433-70.jpg"
+        },
+        {
+          "id": "ATT-1793225151929-779",
+          "kind": "FILE",
+          "name": "2026 YILI EYLÜL AYI YEDEK PARCA SAYIMI Stok Fiyatlandırması.xlsx",
+          "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "note": "Ek Belge",
+          "dataUrl": "",
+          "addedBy": "ÖMER EREN",
+          "addedAt": "29.10.2026 01:05:51",
+          "fileUrl": "attachments/ATT-1793225151929-779.bin"
+        },
+        {
+          "id": "ATT-1793225279793-67",
+          "kind": "NOTE",
+          "name": "Excel ve Toplantı Fotoğrafları",
+          "type": "text/plain",
+          "note": "Excel ve Toplantı Fotoğrafları",
+          "dataUrl": "",
+          "addedBy": "ÖMER EREN",
+          "addedAt": "29.10.2026 01:07:59"
+        }
+      ],
+      "approvalStatus": "Onaylandı",
+      "omerApprovedStamp": true,
+      "approvedBy": "ÖMER EREN",
+      "approvedAt": "29.10.2026 01:07:59",
+      "createdBy": "ÖMER EREN",
+      "createdAt": "29.10.2026 01:07:59",
+      "updatedBy": "",
+      "updatedAt": ""
+    },
+    {
       "id": "TOP-2026-002",
       "recordType": "Toplantı",
       "title": "Finans ve Ödeme Toplantısı Planlama",
@@ -399,6 +618,178 @@
   ],
   "actions": [
     {
+      "id": "AKS-108",
+      "meetingId": "TOP-2026-004",
+      "meetingTitle": "Stok Değerlendirme ve Strateji Toplantısı",
+      "agendaItemId": "agd-1793224725506-970",
+      "agendaItemTitle": "Yeni Stok Çalışması Değerlendirmesi",
+      "subItemId": "agd-1793224725506-970_sub_1",
+      "subItemCode": "3.1",
+      "actionCode": "3.1.1.",
+      "title": "3.1.1. Yeni Liste kabaca oluşturuldu detaylandırılıp yönetim onayına sunulacak",
+      "assignees": [
+        "RAFET CANBEK",
+        "FATİH KIROĞLU",
+        "HAKAN AYDIN"
+      ],
+      "assignee": "RAFET CANBEK, FATİH KIROĞLU, HAKAN AYDIN",
+      "controller": "ÖMER EREN",
+      "manager": "ÖMER EREN",
+      "priority": "Kritik",
+      "dueDate": "2026-10-29",
+      "dueTime": "15:30",
+      "status": "Bekliyor",
+      "note": "",
+      "completedDate": "",
+      "completedTime": "",
+      "completedAt": "",
+      "remindOneDayBefore": true,
+      "remindSameDay": true,
+      "remindNextDay": true,
+      "remindEveryOtherDay": true,
+      "createdDate": "2026-10-28",
+      "createdBy": "ÖMER EREN",
+      "createdAt": "29.10.2026 01:07:59",
+      "updatedBy": "",
+      "updatedAt": ""
+    },
+    {
+      "id": "AKS-107",
+      "meetingId": "TOP-2026-004",
+      "meetingTitle": "Stok Değerlendirme ve Strateji Toplantısı",
+      "agendaItemId": "agd-1793224620473-523",
+      "agendaItemTitle": "Temel Stok Bilgilendirmesi",
+      "subItemId": "agd-1793224620473-523_sub_1",
+      "subItemCode": "2.1",
+      "actionCode": "2.1.1.",
+      "title": "2.1.1. Temel Stok lsiteleri güncellenecek çıkartılacaklar Doğuş Otoya bildirilip çıkartılacak eklenecekler güncellenecek",
+      "assignees": [
+        "FATİH KIROĞLU"
+      ],
+      "assignee": "FATİH KIROĞLU",
+      "controller": "RAFET CANBEK",
+      "manager": "RAFET CANBEK",
+      "priority": "Kritik",
+      "dueDate": "2026-10-29",
+      "dueTime": "13:45",
+      "status": "Bekliyor",
+      "note": "",
+      "completedDate": "",
+      "completedTime": "",
+      "completedAt": "",
+      "remindOneDayBefore": true,
+      "remindSameDay": true,
+      "remindNextDay": true,
+      "remindEveryOtherDay": true,
+      "createdDate": "2026-10-28",
+      "createdBy": "ÖMER EREN",
+      "createdAt": "29.10.2026 01:07:59",
+      "updatedBy": "",
+      "updatedAt": ""
+    },
+    {
+      "id": "AKS-106",
+      "meetingId": "TOP-2026-004",
+      "meetingTitle": "Stok Değerlendirme ve Strateji Toplantısı",
+      "agendaItemId": "agd-1793224144808",
+      "agendaItemTitle": "Genel Stok Durumu Bildirimi Yapılacak",
+      "subItemId": "agd-1793224144808_sub_1793224406899_573",
+      "subItemCode": "1.4",
+      "actionCode": "1.4.1.",
+      "title": "1.4.1. Çıkmacılar ve inşaat araçları olan müşterilerle iletişime geçilerek satışa çevrilecek",
+      "assignees": [
+        "FATİH KIROĞLU"
+      ],
+      "assignee": "FATİH KIROĞLU",
+      "controller": "ÖMER EREN",
+      "manager": "ÖMER EREN",
+      "priority": "Normal",
+      "dueDate": "2026-10-29",
+      "dueTime": "12:00",
+      "status": "Bekliyor",
+      "note": "",
+      "completedDate": "",
+      "completedTime": "",
+      "completedAt": "",
+      "remindOneDayBefore": true,
+      "remindSameDay": true,
+      "remindNextDay": true,
+      "remindEveryOtherDay": true,
+      "createdDate": "2026-10-28",
+      "createdBy": "ÖMER EREN",
+      "createdAt": "29.10.2026 01:07:59",
+      "updatedBy": "",
+      "updatedAt": ""
+    },
+    {
+      "id": "AKS-105",
+      "meetingId": "TOP-2026-004",
+      "meetingTitle": "Stok Değerlendirme ve Strateji Toplantısı",
+      "agendaItemId": "agd-1793224144808",
+      "agendaItemTitle": "Genel Stok Durumu Bildirimi Yapılacak",
+      "subItemId": "agd-1793224144808_sub_1793224377519_725",
+      "subItemCode": "1.3",
+      "actionCode": "1.3.1.",
+      "title": "1.3.1. Turgut Gülerin Garantili aracına uygunluğu sistemden kontrol edilecek",
+      "assignees": [
+        "FATİH KIROĞLU"
+      ],
+      "assignee": "FATİH KIROĞLU",
+      "controller": "ÖMER EREN",
+      "manager": "ÖMER EREN",
+      "priority": "Normal",
+      "dueDate": "2026-10-29",
+      "dueTime": "11:00",
+      "status": "Bekliyor",
+      "note": "",
+      "completedDate": "",
+      "completedTime": "",
+      "completedAt": "",
+      "remindOneDayBefore": true,
+      "remindSameDay": true,
+      "remindNextDay": true,
+      "remindEveryOtherDay": true,
+      "createdDate": "2026-10-28",
+      "createdBy": "ÖMER EREN",
+      "createdAt": "29.10.2026 01:07:59",
+      "updatedBy": "",
+      "updatedAt": ""
+    },
+    {
+      "id": "AKS-104",
+      "meetingId": "TOP-2026-004",
+      "meetingTitle": "Stok Değerlendirme ve Strateji Toplantısı",
+      "agendaItemId": "agd-1793224144808",
+      "agendaItemTitle": "Genel Stok Durumu Bildirimi Yapılacak",
+      "subItemId": "agd-1793224144808_sub_1793224353801_220",
+      "subItemCode": "1.2",
+      "actionCode": "1.2.1.",
+      "title": "1.2.1. Garantiden Değişecek araçların şasi numaraları Doğuş Otomotivden istenecek araçlar davet edilecek gelemeyecek durumdalarsa yerinde hizmetle kontrol üniteleri elden çıkartılıp nakite dönüştürülecek",
+      "assignees": [
+        "HAKAN AYDIN"
+      ],
+      "assignee": "HAKAN AYDIN",
+      "controller": "ÖMER EREN",
+      "manager": "ÖMER EREN",
+      "priority": "Kritik",
+      "dueDate": "2026-10-30",
+      "dueTime": "11:00",
+      "status": "Bekliyor",
+      "note": "",
+      "completedDate": "",
+      "completedTime": "",
+      "completedAt": "",
+      "remindOneDayBefore": true,
+      "remindSameDay": true,
+      "remindNextDay": true,
+      "remindEveryOtherDay": true,
+      "createdDate": "2026-10-28",
+      "createdBy": "ÖMER EREN",
+      "createdAt": "29.10.2026 01:07:59",
+      "updatedBy": "",
+      "updatedAt": ""
+    },
+    {
       "id": "AKS-102",
       "meetingId": "TOP-2026-002",
       "meetingTitle": "Finans ve Ödeme Toplantısı Planlama",
@@ -431,6 +822,54 @@
     }
   ],
   "logs": [
+    {
+      "id": "LOG-1793225279809",
+      "timestamp": "29.10.2026 01:07:59",
+      "user": "ÖMER EREN",
+      "category": "TOPLANTI",
+      "detail": "TOP-2026-004 kodlu yeni toplantı ('Stok Değerlendirme ve Strateji Toplantısı') oluşturuldu (Onaylandı). Davetli: 9, Gelen: 7, Gelmeyen: 2.",
+      "platform": "macOS / Masaüstü"
+    },
+    {
+      "id": "LOG-1793225279791",
+      "timestamp": "29.10.2026 01:07:59",
+      "user": "ÖMER EREN",
+      "category": "AKSİYON",
+      "detail": "AKS-108 kodlu aksiyon ('Yeni Stok Çalışması Değerlendirmesi' [3.1] maddesi altında) Sorumlu(lar): 'RAFET CANBEK, FATİH KIROĞLU, HAKAN AYDIN' ve Kontrol Edecek Kişi: 'ÖMER EREN' olarak atandı (Tamamlama: 29.10.2026 15:30).",
+      "platform": "macOS / Masaüstü"
+    },
+    {
+      "id": "LOG-1793225279788",
+      "timestamp": "29.10.2026 01:07:59",
+      "user": "ÖMER EREN",
+      "category": "AKSİYON",
+      "detail": "AKS-107 kodlu aksiyon ('Temel Stok Bilgilendirmesi' [2.1] maddesi altında) Sorumlu(lar): 'FATİH KIROĞLU' ve Kontrol Edecek Kişi: 'RAFET CANBEK' olarak atandı (Tamamlama: 29.10.2026 13:45).",
+      "platform": "macOS / Masaüstü"
+    },
+    {
+      "id": "LOG-1793225279785",
+      "timestamp": "29.10.2026 01:07:59",
+      "user": "ÖMER EREN",
+      "category": "AKSİYON",
+      "detail": "AKS-106 kodlu aksiyon ('Genel Stok Durumu Bildirimi Yapılacak' [1.4] maddesi altında) Sorumlu(lar): 'FATİH KIROĞLU' ve Kontrol Edecek Kişi: 'ÖMER EREN' olarak atandı (Tamamlama: 29.10.2026 12:00).",
+      "platform": "macOS / Masaüstü"
+    },
+    {
+      "id": "LOG-1793225279782",
+      "timestamp": "29.10.2026 01:07:59",
+      "user": "ÖMER EREN",
+      "category": "AKSİYON",
+      "detail": "AKS-105 kodlu aksiyon ('Genel Stok Durumu Bildirimi Yapılacak' [1.3] maddesi altında) Sorumlu(lar): 'FATİH KIROĞLU' ve Kontrol Edecek Kişi: 'ÖMER EREN' olarak atandı (Tamamlama: 29.10.2026 11:00).",
+      "platform": "macOS / Masaüstü"
+    },
+    {
+      "id": "LOG-1793225279779",
+      "timestamp": "29.10.2026 01:07:59",
+      "user": "ÖMER EREN",
+      "category": "AKSİYON",
+      "detail": "AKS-104 kodlu aksiyon ('Genel Stok Durumu Bildirimi Yapılacak' [1.2] maddesi altında) Sorumlu(lar): 'HAKAN AYDIN' ve Kontrol Edecek Kişi: 'ÖMER EREN' olarak atandı (Tamamlama: 30.10.2026 11:00).",
+      "platform": "macOS / Masaüstü"
+    },
     {
       "id": "LOG-1793216455350",
       "timestamp": "28.10.2026 22:40:55",
@@ -1250,28 +1689,28 @@
   ],
   "changelog": [
     {
-      "version": "v4.9.9",
+      "version": "v5.0.2",
       "date": "28.10.2026 23:51",
       "author": "Sistem Güncellemesi (ÖMER EREN)",
-      "notes": "Alt gündem maddelerinin (1.1, 1.2, 1.3, 1.4) sonuna bağımsız Aksiyon tiki ve seçilen alt madde koduyla (örn. 1.2) doğrudan aksiyon alanı açılması sağlandı."
+      "notes": "Her alt gündem maddesinin (1.1, 1.2, 1.3, 1.4 vb.) sonuna bağımsız Aksiyon tiki eklendi; örneğin 1.1'de aksiyon yokken 1.2'de Aksiyon tiki işaretlendiğinde altta doğrudan 1.2 koduyla başlayan aksiyon metin alanı açılması sağlandı."
     },
     {
       "version": "v4.9.8",
       "date": "28.10.2026 23:22",
       "author": "Sistem Güncellemesi (ÖMER EREN)",
-      "notes": "Gündem maddeleri altında 1.1, 1.2 (2.1, 2.2 vb.) hiyerarşik alt madde ve aksiyon numaralandırması eklendi."
+      "notes": "Gündem maddeleri konuşuldu olarak işaretlendiğinde alt maddelerin ve aksiyonların otomatik olarak 1.1, 1.2 (2. madde için 2.1, 2.2 vb.) şeklinde hiyerarşik numaralandırılması sağlandı."
     },
     {
       "version": "v4.9.7",
       "date": "28.10.2026 23:05",
       "author": "Sistem Güncellemesi (ÖMER EREN)",
-      "notes": "Aynı gündem maddesine birden fazla aksiyon alanı ekleme ve Öncelik/Termin/Saat alanlarının alt satıra alınarak aksiyon satırının tam görünmesi sağlandı."
+      "notes": "Aynı gündem maddesine (konuya) birden fazla numaralı aksiyon alanı ekleme butonları (+ Yeni Aksiyon, + Gündem Maddesine Yeni Aksiyon Alanı Ekle ve Enter kısayolu) eklendi; Öncelik, Termin Tarihi ve Saat alanları alt satıra alınarak Aksiyon / Görev Açıklaması satırının %100 tam genişlikte görünmesi sağlandı."
     },
     {
-      "version": "v4.9.5",
+      "version": "v4.9.6",
       "date": "28.10.2026",
       "author": "ÖMER EREN",
-      "notes": "Yeni gündem maddesi eklendiğinde Konuşuldu ve Konuşulmadı tiklerinin her ikisinin de işaretsiz gelmesi sağlandı; Her gündem maddesinin altına 'Aksiyon Var' tiki eklendi; aksiyonu olan maddelerin hem kayıtlı aksiyonları hem de yeni aksiyon giriş formları doğrudan ilgili gündem maddesinin altında bütünleşik olarak gösterilecek şekilde düzenlendi."
+      "notes": "Toplantı bildirim sesi kısa 'dit-dit' sinyaline dönüştürüldü ve sesli metin okuma (TTS) kapatıldı; Yeni gündem maddesi eklendiğinde Konuşuldu ve Konuşulmadı tiklerinin her ikisinin de işaretsiz gelmesi sağlandı; Her gündem maddesinin altına 'Aksiyon Var' tiki eklendi; aksiyonu olan maddelerin hem kayıtlı aksiyonları hem de yeni aksiyon giriş formları doğrudan ilgili gündem maddesinin altında bütünleşik olarak gösterilecek şekilde düzenlendi."
     },
     {
       "version": "v4.9.3",
@@ -1410,7 +1849,7 @@
       "resolvedBy": "ÖMER EREN"
     }
   ],
-  "stateRevision": 177,
+  "stateRevision": 184,
   "pushSubscriptions": [
     {
       "id": "SUB-1793029403205-553",
