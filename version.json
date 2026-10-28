@@ -3,7 +3,7 @@
   "appName": "Dizsan D-Pro Kurumsal Platform",
   "version": "4.9.4",
   "build": 494,
-  "releasedAt": "2026-10-26 22:51:22",
-  "releaseNotes": "Toplantı/Eğitim formu profesyonel hizalama, mavi tikli katılımcı yoklaması ve düzenlemede bildirim/ses kapatma güncellemesi (v4.9.4)",
+  "releasedAt": "28.10.2026 21:52:00",
+  "releaseNotes": "Toplantı gündem maddelerinin altına Aksiyon Var tiki ve madde altı bütünleşik aksiyon yönetimi eklendi (v4.9.4)",
   "author": "Ömer Eren & DİZSAN"
 }
