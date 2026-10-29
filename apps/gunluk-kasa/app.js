@@ -1298,7 +1298,7 @@ async function syncStateToServer() {
     setSyncBadge("saving");
 
     try {
-        if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        if (!window.location.hostname.endsWith("github.io")) {
             await fetch("/api/kasa-state", {
                 method: "POST",
                 keepalive: true,
@@ -1327,7 +1327,7 @@ async function syncStateToServer() {
 
 async function fetchAllRemoteKasaCandidates() {
     const candidates = [];
-    const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    const isLocal = !window.location.hostname.endsWith("github.io");
 
     // 1. GitHub Contents API (Telefon <-> Safari anlık sıfır önbellekli bulut verisi)
     try {
@@ -1434,7 +1434,7 @@ async function loadStateFromStorageAndServer() {
         }
         ensureDayObject(uiState.selectedDateISO);
 
-        const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+        const isLocal = !window.location.hostname.endsWith("github.io");
         if (isLocal) {
             fetch("/api/kasa-state", {
                 method: "POST",
@@ -1519,7 +1519,7 @@ async function pollKasaCloudState(isManual = false) {
                 uiState.selectedDateISO = remoteActiveDate;
             }
 
-            if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+            if (!window.location.hostname.endsWith("github.io")) {
                 fetch("/api/kasa-state", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -10134,7 +10134,7 @@ window.addEventListener("DOMContentLoaded", async () => {
             // Sekme/uygulama arka plana alındığında veya kapatılırken anlık yerel + bulut yedekleme
             saveStateLocally();
             recordLocalBackupSnapshot("Sekme Kapatma / Arka Plan Otomatik Yedek");
-            if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+            if (!window.location.hostname.endsWith("github.io")) {
                 try {
                     navigator.sendBeacon("/api/kasa-state", new Blob([JSON.stringify(appState)], { type: "application/json" }));
                 } catch (e) {}
@@ -10148,7 +10148,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         try {
             saveStateLocally();
             recordLocalBackupSnapshot("Acil Kapanış Auto-Save");
-            if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+            if (!window.location.hostname.endsWith("github.io")) {
                 navigator.sendBeacon("/api/kasa-state", new Blob([JSON.stringify(appState)], { type: "application/json" }));
             }
             pushStateToGitHubCloud().catch(() => {});
@@ -10162,7 +10162,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         try {
             saveStateLocally();
             recordLocalBackupSnapshot("5 Dakikalık Otomatik Auto-Save");
-            if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+            if (!window.location.hostname.endsWith("github.io")) {
                 fetch("/api/kasa-state", {
                     method: "POST",
                     keepalive: true,

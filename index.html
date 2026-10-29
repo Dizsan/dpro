@@ -2686,7 +2686,7 @@
                     delete ku.oldPin;
                     localStorage.setItem("dizsan_gunluk_kasa_manual_v2", JSON.stringify(kasaSt));
                     localStorage.setItem("dizsan_gunluk_kasa_shadow_backup_v2", JSON.stringify(kasaSt));
-                    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+                    if (!window.location.hostname.endsWith("github.io")) {
                         fetch("/api/kasa-state", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
