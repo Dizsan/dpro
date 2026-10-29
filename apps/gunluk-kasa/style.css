@@ -1496,8 +1496,8 @@ html[data-theme="light"] .subtab-amount {
     font-size: 8.8px;
     height: 14.5px;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    text-overflow: clip; white-space: normal; overflow-wrap: anywhere; word-break: break-word;
+    
 }
 
 .excel-main-kasa-table .double-sep {
@@ -1546,8 +1546,8 @@ html[data-theme="light"] .subtab-amount {
     font-size: 8.5px;
     height: 14px;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    text-overflow: clip; white-space: normal; overflow-wrap: anywhere; word-break: break-word;
+    
 }
 
 .excel-sub-table .sub-title {
@@ -2255,4 +2255,37 @@ html[data-theme="light"] .badge-danger {
         border: none !important;
         box-shadow: none !important;
     }
+}
+
+/* === DIZSAN 100% RESPONSIVE & ANTI-TRUNCATION MEDIA QUERIES === */
+@media (max-width: 1024px) {
+  html, body {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+  .container, .main-container, .app-container, .content-wrapper, .page-container, .dashboard-container {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  h1, h2, h3, h4, h5, h6, p, span, td, th, label, a, div {
+    text-overflow: clip !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+}
+
+@media (max-width: 767px) {
+  html, body {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+  .container, .main-container, .app-container, .content-wrapper, .page-container, .dashboard-container, .card, .modal-content, .panel {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .table-responsive, .table-container, .table-wrapper {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
 }

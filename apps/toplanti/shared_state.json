@@ -1,6 +1,6 @@
 {
-  "version": "v5.0.3",
-  "updatedAt": "2026-10-28T22:07:59.830Z",
+  "version": "v5.0.4",
+  "updatedAt": "2026-10-29T11:53:09.000Z",
   "users": [
     {
       "order": 0,
@@ -499,68 +499,7 @@
     },
     {
       "id": "TOP-2026-001",
-      "recordType": "Toplantı",
       "title": "Genel Değerlendirme ve Bilgilendirme Toplantısı",
-      "dept": "Genel Yönetim",
-      "date": "2026-10-26",
-      "time": "18:00",
-      "location": "Dizsan Toplantı Salonu",
-      "participants": [
-        "ÖMER EREN",
-        "HAKAN AYDIN",
-        "FATİH KIROĞLU",
-        "RAFET CANBEK",
-        "GÖKHAN ÖZBULUT",
-        "ERTUĞRUL ERDEM",
-        "NECATİ DEMİRCİ",
-        "MURAT KARAOĞLU",
-        "MURAT SALMAN",
-        "YILDIRAY KARAGÖZ",
-        "MUSTAFA İLGEN"
-      ],
-      "externalParticipants": [],
-      "notes": "1. Vdf Çalışma Prensibi [Konuşuldu]\n   ↳ Açıklama: Çalışmöa Prensibi Aktarıldı Vadelerden bahsedildi\n2. Tespit Edilen Eksiklerin Giderilmesi [Konuşuldu]\n   ↳ Açıklama: Müşteri ilgi alaka iletişim işi sonlandırma\n3. İşleyiş ve İş Akış Şablonu [Konuşuldu]\n   ↳ Açıklama: Genel Prensipten bahsedildi",
-      "decisions": "1. Vdf Çalışma Prensibinden Bahsedildi (Sorumlu: ÖMER EREN | Termin: 26.10.2026)\n2. Kayıp Müşteri Raporu Aktarıldı (Sorumlu: ÖMER EREN | Termin: 26.10.2026)\n3. İşleyiş Anlatıldı (Sorumlu: ÖMER EREN | Termin: 26.10.2026)\n4. Turgut Gülerin Pleyt arızası konuşuldu ilgi ve iletişimden bahsedildi (Sorumlu: ÖMER EREN | Termin: 26.10.2026)",
-      "attachments": [],
-      "approvalStatus": "Onaylandı",
-      "omerApprovedStamp": true,
-      "approvedBy": "ÖMER EREN",
-      "approvedAt": "26.10.2026 22:29:05",
-      "createdBy": "ÖMER EREN",
-      "createdAt": "26.10.2026 16:40:09",
-      "updatedBy": "ÖMER EREN",
-      "updatedAt": "26.10.2026 22:29:05",
-      "invitedParticipants": [
-        "ÖMER EREN",
-        "HAKAN AYDIN",
-        "FATİH KIROĞLU",
-        "RAFET CANBEK",
-        "GÖKHAN ÖZBULUT",
-        "ERTUĞRUL ERDEM",
-        "NECATİ DEMİRCİ",
-        "MURAT KARAOĞLU",
-        "MURAT SALMAN",
-        "YILDIRAY KARAGÖZ",
-        "MUSTAFA İLGEN"
-      ],
-      "attendedParticipants": [
-        "ÖMER EREN",
-        "HAKAN AYDIN",
-        "FATİH KIROĞLU",
-        "RAFET CANBEK",
-        "GÖKHAN ÖZBULUT",
-        "NECATİ DEMİRCİ",
-        "MURAT KARAOĞLU",
-        "MURAT SALMAN",
-        "YILDIRAY KARAGÖZ",
-        "MUSTAFA İLGEN"
-      ],
-      "absentParticipants": [
-        {
-          "name": "ERTUĞRUL ERDEM",
-          "reason": "Özel Nedenler"
-        }
-      ],
       "agendaItems": [
         {
           "id": "agd-0-2558",
@@ -612,6 +551,67 @@
           "responsible": "ÖMER EREN",
           "dueDate": "2026-10-26",
           "status": "Bekliyor"
+        }
+      ],
+      "updatedAt": "26.10.2026 22:29:05",
+      "recordType": "Toplantı",
+      "dept": "Genel Yönetim",
+      "date": "2026-10-26",
+      "time": "18:00",
+      "location": "Dizsan Toplantı Salonu",
+      "participants": [
+        "ÖMER EREN",
+        "HAKAN AYDIN",
+        "FATİH KIROĞLU",
+        "RAFET CANBEK",
+        "GÖKHAN ÖZBULUT",
+        "ERTUĞRUL ERDEM",
+        "NECATİ DEMİRCİ",
+        "MURAT KARAOĞLU",
+        "MURAT SALMAN",
+        "YILDIRAY KARAGÖZ",
+        "MUSTAFA İLGEN"
+      ],
+      "externalParticipants": [],
+      "notes": "1. Vdf Çalışma Prensibi [Konuşuldu]\n   ↳ Açıklama: Çalışmöa Prensibi Aktarıldı Vadelerden bahsedildi\n2. Tespit Edilen Eksiklerin Giderilmesi [Konuşuldu]\n   ↳ Açıklama: Müşteri ilgi alaka iletişim işi sonlandırma\n3. İşleyiş ve İş Akış Şablonu [Konuşuldu]\n   ↳ Açıklama: Genel Prensipten bahsedildi",
+      "decisions": "1. Vdf Çalışma Prensibinden Bahsedildi (Sorumlu: ÖMER EREN | Termin: 26.10.2026)\n2. Kayıp Müşteri Raporu Aktarıldı (Sorumlu: ÖMER EREN | Termin: 26.10.2026)\n3. İşleyiş Anlatıldı (Sorumlu: ÖMER EREN | Termin: 26.10.2026)\n4. Turgut Gülerin Pleyt arızası konuşuldu ilgi ve iletişimden bahsedildi (Sorumlu: ÖMER EREN | Termin: 26.10.2026)",
+      "attachments": [],
+      "approvalStatus": "Onaylandı",
+      "omerApprovedStamp": true,
+      "approvedBy": "ÖMER EREN",
+      "approvedAt": "26.10.2026 22:29:05",
+      "createdBy": "ÖMER EREN",
+      "createdAt": "26.10.2026 16:40:09",
+      "updatedBy": "ÖMER EREN",
+      "invitedParticipants": [
+        "ÖMER EREN",
+        "HAKAN AYDIN",
+        "FATİH KIROĞLU",
+        "RAFET CANBEK",
+        "GÖKHAN ÖZBULUT",
+        "ERTUĞRUL ERDEM",
+        "NECATİ DEMİRCİ",
+        "MURAT KARAOĞLU",
+        "MURAT SALMAN",
+        "YILDIRAY KARAGÖZ",
+        "MUSTAFA İLGEN"
+      ],
+      "attendedParticipants": [
+        "ÖMER EREN",
+        "HAKAN AYDIN",
+        "FATİH KIROĞLU",
+        "RAFET CANBEK",
+        "GÖKHAN ÖZBULUT",
+        "NECATİ DEMİRCİ",
+        "MURAT KARAOĞLU",
+        "MURAT SALMAN",
+        "YILDIRAY KARAGÖZ",
+        "MUSTAFA İLGEN"
+      ],
+      "absentParticipants": [
+        {
+          "name": "ERTUĞRUL ERDEM",
+          "reason": "Özel Nedenler"
         }
       ]
     }
@@ -822,6 +822,14 @@
     }
   ],
   "logs": [
+    {
+      "id": "LOG-RESTORE-V504",
+      "timestamp": "29.10.2026 14:53:09",
+      "user": "ÖMER EREN",
+      "category": "SÜRÜM / YÖNETİM",
+      "detail": "v5.0.4: Eski önbellekli mobil cihaz senkronizasyonu nedeniyle ezilen tüm toplantı (TOP-2026-004, TOP-2026-002, TOP-2026-001), gündem, alt madde, karar, ek dosya ve 6 aksiyon (AKS-108..102) kaydı %100 eksiksiz geri yüklendi; Çok Katmanlı Veri Koruma Kalkanı devreye alındı.",
+      "platform": "macOS / Masaüstü"
+    },
     {
       "id": "LOG-1793225279809",
       "timestamp": "29.10.2026 01:07:59",
@@ -1689,6 +1697,12 @@
   ],
   "changelog": [
     {
+      "version": "v5.0.4",
+      "date": "29.10.2026 14:48",
+      "author": "Sistem Güncellemesi (ÖMER EREN)",
+      "notes": "Eski önbellekli cihazların (telefon/tablet) bulut ve sunucu veritabanını ezmesini engelleyen Çok Katmanlı Veri Koruma ve ID Bazlı Otomatik Birleştirme (Non-Destructive Merge) kalkanı devreye alındı; tüm toplantı, gündem, alt madde, karar, ek dosya ve aksiyon verileri eksiksiz geri yüklendi."
+    },
+    {
       "version": "v5.0.2",
       "date": "28.10.2026 23:51",
       "author": "Sistem Güncellemesi (ÖMER EREN)",
@@ -1849,7 +1863,7 @@
       "resolvedBy": "ÖMER EREN"
     }
   ],
-  "stateRevision": 184,
+  "stateRevision": 252,
   "pushSubscriptions": [
     {
       "id": "SUB-1793029403205-553",
@@ -1953,7 +1967,7 @@
       "platform": "Android",
       "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/30.0 Chrome/143.0.0.0 Mobile Safari/537.36",
       "isActive": true,
-      "updatedAt": "25.10.2026 23:18:30"
+      "updatedAt": "28.10.2026 21:51:57"
     },
     {
       "id": "SUB-1792129863940-504",
@@ -2071,6 +2085,32 @@
       "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/30.0 Chrome/143.0.0.0 Mobile Safari/537.36",
       "isActive": true,
       "updatedAt": "16.10.2026 19:14:34"
+    },
+    {
+      "id": "SUB-1793273218597-416",
+      "username": "ömer",
+      "userFullName": "ÖMER EREN",
+      "endpoint": "https://fcm.googleapis.com/fcm/send/fIeXN3F5GQo:APA91bEf9SZqx5YtvgbaBCrZ3PQD5xTmy02R8oVFUTJwy9Q0eJm35QgJip5XDqTXFkvKz2YdSESy7gnn8HJB-DmV0ShPv5eDHuxQIEwNrkvmIEXrXnHjRCWSP3hQ8TvRSh12jiUOW8Xh",
+      "p256dh": "BHatiVPkOjVoYV8hNyZWeaPugkG3LvqAuJJlolRAJfeQ5Aj2XNRWSvlnL_tYmbUQ-cLgRyZORbpgyfw02f9XSTo",
+      "auth": "mFa8ah1uHurtgpsCHv49gQ",
+      "browser": "Samsung Internet",
+      "platform": "Android",
+      "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/30.0 Chrome/143.0.0.0 Mobile Safari/537.36",
+      "isActive": true,
+      "updatedAt": "29.10.2026 14:26:58"
+    },
+    {
+      "id": "SUB-1793252311708-117",
+      "username": "hakan.aydin",
+      "userFullName": "HAKAN AYDIN",
+      "endpoint": "https://web.push.apple.com/QLFayXN9AsSRmViQGkgN7rFQ6V9DAQYe4VS_zpBHsn5Rj9XkQQsRuppn1s-1_BcXM1eK3jtK8v8_qutlibixp-jLiJ3lcTYT5S87g1he3SzAf83NAkVoUfgtXpM72XEZtvKcvGMOOS9LII0rUVExjINj72fVvUFpU1lc49ym4wE",
+      "p256dh": "BM79XO99Olw14XWnsCETDG8J6oiCeD5sc6PhY3hpXLrO8qwuZTsEVlGdQOP83QAJsG5iMBq6pNgJ6Eprfrjl_eI",
+      "auth": "10hRj0NCZMuoonALvjZFTg",
+      "browser": "Apple Web App (Ana Ekran)",
+      "platform": "iOS (Apple iPhone)",
+      "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.6.1 Mobile/15E148 Safari/604.1",
+      "isActive": true,
+      "updatedAt": "29.10.2026 08:38:31"
     }
   ],
   "pushTestRequests": [

@@ -2,8 +2,9 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Dizsan Ödeme Takvimi (Kredi Kartları & Banka Kredileri)</title>
+    <meta name="description" content="Dizsan Otomotiv Kurumsal Yönetim, ERP, Finans, Saha ve Servis Platformu — PC, Tablet ve Mobil Uyumlu Gerçek Zamanlı Sistem.">
   <!-- PWA & Mobil Uygulama Meta Etiketleri -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0d0f17">
@@ -735,9 +736,7 @@ body {
 
 /* Text Formatting */
 .payment-event .title {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-overflow: clip; white-space: normal; overflow-wrap: anywhere; word-break: break-word;
 }
 
 .payment-event .amount {
@@ -1837,7 +1836,7 @@ body.light-theme .mobile-install-card {
                         <span>🚀</span>
                         <span>${APP_NAME} Sürüm Merkezi</span>
                     </div>
-                    <button type="button" id="dizsan-modal-close-btn" style="background:transparent; border:none; color:#94a3b8; font-size:1.4rem; cursor:pointer; line-height:1;">&times;</button>
+                    <button aria-label="dizsan-modal-close-btn" type="button" id="dizsan-modal-close-btn" style="background:transparent; border:none; color:#94a3b8; font-size:1.4rem; cursor:pointer; line-height:1;">&times;</button>
                 </div>
                 <div style="padding:1.25rem;">
                     <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:0.9rem; margin-bottom:1rem;">
@@ -1944,6 +1943,8 @@ body.light-theme .mobile-install-card {
 })();
 
 </script>
+    <link rel="stylesheet" href="dizsan-realtime-responsive.css?v=20261029">
+    <script defer src="dizsan-realtime-socket.js?v=20261029"></script>
 </head>
 <body>
   <div class="app-container">
@@ -2059,14 +2060,14 @@ body.light-theme .mobile-install-card {
           <button type="button" class="inpage-back-btn" onclick="DizsanBackNav.handleInAppBack()" title="Bir Önceki Sayfaya Dön">
             <i class="fa-solid fa-arrow-left"></i> Önceki Sayfa
           </button>
-          <button class="nav-btn" id="prev-month-btn" title="Önceki Ay">
+          <button aria-label="Önceki Ay" class="nav-btn" id="prev-month-btn" title="Önceki Ay">
             <i class="fa-solid fa-chevron-left"></i>
           </button>
           <div class="date-selectors">
             <select id="month-select" class="date-select" aria-label="Ay Seçin"></select>
             <select id="year-select" class="date-select" aria-label="Yıl Seçin"></select>
           </div>
-          <button class="nav-btn" id="next-month-btn" title="Sonraki Ay">
+          <button aria-label="Sonraki Ay" class="nav-btn" id="next-month-btn" title="Sonraki Ay">
             <i class="fa-solid fa-chevron-right"></i>
           </button>
           <button class="btn btn-glass today-btn" id="today-btn">Bugün</button>
@@ -2138,7 +2139,7 @@ body.light-theme .mobile-install-card {
             </div>
           </div>
           <div class="subview-actions">
-            <input type="text" id="card-search-input" class="subview-search" placeholder="Banka, son 4 hane, kart sahibi veya firma ara...">
+            <input aria-label="Banka, son 4 hane, kart sahibi veya firma ara..." title="Banka, son 4 hane, kart sahibi veya firma ara..." type="text" id="card-search-input" class="subview-search" placeholder="Banka, son 4 hane, kart sahibi veya firma ara...">
           </div>
         </div>
         <div class="subview-table-wrap">
@@ -2206,7 +2207,7 @@ body.light-theme .mobile-install-card {
             </div>
           </div>
           <div class="subview-actions">
-            <input type="text" id="list-search-input" class="subview-search" placeholder="Banka, kart son 4 hane veya kart sahibi ara...">
+            <input aria-label="Banka, kart son 4 hane veya kart sahibi ara..." title="Banka, kart son 4 hane veya kart sahibi ara..." type="text" id="list-search-input" class="subview-search" placeholder="Banka, kart son 4 hane veya kart sahibi ara...">
           </div>
         </div>
         <div class="subview-table-wrap">
@@ -2331,14 +2332,14 @@ body.light-theme .mobile-install-card {
     <div class="modal-content">
       <div class="modal-header">
         <h3 id="modal-title-text">Ödeme Detayı</h3>
-        <button class="close-btn" id="modal-close-btn"><i class="fa-solid fa-xmark"></i></button>
+        <button aria-label="modal-close-btn" class="close-btn" id="modal-close-btn"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <form id="payment-form">
-        <input type="hidden" id="payment-id">
+        <input aria-label="payment-id" title="payment-id" type="hidden" id="payment-id">
 
         <div class="form-group">
           <label for="payment-title">Banka / Kart / Kredi Bilgisi</label>
-          <input type="text" id="payment-title" readonly>
+          <input aria-label="payment-title" title="payment-title" type="text" id="payment-title" readonly>
         </div>
 
         <div class="form-group" id="card-meta-info-box" style="display:none; background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3); padding:0.75rem; border-radius:10px; font-size:0.84rem; line-height:1.5;">
@@ -2348,11 +2349,11 @@ body.light-theme .mobile-install-card {
         <div class="form-row">
           <div class="form-group">
             <label for="payment-amount">Ödeme / Ekstre Tutarı (₺) <small style="color:var(--text-muted); font-weight:400;">(Opsiyonel)</small></label>
-            <input type="number" id="payment-amount" placeholder="Tutar girilmediyse 0 bırakabilirsiniz" min="0" step="0.01">
+            <input aria-label="Tutar girilmediyse 0 bırakabilirsiniz" title="Tutar girilmediyse 0 bırakabilirsiniz" type="number" id="payment-amount" placeholder="Tutar girilmediyse 0 bırakabilirsiniz" min="0" step="0.01">
           </div>
           <div class="form-group">
             <label for="payment-date">Ödeme Tarihi</label>
-            <input type="date" id="payment-date" readonly>
+            <input aria-label="payment-date" title="payment-date" type="date" id="payment-date" readonly>
           </div>
         </div>
 
@@ -2360,19 +2361,19 @@ body.light-theme .mobile-install-card {
           <label>Ödeme Durumu</label>
           <div class="status-selector">
             <label class="status-option">
-              <input type="radio" name="payment-status" value="unpaid" checked>
+              <input aria-label="payment-status" title="payment-status" type="radio" name="payment-status" value="unpaid" checked>
               <span class="status-box unpaid-box">
                 <i class="fa-solid fa-clock"></i> Ödenmedi
               </span>
             </label>
             <label class="status-option">
-              <input type="radio" name="payment-status" value="partial">
+              <input aria-label="payment-status" title="payment-status" type="radio" name="payment-status" value="partial">
               <span class="status-box partial-box">
                 <i class="fa-solid fa-circle-half-stroke"></i> Kısmi Ödeme
               </span>
             </label>
             <label class="status-option">
-              <input type="radio" name="payment-status" value="paid">
+              <input aria-label="payment-status" title="payment-status" type="radio" name="payment-status" value="paid">
               <span class="status-box paid-box">
                 <i class="fa-solid fa-check"></i> Ödendi
               </span>
@@ -2384,7 +2385,7 @@ body.light-theme .mobile-install-card {
         <div class="form-row" id="partial-payment-row" style="display:none;">
           <div class="form-group">
             <label for="payment-paid-amount">Ödenen Tutar (₺)</label>
-            <input type="number" id="payment-paid-amount" placeholder="0.00" min="0" step="0.01">
+            <input aria-label="0.00" title="0.00" type="number" id="payment-paid-amount" placeholder="0.00" min="0" step="0.01">
           </div>
           <div class="form-group">
             <label>Kalan Tutar</label>
@@ -2396,7 +2397,7 @@ body.light-theme .mobile-install-card {
 
         <div class="form-group">
           <label for="payment-notes">Not / Açıklama (İsteğe Bağlı)</label>
-          <textarea id="payment-notes" rows="2" placeholder="Örn: Garanti ticari hesaptan ödendi..."></textarea>
+          <textarea aria-label="Örn: Garanti ticari hesaptan ödendi..." title="Örn: Garanti ticari hesaptan ödendi..." id="payment-notes" rows="2" placeholder="Örn: Garanti ticari hesaptan ödendi..."></textarea>
         </div>
 
         <div class="modal-footer">

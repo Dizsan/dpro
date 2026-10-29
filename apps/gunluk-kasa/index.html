@@ -1,17 +1,18 @@
 <!DOCTYPE html>
-<html lang="tr" data-theme="dark" data-version="1.0.2">
+<html lang="tr" data-theme="dark" data-version="1.3.1">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#0284c7">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Dizsan Kasa">
     <title>Dizsan Günlük Kasa Formu &amp; Kasa Takip Sistemi v1.0.2</title>
+    <meta name="description" content="Dizsan Otomotiv Kurumsal Yönetim, ERP, Finans, Saha ve Servis Platformu — PC, Tablet ve Mobil Uyumlu Gerçek Zamanlı Sistem.">
 
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -24,8 +25,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <link rel="stylesheet" href="style.css?v=1.3.0">
+    <link rel="stylesheet" href="style.css?v=1.3.1">
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" defer></script>
+    <link rel="stylesheet" href="dizsan-realtime-responsive.css?v=20261029">
+    <script defer src="dizsan-realtime-socket.js?v=20261029"></script>
 </head>
 <body>
 
@@ -48,7 +51,7 @@
                     <label for="login-username">Kullanıcı Adı veya Kurumsal E-Posta</label>
                     <div class="login-input-wrap">
                         <i class="fa-solid fa-user-shield"></i>
-                        <input type="text" id="login-username" class="login-input" placeholder="Örn: ömer, gokhan.ozbulut, rafet.canbek" required autocomplete="username">
+                        <input aria-label="Örn: ömer, gokhan.ozbulut, rafet.canbek" title="Örn: ömer, gokhan.ozbulut, rafet.canbek" type="text" id="login-username" class="login-input" placeholder="Örn: ömer, gokhan.ozbulut, rafet.canbek" required autocomplete="username">
                     </div>
                 </div>
 
@@ -56,13 +59,13 @@
                     <label for="login-password">Şifre</label>
                     <div class="login-input-wrap">
                         <i class="fa-solid fa-lock"></i>
-                        <input type="password" id="login-password" class="login-input" placeholder="••••••" required autocomplete="current-password">
+                        <input aria-label="••••••" title="••••••" type="password" id="login-password" class="login-input" placeholder="••••••" required autocomplete="current-password">
                     </div>
                 </div>
 
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; font-size:0.75rem;">
                     <label style="display:flex; align-items:center; gap:6px; color:#cbd5e1; cursor:pointer;">
-                        <input type="checkbox" id="login-remember-me" checked style="width:15px; height:15px; accent-color:#38bdf8;">
+                        <input aria-label="login-remember-me" title="login-remember-me" type="checkbox" id="login-remember-me" checked style="width:15px; height:15px; accent-color:#38bdf8;">
                         <span>Beni Hatırla</span>
                     </label>
                     <a href="javascript:void(0)" onclick="openForgotPasswordModal()" style="color:#38bdf8; text-decoration:none; font-weight:600;">
@@ -151,7 +154,7 @@
                     <i class="fa-solid fa-key" style="color:#fbbf24;"></i> Veya Ömer Eren'den Aldığınız 6 Haneli Onay Kodunu Girin:
                 </label>
                 <div style="display:flex; gap:8px;">
-                    <input type="text" inputmode="numeric" maxlength="6" id="manual-device-approval-code" class="form-control" placeholder="6 Haneli Onay Kodu" style="text-align:center; font-weight:800; font-size:1rem; letter-spacing:3px;">
+                    <input aria-label="6 Haneli Onay Kodu" title="6 Haneli Onay Kodu" type="text" inputmode="numeric" maxlength="6" id="manual-device-approval-code" class="form-control" placeholder="6 Haneli Onay Kodu" style="text-align:center; font-weight:800; font-size:1rem; letter-spacing:3px;">
                     <button type="button" class="btn btn-primary" onclick="verifyManualDeviceApprovalCode()" style="font-weight:800; padding:8px 16px;">Onayla</button>
                 </div>
             </div>
@@ -224,16 +227,16 @@
                         <div class="user-mini-role" id="sidebar-user-role">Yönetici (Tam Yetki)</div>
                     </div>
                     <div style="display:flex; gap:4px;">
-                        <button class="btn btn-xs theme-toggle-btn" onclick="toggleLightDarkTheme()" title="Açık / Koyu Tema Değiştir">
+                        <button aria-label="Açık / Koyu Tema Değiştir" class="btn btn-xs theme-toggle-btn" onclick="toggleLightDarkTheme()" title="Açık / Koyu Tema Değiştir">
                             <i class="fa-solid fa-sun theme-toggle-icon" style="color:#fbbf24;"></i>
                         </button>
-                        <button class="btn btn-xs" onclick="openInstallModal()" title="Mobil Karekod &amp; PC Kurulum Rehberi">
+                        <button aria-label="Mobil Karekod &amp; PC Kurulum Rehberi" class="btn btn-xs" onclick="openInstallModal()" title="Mobil Karekod &amp; PC Kurulum Rehberi">
                             <i class="fa-solid fa-qrcode" style="color:var(--dizsan-cyan);"></i>
                         </button>
-                        <button class="btn btn-xs" onclick="openChangePasswordModal()" title="Şifre Değiştir">
+                        <button aria-label="Şifre Değiştir" class="btn btn-xs" onclick="openChangePasswordModal()" title="Şifre Değiştir">
                             <i class="fa-solid fa-key"></i>
                         </button>
-                        <button class="btn btn-xs" onclick="handleLogout()" title="Güvenli Çıkış">
+                        <button aria-label="Güvenli Çıkış" class="btn btn-xs" onclick="handleLogout()" title="Güvenli Çıkış">
                             <i class="fa-solid fa-power-off" style="color:var(--rose-danger);"></i>
                         </button>
                     </div>
@@ -265,17 +268,17 @@
                     <!-- TEK ÜST BAR: TARİH + TCMB DÖVİZ SATIŞ KURLARI + EKLE DÜĞMESİ -->
                     <div class="clean-kasa-topbar">
                         <div class="date-nav-group">
-                            <button class="mobile-menu-trigger" onclick="toggleMobileSidebar()" title="Menüyü Aç/Kapat">
+                            <button aria-label="Menüyü Aç/Kapat" class="mobile-menu-trigger" onclick="toggleMobileSidebar()" title="Menüyü Aç/Kapat">
                                 <i class="fa-solid fa-bars"></i>
                             </button>
-                            <button class="btn btn-sm" onclick="stepSelectedDate(-1)" title="Önceki Gün">
+                            <button aria-label="Önceki Gün" class="btn btn-sm" onclick="stepSelectedDate(-1)" title="Önceki Gün">
                                 <i class="fa-solid fa-chevron-left"></i>
                             </button>
                             <div style="display:flex; align-items:center; gap:6px;">
                                 <i class="fa-solid fa-calendar-day" style="color:var(--dizsan-cyan);"></i>
-                                <input type="text" id="kasa-date-input" class="form-control" style="width:116px; font-weight:800; text-align:center;" placeholder="GG.AA.YYYY" onchange="handleDateInputChanged(this.value)">
+                                <input aria-label="GG.AA.YYYY" title="GG.AA.YYYY" type="text" id="kasa-date-input" class="form-control" style="width:116px; font-weight:800; text-align:center;" placeholder="GG.AA.YYYY" onchange="handleDateInputChanged(this.value)">
                             </div>
-                            <button class="btn btn-sm" onclick="stepSelectedDate(1)" title="Sonraki Gün">
+                            <button aria-label="Sonraki Gün" class="btn btn-sm" onclick="stepSelectedDate(1)" title="Sonraki Gün">
                                 <i class="fa-solid fa-chevron-right"></i>
                             </button>
                             <button class="btn btn-xs badge-info" onclick="jumpToToday()">Bugün</button>
@@ -284,11 +287,11 @@
                         <div class="fx-rate-group">
                             <div class="fx-pill" title="TCMB Euro Döviz Satış Kuru">
                                 <span style="color:var(--text-muted); font-weight:600;">EUR Satış:</span>
-                                <input type="text" id="fx-eur-input" placeholder="--" onchange="updateDayMetaField('euroRate', this.value)">
+                                <input aria-label="--" title="--" type="text" id="fx-eur-input" placeholder="--" onchange="updateDayMetaField('euroRate', this.value)">
                             </div>
                             <div class="fx-pill" title="TCMB Dolar Döviz Satış Kuru">
                                 <span style="color:var(--text-muted); font-weight:600;">USD Satış:</span>
-                                <input type="text" id="fx-usd-input" placeholder="--" onchange="updateDayMetaField('usdRate', this.value)">
+                                <input aria-label="--" title="--" type="text" id="fx-usd-input" placeholder="--" onchange="updateDayMetaField('usdRate', this.value)">
                             </div>
                             <button class="btn btn-xs badge-info" type="button" id="btn-fetch-tcmb" onclick="fetchAndApplyTcmbRates(uiState.selectedDateISO, true)" title="TCMB Döviz Satış Kurlarını Yenile">
                                 <i class="fa-solid fa-arrows-rotate"></i> <span id="lbl-tcmb-status">TCMB Kur</span>
@@ -446,9 +449,9 @@
                                 </div>
                                 <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                                     <span style="font-size:0.72rem; color:var(--text-muted); font-weight:700;">Tarih Aralığı:</span>
-                                    <input type="text" id="rep-start-date" class="form-control" style="width:108px; text-align:center; font-weight:700; padding:4px 6px; font-size:0.75rem;" placeholder="GG.AA.YYYY" onchange="handleCustomReportDateChange()">
+                                    <input aria-label="GG.AA.YYYY" title="GG.AA.YYYY" type="text" id="rep-start-date" class="form-control" style="width:108px; text-align:center; font-weight:700; padding:4px 6px; font-size:0.75rem;" placeholder="GG.AA.YYYY" onchange="handleCustomReportDateChange()">
                                     <span style="color:var(--text-muted);">—</span>
-                                    <input type="text" id="rep-end-date" class="form-control" style="width:108px; text-align:center; font-weight:700; padding:4px 6px; font-size:0.75rem;" placeholder="GG.AA.YYYY" onchange="handleCustomReportDateChange()">
+                                    <input aria-label="GG.AA.YYYY" title="GG.AA.YYYY" type="text" id="rep-end-date" class="form-control" style="width:108px; text-align:center; font-weight:700; padding:4px 6px; font-size:0.75rem;" placeholder="GG.AA.YYYY" onchange="handleCustomReportDateChange()">
                                 </div>
                             </div>
 
@@ -456,7 +459,7 @@
                             <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:8px;">
                                 <div>
                                     <label style="display:block; font-size:0.66rem; color:var(--text-muted); font-weight:700; margin-bottom:3px;">Kanal / Tablo Filtresi</label>
-                                    <select id="rep-filter-channel" class="form-control" onchange="renderReportsSection()">
+                                    <select aria-label="rep-filter-channel" title="rep-filter-channel" id="rep-filter-channel" class="form-control" onchange="renderReportsSection()">
                                         <option value="ALL">Tüm Kanallar (Nakit + Kart + Banka + Çek)</option>
                                         <option value="CASH">Sadece Nakit Kasa (Giriş &amp; Çıkış)</option>
                                         <option value="CARI_CC">Sadece Şirket Kredi Kartı Harcamaları</option>
@@ -468,7 +471,7 @@
                                 </div>
                                 <div>
                                     <label style="display:block; font-size:0.66rem; color:var(--text-muted); font-weight:700; margin-bottom:3px;">Alan / Alt Kategori Filtresi</label>
-                                    <select id="rep-filter-area" class="form-control" onchange="handleReportAreaFilterChange(this.value)">
+                                    <select aria-label="rep-filter-area" title="rep-filter-area" id="rep-filter-area" class="form-control" onchange="handleReportAreaFilterChange(this.value)">
                                         <option value="ALL">Tüm Kategoriler (Şahsi + Ofis + Atölye + Araç vb.)</option>
                                         <option value="FUEL">⛽ Sadece Yakıt / Akaryakıt (Plaka Listesi Açılır)</option>
                                         <option value="ŞAHSİ">Sadece ŞAHSİ Harcamalar</option>
@@ -481,13 +484,13 @@
                                     <label style="display:block; font-size:0.66rem; color:#34d399; font-weight:800; margin-bottom:3px;">
                                         <i class="fa-solid fa-car"></i> Araç Plakası Seçimi (Otomatik Liste)
                                     </label>
-                                    <select id="rep-filter-plate" class="form-control" onchange="renderReportsSection()">
+                                    <select aria-label="rep-filter-plate" title="rep-filter-plate" id="rep-filter-plate" class="form-control" onchange="renderReportsSection()">
                                         <option value="ALL">Tüm Araç Plakaları</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label style="display:block; font-size:0.66rem; color:var(--text-muted); font-weight:700; margin-bottom:3px;">Kredi Kartı Filtresi</label>
-                                    <select id="rep-filter-card" class="form-control" onchange="renderReportsSection()">
+                                    <select aria-label="rep-filter-card" title="rep-filter-card" id="rep-filter-card" class="form-control" onchange="renderReportsSection()">
                                         <option value="ALL">Tüm Kredi Kartları</option>
                                         <option value="4360">GARANTİ BBVA •••• 4360</option>
                                         <option value="6010">GARANTİ BBVA •••• 6010</option>
@@ -502,7 +505,7 @@
                                 </div>
                                 <div>
                                     <label style="display:block; font-size:0.66rem; color:var(--text-muted); font-weight:700; margin-bottom:3px;">Kelime / Plaka / Firma Ara</label>
-                                    <input type="text" id="rep-filter-query" class="form-control" placeholder="Plaka (19 DS 750), firma veya açıklama..." oninput="renderReportsSection()">
+                                    <input aria-label="Plaka (19 DS 750), firma veya açıklama..." title="Plaka (19 DS 750), firma veya açıklama..." type="text" id="rep-filter-query" class="form-control" placeholder="Plaka (19 DS 750), firma veya açıklama..." oninput="renderReportsSection()">
                                 </div>
                             </div>
                         </div>
@@ -700,8 +703,8 @@
                         </div>
                         <div style="padding:12px;">
                             <div style="display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:8px; margin-bottom:10px;">
-                                <input type="text" id="archive-search-input" class="form-control" placeholder="Cari adı, açıklama, plaka (19 DS 134), fatura no veya TDR kodu ara..." oninput="renderArchiveSection()">
-                                <select id="archive-section-filter" class="form-control" onchange="renderArchiveSection()">
+                                <input aria-label="Cari adı, açıklama, plaka (19 DS 134), fatura no veya TDR kodu ara..." title="Cari adı, açıklama, plaka (19 DS 134), fatura no veya TDR kodu ara..." type="text" id="archive-search-input" class="form-control" placeholder="Cari adı, açıklama, plaka (19 DS 134), fatura no veya TDR kodu ara..." oninput="renderArchiveSection()">
+                                <select aria-label="archive-section-filter" title="archive-section-filter" id="archive-section-filter" class="form-control" onchange="renderArchiveSection()">
                                     <option value="ALL">Tüm Tablolar</option>
                                     <option value="CASH_IN">Nakit Girişler</option>
                                     <option value="CASH_OUT">Günlük Nakit Ödemeler</option>
@@ -712,7 +715,7 @@
                                     <option value="WIRE_IN">Gelen Havale</option>
                                     <option value="WIRE_OUT">Giden Havale</option>
                                 </select>
-                                <select id="archive-tdr-filter" class="form-control" onchange="renderArchiveSection()">
+                                <select aria-label="archive-tdr-filter" title="archive-tdr-filter" id="archive-tdr-filter" class="form-control" onchange="renderArchiveSection()">
                                     <option value="ALL">Tümü (TDR + Normal)</option>
                                     <option value="ONLY_TDR">Sadece TDR (Tedarik) Kalemleri</option>
                                 </select>
@@ -889,7 +892,7 @@
                                     </button>
                                     <label class="btn btn-sm perm-require-admin" style="cursor:pointer;">
                                         <i class="fa-solid fa-upload"></i> <span>Yedek Dosyası Yükle (.JSON)</span>
-                                        <input type="file" accept=".json" style="display:none;" onchange="importFullBackupJSON(event)">
+                                        <input aria-label="Seçim / Giriş Alanı" title="Seçim / Giriş Alanı" type="file" accept=".json" style="display:none;" onchange="importFullBackupJSON(event)">
                                     </label>
                                 </div>
                                 <div id="local-snapshots-list-box" style="font-size:0.70rem; color:var(--text-muted);"></div>
@@ -939,12 +942,12 @@
         <div class="modal-dialog" style="max-width:480px;">
             <div class="modal-header">
                 <h3 id="modal-entry-title"><i class="fa-solid fa-plus-circle" style="color:var(--dizsan-cyan);"></i> <span>Gelir / Gider Ekle</span></h3>
-                <button class="btn btn-xs" onclick="closeModal('modal-entry')"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Buton closeModal" class="btn btn-xs" onclick="closeModal('modal-entry')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="form-entry" onsubmit="handleSaveEntry(event)">
                 <div class="modal-body">
-                    <input type="hidden" id="entry-id">
-                    <input type="hidden" id="entry-ocr-meta" value="">
+                    <input aria-label="entry-id" title="entry-id" type="hidden" id="entry-id">
+                    <input aria-label="entry-ocr-meta" title="entry-ocr-meta" type="hidden" id="entry-ocr-meta" value="">
 
                     <!-- 0. YAPAY ZEKÂ DESTEKLİ GENEL BELGE TARAMA (TÜM FİŞ, FATURA, DEKONT & POS SLİPLERİ) -->
                     <div id="ai-scanner-panel" style="padding:11px 12px; border-radius:11px; background:linear-gradient(145deg, rgba(14,165,233,0.10), rgba(16,185,129,0.07)); border:1px solid rgba(56,189,248,0.32); margin-bottom:12px;">
@@ -971,7 +974,7 @@
                                 Sistem varsayılan olarak <strong>Ücretsiz Yerel Apple Vision Neural OCR + Türkçe Belge Motoru</strong> ile anahtarsız çalışır. İsterseniz ücretsiz Google AI Studio (Gemini Flash) anahtarınızı da ekleyebilirsiniz:
                             </div>
                             <div style="display:flex; gap:6px;">
-                                <input type="password" id="ai-gemini-key-input" class="form-control" style="font-size:0.73rem; padding:5px 8px;" placeholder="AIzaSy... (İsteğe Bağlı Ücretsiz Gemini API Anahtarı)">
+                                <input aria-label="AIzaSy... (İsteğe Bağlı Ücretsiz Gemini API Anahtarı)" title="AIzaSy... (İsteğe Bağlı Ücretsiz Gemini API Anahtarı)" type="password" id="ai-gemini-key-input" class="form-control" style="font-size:0.73rem; padding:5px 8px;" placeholder="AIzaSy... (İsteğe Bağlı Ücretsiz Gemini API Anahtarı)">
                                 <button type="button" class="btn btn-xs btn-primary" onclick="saveLocalGeminiKey()">Kaydet</button>
                             </div>
                         </div>
@@ -986,7 +989,7 @@
                                 <div style="font-size:0.63rem; color:var(--text-muted); margin-top:-3px;">Yemek, Market, Yakıt, Yedek Parça, Kargo, Otopark vb. tüm belgeler</div>
                                 <label class="btn btn-xs" style="justify-content:center; cursor:pointer; background:rgba(16,185,129,0.14); border-color:rgba(16,185,129,0.35); color:#d1fae5; padding:6px;">
                                     <i class="fa-solid fa-camera"></i> <span>Belge Tara (Kamera / Galeri)</span>
-                                    <input type="file" id="scan-receipt-input" accept="image/*" style="display:none;" onchange="handleScanFileSelect('receipt', this)">
+                                    <input aria-label="scan-receipt-input" title="scan-receipt-input" type="file" id="scan-receipt-input" accept="image/*" style="display:none;" onchange="handleScanFileSelect('receipt', this)">
                                 </label>
                                 <div id="preview-wrap-receipt" style="display:none; align-items:center; gap:8px;">
                                     <img id="preview-img-receipt" src="" alt="Belge Önizleme" style="width:46px; height:46px; object-fit:cover; border-radius:6px; border:1px solid rgba(255,255,255,0.2);">
@@ -1003,7 +1006,7 @@
                                 <div style="font-size:0.63rem; color:var(--text-muted); margin-top:-3px;">Ödeme kredi kartı veya banka ile yapıldıysa slipi/dekontu ekleyin</div>
                                 <label class="btn btn-xs" style="justify-content:center; cursor:pointer; background:rgba(56,189,248,0.14); border-color:rgba(56,189,248,0.35); color:#e0f2fe; padding:6px;">
                                     <i class="fa-solid fa-camera"></i> <span>POS Slipi / Dekont Tara</span>
-                                    <input type="file" id="scan-pos-input" accept="image/*" style="display:none;" onchange="handleScanFileSelect('pos', this)">
+                                    <input aria-label="scan-pos-input" title="scan-pos-input" type="file" id="scan-pos-input" accept="image/*" style="display:none;" onchange="handleScanFileSelect('pos', this)">
                                 </label>
                                 <div id="preview-wrap-pos" style="display:none; align-items:center; gap:8px;">
                                     <img id="preview-img-pos" src="" alt="POS Önizleme" style="width:46px; height:46px; object-fit:cover; border-radius:6px; border:1px solid rgba(255,255,255,0.2);">
@@ -1024,7 +1027,7 @@
                     <!-- 1. GELİR / GİDER SEÇMELİ LİSTE -->
                     <div class="form-group">
                         <label for="entry-flow-type">Gelir / Gider Seçimi</label>
-                        <select id="entry-flow-type" class="form-control flow-type-select" onchange="handleFlowTypeChange(this.value)" required>
+                        <select aria-label="entry-flow-type" title="entry-flow-type" id="entry-flow-type" class="form-control flow-type-select" onchange="handleFlowTypeChange(this.value)" required>
                             <option value="GELIR">GELİR (+ Giriş / Tahsilat)</option>
                             <option value="GIDER">GİDER (- Ödeme / Çıkış)</option>
                         </select>
@@ -1034,7 +1037,7 @@
                     <div class="form-grid-2">
                         <div class="form-group">
                             <label for="entry-section" id="lbl-entry-section">Gelir / Gider Türü</label>
-                            <select id="entry-section" class="form-control" onchange="handleEntrySectionChange(this.value)" required>
+                            <select aria-label="entry-section" title="entry-section" id="entry-section" class="form-control" onchange="handleEntrySectionChange(this.value)" required>
                                 <option value="CASH_IN">Nakit Gelir (Kasa Girişi)</option>
                                 <option value="POS_CC">Kredi Kartı (POS Çekimi)</option>
                                 <option value="WIRE_IN">Gelen Havale / EFT</option>
@@ -1042,7 +1045,7 @@
                         </div>
                         <div class="form-group">
                             <label for="entry-date">Tarih (GG.AA.YYYY)</label>
-                            <input type="text" id="entry-date" class="form-control" placeholder="GG.AA.YYYY" required>
+                            <input aria-label="GG.AA.YYYY" title="GG.AA.YYYY" type="text" id="entry-date" class="form-control" placeholder="GG.AA.YYYY" required>
                         </div>
                     </div>
 
@@ -1057,7 +1060,7 @@
                         <div class="form-grid-2" style="gap:8px; margin-bottom:8px;">
                             <div class="form-group" style="margin-bottom:0;">
                                 <label for="entry-ic-counterparty" id="lbl-entry-ic-counterparty" style="color:#fde68a; font-weight:800;">Borç Alınan Şirket / Kişi Adı *</label>
-                                <select id="entry-ic-counterparty" class="form-control" onchange="handleIntercompanyFieldChange()">
+                                <select aria-label="entry-ic-counterparty" title="entry-ic-counterparty" id="entry-ic-counterparty" class="form-control" onchange="handleIntercompanyFieldChange()">
                                     <option value="DİZSAN LOJİSTİK">DİZSAN LOJİSTİK</option>
                                     <option value="DİZSAN OTOMOTİV">DİZSAN OTOMOTİV</option>
                                     <option value="KM SOLAR">KM SOLAR</option>
@@ -1068,7 +1071,7 @@
                             </div>
                             <div class="form-group" style="margin-bottom:0;">
                                 <label for="entry-ic-owner" id="lbl-entry-ic-owner" style="color:#cbd5e1; font-weight:700;">Giriş Yapılan (Borçlu) Şirketimiz / Kişi</label>
-                                <select id="entry-ic-owner" class="form-control" onchange="handleIntercompanyFieldChange()">
+                                <select aria-label="entry-ic-owner" title="entry-ic-owner" id="entry-ic-owner" class="form-control" onchange="handleIntercompanyFieldChange()">
                                     <option value="DİZSAN OTOMOTİV">DİZSAN OTOMOTİV</option>
                                     <option value="DİZSAN LOJİSTİK">DİZSAN LOJİSTİK</option>
                                     <option value="KM SOLAR">KM SOLAR</option>
@@ -1081,7 +1084,7 @@
                         <div class="form-grid-2" style="gap:8px; margin-bottom:8px;">
                             <div class="form-group" style="margin-bottom:0;">
                                 <label for="entry-ic-currency" style="color:#38bdf8; font-weight:800;">Borç Para Cinsi (Döviz / TL) *</label>
-                                <select id="entry-ic-currency" class="form-control" onchange="handleIntercompanyCurrencyChange(this.value)">
+                                <select aria-label="entry-ic-currency" title="entry-ic-currency" id="entry-ic-currency" class="form-control" onchange="handleIntercompanyCurrencyChange(this.value)">
                                     <option value="USD">USD ($ - Amerikan Doları)</option>
                                     <option value="EUR">EUR (€ - Euro)</option>
                                     <option value="TRY">TL (₺ - Türk Lirası)</option>
@@ -1091,7 +1094,7 @@
                             </div>
                             <div class="form-group" style="margin-bottom:0;">
                                 <label for="entry-ic-channel" style="color:#cbd5e1; font-weight:700;">Kasa / Banka Giriş-Çıkış Yöntemi</label>
-                                <select id="entry-ic-channel" class="form-control" onchange="handleIntercompanyFieldChange()">
+                                <select aria-label="entry-ic-channel" title="entry-ic-channel" id="entry-ic-channel" class="form-control" onchange="handleIntercompanyFieldChange()">
                                     <option value="CASH">Nakit Olarak Kasaya Girdi / Çıktı</option>
                                     <option value="BANK">Banka Hesabına Havale / EFT Girdi / Çıktı</option>
                                 </select>
@@ -1100,11 +1103,11 @@
                         <div class="form-grid-2" style="gap:8px;">
                             <div class="form-group" style="margin-bottom:0;">
                                 <label for="entry-ic-fx-amount" id="lbl-entry-ic-fx-amount" style="color:#34d399; font-weight:800;">Borç Alınan Döviz / Para Tutarı *</label>
-                                <input type="text" inputmode="decimal" id="entry-ic-fx-amount" class="form-control tr-money-input" placeholder="Örn: 1.000" oninput="formatMoneyInputLive(this); handleIntercompanyAmountOrRateInput()">
+                                <input aria-label="Örn: 1.000" title="Örn: 1.000" type="text" inputmode="decimal" id="entry-ic-fx-amount" class="form-control tr-money-input" placeholder="Örn: 1.000" oninput="formatMoneyInputLive(this); handleIntercompanyAmountOrRateInput()">
                             </div>
                             <div class="form-group" id="group-entry-ic-rate" style="margin-bottom:0;">
                                 <label for="entry-ic-fx-rate" style="color:#cbd5e1; font-weight:700;">Bozdurma Kuru (₺ - İsteğe Bağlı)</label>
-                                <input type="text" inputmode="decimal" id="entry-ic-fx-rate" class="form-control" placeholder="Örn: 34,50 (TL karşılığı için)" oninput="handleIntercompanyAmountOrRateInput()">
+                                <input aria-label="Örn: 34,50 (TL karşılığı için)" title="Örn: 34,50 (TL karşılığı için)" type="text" inputmode="decimal" id="entry-ic-fx-rate" class="form-control" placeholder="Örn: 34,50 (TL karşılığı için)" oninput="handleIntercompanyAmountOrRateInput()">
                             </div>
                         </div>
                         <div id="entry-ic-summary-preview" style="margin-top:8px; padding:6px 9px; border-radius:7px; background:rgba(15,23,42,0.75); border:1px solid rgba(251,191,36,0.35); font-size:0.71rem; color:#fde68a; font-weight:700;"></div>
@@ -1115,7 +1118,7 @@
                         <label for="entry-cc-card-select" style="color:var(--dizsan-cyan); font-weight:800;">
                             <i class="fa-solid fa-credit-card"></i> Ödeme Yapılan Kredi Kartı (Banka Adı &amp; Son 4 Hane)
                         </label>
-                        <select id="entry-cc-card-select" class="form-control" onchange="handleCreditCardSelectChange(this.value)">
+                        <select aria-label="entry-cc-card-select" title="entry-cc-card-select" id="entry-cc-card-select" class="form-control" onchange="handleCreditCardSelectChange(this.value)">
                         </select>
                     </div>
 
@@ -1123,12 +1126,12 @@
                     <div class="form-grid-2" id="entry-row-cat-sub">
                         <div class="form-group">
                             <label for="entry-main-cat" id="lbl-entry-main-cat">Ana Gider Grubu</label>
-                            <select id="entry-main-cat" class="form-control" onchange="handleMainCategoryChange(this.value)">
+                            <select aria-label="entry-main-cat" title="entry-main-cat" id="entry-main-cat" class="form-control" onchange="handleMainCategoryChange(this.value)">
                             </select>
                         </div>
                         <div class="form-group">
                             <label for="entry-sub-cat" id="lbl-entry-sub-cat">Alt Kalem (Şahsi / Ofis / Atölye Seçilebilir)</label>
-                            <select id="entry-sub-cat" class="form-control" onchange="handleSubCategoryChange(this.value)">
+                            <select aria-label="entry-sub-cat" title="entry-sub-cat" id="entry-sub-cat" class="form-control" onchange="handleSubCategoryChange(this.value)">
                             </select>
                             <div style="display:flex; gap:4px; margin-top:5px; flex-wrap:wrap;">
                                 <button type="button" class="btn btn-xs" style="padding:2px 8px; font-size:0.64rem; background:rgba(244,63,94,0.16); border-color:rgba(244,63,94,0.45); color:#fecdd3;" onclick="handleOcrManualSubCatChange('ŞAHSİ')">
@@ -1153,7 +1156,7 @@
                             <span style="font-size:0.63rem; color:#a7f3d0;">Listeden seçin veya en alttan <strong>Elle Giriş</strong> yapın</span>
                         </div>
                         <div>
-                            <select id="entry-plate-select" class="form-control" onchange="handleVehiclePlateSelectChange(this.value)">
+                            <select aria-label="entry-plate-select" title="entry-plate-select" id="entry-plate-select" class="form-control" onchange="handleVehiclePlateSelectChange(this.value)">
                                 <option value="">-- LİSTEDEN ARAÇ PLAKASI SEÇİNİZ --</option>
                             </select>
                         </div>
@@ -1161,7 +1164,7 @@
                         <!-- EN ALTTA ELLE PLAKA GİRİŞ KUTUSU (Listeden "En Altta Elle Giriş" seçilince veya doğrudan yazmak için) -->
                         <div id="entry-manual-plate-box" style="margin-top:8px; padding-top:7px; border-top:1px dashed rgba(52,211,153,0.35); display:flex; align-items:center; gap:6px;">
                             <span style="font-size:0.68rem; font-weight:800; color:#fde68a; white-space:nowrap;"><i class="fa-solid fa-keyboard"></i> Elle Plaka Girişi:</span>
-                            <input type="text" id="entry-new-plate-input" class="form-control" placeholder="Plakayı elle yazın (Örn: 19AK404)" style="text-transform:uppercase; font-weight:800; font-size:0.76rem; padding:5px 8px;" oninput="handleManualPlateInputLive(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault(); addNewCompanyVehiclePlate();}">
+                            <input aria-label="Plakayı elle yazın (Örn: 19AK404)" title="Plakayı elle yazın (Örn: 19AK404)" type="text" id="entry-new-plate-input" class="form-control" placeholder="Plakayı elle yazın (Örn: 19AK404)" style="text-transform:uppercase; font-weight:800; font-size:0.76rem; padding:5px 8px;" oninput="handleManualPlateInputLive(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault(); addNewCompanyVehiclePlate();}">
                             <button type="button" class="btn btn-xs btn-success" style="white-space:nowrap; padding:6px 10px;" onclick="addNewCompanyVehiclePlate()" title="Yazılan plakayı listeye de kaydet">
                                 <i class="fa-solid fa-check"></i> Listeye Kaydet
                             </button>
@@ -1171,7 +1174,7 @@
                             <label for="entry-vehicle-km-input" id="lbl-entry-km-req" style="margin:0; font-size:0.72rem; font-weight:800; color:#fbbf24; white-space:nowrap;">
                                 <i class="fa-solid fa-gauge-high"></i> Araç Güncel KM Bilgisi (Bütün Yakıt Alımlarında Zorunlu) *
                             </label>
-                            <input type="text" inputmode="numeric" id="entry-vehicle-km-input" class="form-control" placeholder="Güncel KM giriniz (Örn: 145.250)" style="max-width:255px; font-weight:800; font-size:0.78rem; padding:5px 8px; border-color:rgba(251,191,36,0.65); color:#fde68a;" oninput="handleVehicleKmInputLive(this.value)">
+                            <input aria-label="Güncel KM giriniz (Örn: 145.250)" title="Güncel KM giriniz (Örn: 145.250)" type="text" inputmode="numeric" id="entry-vehicle-km-input" class="form-control" placeholder="Güncel KM giriniz (Örn: 145.250)" style="max-width:255px; font-weight:800; font-size:0.78rem; padding:5px 8px; border-color:rgba(251,191,36,0.65); color:#fde68a;" oninput="handleVehicleKmInputLive(this.value)">
                         </div>
                     </div>
 
@@ -1179,25 +1182,25 @@
                     <div class="form-grid-2" id="entry-row-party-due">
                         <div class="form-group" id="group-entry-col1">
                             <label for="entry-col1" id="lbl-entry-col1">Seçilen Grup / Cari / Banka Başlığı</label>
-                            <input type="text" id="entry-col1" class="form-control" placeholder="Yukarıdan seçince otomatik dolar veya özel cari yazabilirsiniz">
+                            <input aria-label="Yukarıdan seçince otomatik dolar veya özel cari yazabilirsiniz" title="Yukarıdan seçince otomatik dolar veya özel cari yazabilirsiniz" type="text" id="entry-col1" class="form-control" placeholder="Yukarıdan seçince otomatik dolar veya özel cari yazabilirsiniz">
                         </div>
                         <div class="form-group" id="group-entry-due" style="display:none;">
                             <label for="entry-due-date">Vade Tarihi (GG.AA.YYYY)</label>
-                            <input type="text" id="entry-due-date" class="form-control" placeholder="GG.AA.YYYY">
+                            <input aria-label="GG.AA.YYYY" title="GG.AA.YYYY" type="text" id="entry-due-date" class="form-control" placeholder="GG.AA.YYYY">
                         </div>
                     </div>
 
                     <!-- 5. AÇIKLAMA -->
                     <div class="form-group">
                         <label for="entry-desc" id="lbl-entry-desc">Açıklama</label>
-                        <input type="text" id="entry-desc" class="form-control" placeholder="Açıklama yazınız..." required>
+                        <input aria-label="Açıklama yazınız..." title="Açıklama yazınız..." type="text" id="entry-desc" class="form-control" placeholder="Açıklama yazınız..." required>
                     </div>
 
                     <!-- 5. TUTAR -->
                     <div class="form-group">
                         <label for="entry-amount">Tutar (₺)</label>
-                        <input type="text" inputmode="decimal" id="entry-amount" class="form-control tr-money-input" style="font-size:1.05rem; font-weight:700;" placeholder="0,00" oninput="formatMoneyInputLive(this)" required>
-                        <input type="hidden" id="entry-code" value="">
+                        <input aria-label="0,00" title="0,00" type="text" inputmode="decimal" id="entry-amount" class="form-control tr-money-input" style="font-size:1.05rem; font-weight:700;" placeholder="0,00" oninput="formatMoneyInputLive(this)" required>
+                        <input aria-label="entry-code" title="entry-code" type="hidden" id="entry-code" value="">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -1213,7 +1216,7 @@
         <div class="modal-dialog" style="max-width:640px;">
             <div class="modal-header">
                 <h3><i class="fa-solid fa-file-invoice" style="color:var(--dizsan-cyan);"></i> <span>Belge Ekleri &amp; Okunan Fiş / POS Detayları</span></h3>
-                <button class="btn btn-xs" onclick="closeModal('modal-doc-preview')"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Buton closeModal" class="btn btn-xs" onclick="closeModal('modal-doc-preview')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body" id="modal-doc-preview-body" style="max-height:75vh; overflow-y:auto;">
             </div>
@@ -1228,7 +1231,7 @@
         <div class="modal-dialog" style="max-width:460px;">
             <div class="modal-header">
                 <h3><i class="fa-solid fa-scale-balanced" style="color:var(--amber-warn);"></i> <span>Manuel Kasa Devri &amp; Önceki Gün Özeti</span></h3>
-                <button class="btn btn-xs" onclick="closeModal('modal-carryover')"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Buton closeModal" class="btn btn-xs" onclick="closeModal('modal-carryover')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form onsubmit="handleSaveCarryoverOverride(event)">
                 <div class="modal-body">
@@ -1237,25 +1240,25 @@
                     </p>
                     <div class="form-group">
                         <label>Seçili Gün</label>
-                        <input type="text" id="carry-modal-date" class="form-control" readonly>
+                        <input aria-label="carry-modal-date" title="carry-modal-date" type="text" id="carry-modal-date" class="form-control" readonly>
                     </div>
                     <div class="form-grid-2">
                         <div class="form-group">
                             <label for="carry-modal-prev-in">Önceki Gün Devir ve Girişler Toplamı (₺)</label>
-                            <input type="text" inputmode="decimal" id="carry-modal-prev-in" class="form-control tr-money-input" placeholder="0,00" oninput="formatMoneyInputLive(this); autoCalcCarryFromPrevInputs()">
+                            <input aria-label="0,00" title="0,00" type="text" inputmode="decimal" id="carry-modal-prev-in" class="form-control tr-money-input" placeholder="0,00" oninput="formatMoneyInputLive(this); autoCalcCarryFromPrevInputs()">
                         </div>
                         <div class="form-group">
                             <label for="carry-modal-prev-out">Önceki Gün Ödemeler Toplamı (₺)</label>
-                            <input type="text" inputmode="decimal" id="carry-modal-prev-out" class="form-control tr-money-input" placeholder="0,00" oninput="formatMoneyInputLive(this); autoCalcCarryFromPrevInputs()">
+                            <input aria-label="0,00" title="0,00" type="text" inputmode="decimal" id="carry-modal-prev-out" class="form-control tr-money-input" placeholder="0,00" oninput="formatMoneyInputLive(this); autoCalcCarryFromPrevInputs()">
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="carry-modal-label">Devir Satırı Açıklaması</label>
-                        <input type="text" id="carry-modal-label" class="form-control" placeholder="Örn: KASA DEVRİ ( + ) BAKİYESİ">
+                        <input aria-label="Örn: KASA DEVRİ ( + ) BAKİYESİ" title="Örn: KASA DEVRİ ( + ) BAKİYESİ" type="text" id="carry-modal-label" class="form-control" placeholder="Örn: KASA DEVRİ ( + ) BAKİYESİ">
                     </div>
                     <div class="form-group">
                         <label for="carry-modal-amount">Bugüne Devreden Kasa Bakiyesi (+) (₺)</label>
-                        <input type="text" inputmode="decimal" id="carry-modal-amount" class="form-control tr-money-input" placeholder="0,00" oninput="formatMoneyInputLive(this)">
+                        <input aria-label="0,00" title="0,00" type="text" inputmode="decimal" id="carry-modal-amount" class="form-control tr-money-input" placeholder="0,00" oninput="formatMoneyInputLive(this)">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -1271,36 +1274,36 @@
         <div class="modal-dialog">
             <div class="modal-header">
                 <h3 id="modal-user-title"><i class="fa-solid fa-user-shield" style="color:var(--dizsan-cyan);"></i> <span>Kullanıcı ve Yetki Tanımla</span></h3>
-                <button class="btn btn-xs" onclick="closeModal('modal-user')"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Buton closeModal" class="btn btn-xs" onclick="closeModal('modal-user')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form onsubmit="handleSaveUser(event)">
                 <div class="modal-body">
-                    <input type="hidden" id="user-edit-original-username">
+                    <input aria-label="user-edit-original-username" title="user-edit-original-username" type="hidden" id="user-edit-original-username">
                     <div class="form-grid-2">
                         <div class="form-group">
                             <label for="user-name-input">Ad Soyad</label>
-                            <input type="text" id="user-name-input" class="form-control" placeholder="Örn: AHMET YILMAZ" required>
+                            <input aria-label="Örn: AHMET YILMAZ" title="Örn: AHMET YILMAZ" type="text" id="user-name-input" class="form-control" placeholder="Örn: AHMET YILMAZ" required>
                         </div>
                         <div class="form-group">
                             <label for="user-username-input">Kullanıcı Adı (Giriş İçin)</label>
-                            <input type="text" id="user-username-input" class="form-control" placeholder="Örn: ahmet.yilmaz" required>
+                            <input aria-label="Örn: ahmet.yilmaz" title="Örn: ahmet.yilmaz" type="text" id="user-username-input" class="form-control" placeholder="Örn: ahmet.yilmaz" required>
                         </div>
                     </div>
 
                     <div class="form-grid-2">
                         <div class="form-group">
                             <label for="user-dept-input">Departman / Görev</label>
-                            <input type="text" id="user-dept-input" class="form-control" placeholder="Örn: Muhasebe / Ön Büro">
+                            <input aria-label="Örn: Muhasebe / Ön Büro" title="Örn: Muhasebe / Ön Büro" type="text" id="user-dept-input" class="form-control" placeholder="Örn: Muhasebe / Ön Büro">
                         </div>
                         <div class="form-group">
                             <label for="user-pass-input">Giriş Şifresi (Değiştirmek için yazın)</label>
-                            <input type="text" id="user-pass-input" class="form-control" placeholder="Varsayılan: 123456">
+                            <input aria-label="Varsayılan: 123456" title="Varsayılan: 123456" type="text" id="user-pass-input" class="form-control" placeholder="Varsayılan: 123456">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="user-role-preset">Yetki Seviyesi (Hazır Profil Seçimi)</label>
-                        <select id="user-role-preset" class="form-control" onchange="applyRolePresetCheckboxes(this.value)">
+                        <select aria-label="user-role-preset" title="user-role-preset" id="user-role-preset" class="form-control" onchange="applyRolePresetCheckboxes(this.value)">
                             <option value="ADMIN">1. Tam Yetki / Yönetici (Görüntüleme + Ekleme + Değişiklik + Silme + Yetki Yönetimi)</option>
                             <option value="EDITOR">2. Değişiklik &amp; Düzenleme Yetkisi (Görüntüleme + Ekleme + Değişiklik + Silme)</option>
                             <option value="CONTRIBUTOR">3. Sadece Ekleme Yetkisi (Görüntüleme + Yeni Kayıt Ekleme — Değişiklik/Silme Yasak)</option>
@@ -1312,12 +1315,12 @@
                     <div class="form-group">
                         <label>Özel Yetki Kutucukları (İstediğiniz Kombinasyonu Seçebilirsiniz)</label>
                         <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;">
-                            <label class="perm-pill-check"><input type="checkbox" id="perm-chk-view" checked> <span>Görüntüleme &amp; A4 Çıktı</span></label>
-                            <label class="perm-pill-check"><input type="checkbox" id="perm-chk-add"> <span>Yeni Kayıt Ekleme</span></label>
-                            <label class="perm-pill-check"><input type="checkbox" id="perm-chk-edit"> <span>Değişiklik / Düzenleme</span></label>
-                            <label class="perm-pill-check"><input type="checkbox" id="perm-chk-delete"> <span>Kayıt Silme</span></label>
-                            <label class="perm-pill-check"><input type="checkbox" id="perm-chk-lock"> <span>Gün Sonu Onay / Kilit</span></label>
-                            <label class="perm-pill-check"><input type="checkbox" id="perm-chk-admin"> <span>Kullanıcı &amp; Yetki Yönetimi</span></label>
+                            <label class="perm-pill-check"><input aria-label="perm-chk-view" title="perm-chk-view" type="checkbox" id="perm-chk-view" checked> <span>Görüntüleme &amp; A4 Çıktı</span></label>
+                            <label class="perm-pill-check"><input aria-label="perm-chk-add" title="perm-chk-add" type="checkbox" id="perm-chk-add"> <span>Yeni Kayıt Ekleme</span></label>
+                            <label class="perm-pill-check"><input aria-label="perm-chk-edit" title="perm-chk-edit" type="checkbox" id="perm-chk-edit"> <span>Değişiklik / Düzenleme</span></label>
+                            <label class="perm-pill-check"><input aria-label="perm-chk-delete" title="perm-chk-delete" type="checkbox" id="perm-chk-delete"> <span>Kayıt Silme</span></label>
+                            <label class="perm-pill-check"><input aria-label="perm-chk-lock" title="perm-chk-lock" type="checkbox" id="perm-chk-lock"> <span>Gün Sonu Onay / Kilit</span></label>
+                            <label class="perm-pill-check"><input aria-label="perm-chk-admin" title="perm-chk-admin" type="checkbox" id="perm-chk-admin"> <span>Kullanıcı &amp; Yetki Yönetimi</span></label>
                         </div>
                     </div>
                 </div>
@@ -1334,21 +1337,21 @@
         <div class="modal-dialog" style="max-width:400px;">
             <div class="modal-header">
                 <h3><i class="fa-solid fa-key" style="color:var(--dizsan-cyan);"></i> <span>Şifre Değiştir</span></h3>
-                <button class="btn btn-xs" onclick="closeModal('modal-change-password')"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Buton closeModal" class="btn btn-xs" onclick="closeModal('modal-change-password')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form onsubmit="handleChangePasswordSubmit(event)">
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Mevcut Şifreniz</label>
-                        <input type="password" id="chg-old-pass" class="form-control" required>
+                        <input aria-label="chg-old-pass" title="chg-old-pass" type="password" id="chg-old-pass" class="form-control" required>
                     </div>
                     <div class="form-group">
                         <label>Yeni Şifre</label>
-                        <input type="password" id="chg-new-pass" class="form-control" required>
+                        <input aria-label="chg-new-pass" title="chg-new-pass" type="password" id="chg-new-pass" class="form-control" required>
                     </div>
                     <div class="form-group">
                         <label>Yeni Şifre (Tekrar)</label>
-                        <input type="password" id="chg-confirm-pass" class="form-control" required>
+                        <input aria-label="chg-confirm-pass" title="chg-confirm-pass" type="password" id="chg-confirm-pass" class="form-control" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -1364,7 +1367,7 @@
         <div class="modal-dialog" style="max-width:450px;">
             <div class="modal-header">
                 <h3><i class="fa-solid fa-envelope-circle-check" style="color:var(--amber-warn);"></i> <span>Şifremi Unuttum (E-Posta Bağlantısı)</span></h3>
-                <button class="btn btn-xs" onclick="closeModal('modal-forgot-password')"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Buton closeModal" class="btn btn-xs" onclick="closeModal('modal-forgot-password')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body">
                 <p style="font-size:0.84rem; color:var(--text-secondary); margin-bottom:14px; line-height:1.5;">
@@ -1372,11 +1375,11 @@
                 </p>
                 <div class="form-group">
                     <label>Personel Seçin</label>
-                    <select id="forgot-kasa-user-select" class="form-control" onchange="syncKasaForgotEmail()"></select>
+                    <select aria-label="forgot-kasa-user-select" title="forgot-kasa-user-select" id="forgot-kasa-user-select" class="form-control" onchange="syncKasaForgotEmail()"></select>
                 </div>
                 <div class="form-group">
                     <label>Kayıtlı Kurumsal E-Posta Adresiniz</label>
-                    <input type="email" id="forgot-kasa-email" class="form-control" placeholder="ornek@dizsan.com.tr" autocomplete="off">
+                    <input aria-label="ornek@dizsan.com.tr" title="ornek@dizsan.com.tr" type="email" id="forgot-kasa-email" class="form-control" placeholder="ornek@dizsan.com.tr" autocomplete="off">
                 </div>
                 <div id="forgot-kasa-status" style="display:none; padding:10px 12px; border-radius:10px; font-size:0.8rem; margin-top:10px; line-height:1.5;"></div>
                 <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
@@ -1394,17 +1397,17 @@
         <div class="modal-dialog" style="max-width:440px;">
             <div class="modal-header">
                 <h3><i class="fa-solid fa-key" style="color:#34d399;"></i> <span>Yeni Şifre Belirleme</span></h3>
-                <button class="btn btn-xs" onclick="closeModal('modal-kasa-reset-link')"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Buton closeModal" class="btn btn-xs" onclick="closeModal('modal-kasa-reset-link')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body">
                 <div id="kasa-reset-link-banner" style="padding:10px 12px; border-radius:10px; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); font-size:0.8rem; color:#d1fae5; margin-bottom:14px;"></div>
                 <div class="form-group">
                     <label>Yeni Şifreniz</label>
-                    <input type="password" id="kasa-reset-link-new-pass" class="form-control" placeholder="En az 3 karakter">
+                    <input aria-label="En az 3 karakter" title="En az 3 karakter" type="password" id="kasa-reset-link-new-pass" class="form-control" placeholder="En az 3 karakter">
                 </div>
                 <div class="form-group">
                     <label>Yeni Şifreniz (Tekrar)</label>
-                    <input type="password" id="kasa-reset-link-confirm-pass" class="form-control" placeholder="Yeni şifrenizi tekrar yazın">
+                    <input aria-label="Yeni şifrenizi tekrar yazın" title="Yeni şifrenizi tekrar yazın" type="password" id="kasa-reset-link-confirm-pass" class="form-control" placeholder="Yeni şifrenizi tekrar yazın">
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
                     <button type="button" class="btn" onclick="closeModal('modal-kasa-reset-link')">İptal</button>
@@ -1421,7 +1424,7 @@
         <div class="modal-dialog" style="max-width:560px;">
             <div class="modal-header">
                 <h3><i class="fa-solid fa-qrcode" style="color:var(--dizsan-cyan);"></i> <span>Telefon Karekod (QR) &amp; Bilgisayar (PC) Kurulum Rehberi</span></h3>
-                <button class="btn btn-xs" onclick="closeModal('modal-install-guide')"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Buton closeModal" class="btn btn-xs" onclick="closeModal('modal-install-guide')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body" style="font-size:0.86rem; color:var(--text-secondary); display:flex; flex-direction:column; gap:12px;">
                 <div style="text-align:center; padding:14px; border-radius:14px; background:rgba(14,165,233,0.08); border:1px solid rgba(56,189,248,0.35);">
@@ -1477,8 +1480,8 @@
 
     <!-- SCRIPTS -->
     <script src="auto-date-helper.js"></script>
-    <script src="app.js?v=1.3.0"></script>
+    <script src="app.js?v=1.3.1"></script>
     <script src="dizsan-back-navigation.js?v=1.2.5"></script>
-    <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.2.5"></script>
+    <script src="dizsan-auto-updater.js" data-app-id="dizsan-kasa" data-app-name="Dizsan Günlük Kasa" data-version="1.3.1"></script>
 </body>
 </html>

@@ -2,8 +2,9 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>VDF Ödeme // Dizsan Faktoring &amp; Vade Takip Sistemi</title>
+    <meta name="description" content="Dizsan Otomotiv Kurumsal Yönetim, ERP, Finans, Saha ve Servis Platformu — PC, Tablet ve Mobil Uyumlu Gerçek Zamanlı Sistem.">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#060913">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1080,9 +1081,7 @@ body.light-theme .ios-cal-cell {
   padding: 3px 6px;
   border-radius: 6px;
   line-height: 1.25;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-overflow: clip; white-space: normal; overflow-wrap: anywhere; word-break: break-word;
   display: flex;
   flex-direction: column;
   background: rgba(2, 132, 199, 0.22);
@@ -1424,7 +1423,7 @@ body.light-theme .ios-cal-day-drawer {
                         <span>🚀</span>
                         <span>${APP_NAME} Sürüm Merkezi</span>
                     </div>
-                    <button type="button" id="dizsan-modal-close-btn" style="background:transparent; border:none; color:#94a3b8; font-size:1.4rem; cursor:pointer; line-height:1;">&times;</button>
+                    <button aria-label="dizsan-modal-close-btn" type="button" id="dizsan-modal-close-btn" style="background:transparent; border:none; color:#94a3b8; font-size:1.4rem; cursor:pointer; line-height:1;">&times;</button>
                 </div>
                 <div style="padding:1.25rem;">
                     <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:0.9rem; margin-bottom:1rem;">
@@ -1531,6 +1530,8 @@ body.light-theme .ios-cal-day-drawer {
 })();
 
 </script>
+    <link rel="stylesheet" href="dizsan-realtime-responsive.css?v=20261029">
+    <script defer src="dizsan-realtime-socket.js?v=20261029"></script>
 </head>
 <body>
   <div class="app-container">
@@ -1951,11 +1952,11 @@ body.light-theme .ios-cal-day-drawer {
             </p>
             <div class="form-group">
               <label>VDF Kullanıcı Adı</label>
-              <input type="text" id="cfg-username" class="form-control" placeholder="VDF Faktoring Kullanıcı Adınız">
+              <input aria-label="VDF Faktoring Kullanıcı Adınız" title="VDF Faktoring Kullanıcı Adınız" type="text" id="cfg-username" class="form-control" placeholder="VDF Faktoring Kullanıcı Adınız">
             </div>
             <div class="form-group">
               <label>VDF Şifre</label>
-              <input type="password" id="cfg-password" class="form-control" placeholder="••••••••">
+              <input aria-label="••••••••" title="••••••••" type="password" id="cfg-password" class="form-control" placeholder="••••••••">
             </div>
             <div style="display:flex; gap:0.65rem; flex-wrap:wrap; margin-top:1rem;">
               <button class="btn btn-primary" onclick="saveSettingsAndSync(true)">
@@ -1979,15 +1980,15 @@ body.light-theme .ios-cal-day-drawer {
             </p>
             <div class="form-group">
               <label>1. Otomatik Çekim Saati (Sabah)</label>
-              <input type="time" id="cfg-time-1" class="form-control" value="09:00">
+              <input aria-label="cfg-time-1" title="cfg-time-1" type="time" id="cfg-time-1" class="form-control" value="09:00">
             </div>
             <div class="form-group">
               <label>2. Otomatik Çekim Saati (Öğleden Sonra)</label>
-              <input type="time" id="cfg-time-2" class="form-control" value="14:00">
+              <input aria-label="cfg-time-2" title="cfg-time-2" type="time" id="cfg-time-2" class="form-control" value="14:00">
             </div>
             <div class="form-group">
               <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
-                <input type="checkbox" id="cfg-sched-enabled" checked style="width:18px; height:18px;">
+                <input aria-label="cfg-sched-enabled" title="cfg-sched-enabled" type="checkbox" id="cfg-sched-enabled" checked style="width:18px; height:18px;">
                 <span>Günlük Otomatik Zamanlayıcı Aktif</span>
               </label>
             </div>
@@ -2051,22 +2052,22 @@ body.light-theme .ios-cal-day-drawer {
           <i class="fa-solid fa-money-check-dollar"></i>
           <span id="modal-title-text">Vade Ödeme Durumu Güncelle</span>
         </div>
-        <button class="btn btn-sm btn-glass" onclick="closePaymentModal()"><i class="fa-solid fa-xmark"></i></button>
+        <button aria-label="Buton closePaymentModal" class="btn btn-sm btn-glass" onclick="closePaymentModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <input type="hidden" id="pay-creditor-id">
-      <input type="hidden" id="pay-col-key">
+      <input aria-label="pay-creditor-id" title="pay-creditor-id" type="hidden" id="pay-creditor-id">
+      <input aria-label="pay-col-key" title="pay-col-key" type="hidden" id="pay-col-key">
       <div class="form-group">
         <label>Alacaklı Kurum &amp; Vade Günü</label>
-        <input type="text" id="pay-summary-label" class="form-control" readonly>
+        <input aria-label="pay-summary-label" title="pay-summary-label" type="text" id="pay-summary-label" class="form-control" readonly>
       </div>
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.85rem;">
         <div class="form-group">
           <label>VDF Tablo Tutarı (₺)</label>
-          <input type="text" id="pay-original-amount" class="form-control" readonly>
+          <input aria-label="pay-original-amount" title="pay-original-amount" type="text" id="pay-original-amount" class="form-control" readonly>
         </div>
         <div class="form-group">
           <label>Ödeme Durumu</label>
-          <select id="pay-status" class="form-control" onchange="onPayStatusChange()">
+          <select aria-label="pay-status" title="pay-status" id="pay-status" class="form-control" onchange="onPayStatusChange()">
             <option value="unpaid">⏳ Bekliyor (Ödenmedi)</option>
             <option value="partial">🌗 Kısmi Ödendi</option>
             <option value="paid">✅ Tamamı Ödendi</option>
@@ -2076,16 +2077,16 @@ body.light-theme .ios-cal-day-drawer {
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.85rem;">
         <div class="form-group">
           <label>Ödenen Tutar (₺)</label>
-          <input type="number" step="0.01" id="pay-paid-amount" class="form-control" placeholder="0.00">
+          <input aria-label="0.00" title="0.00" type="number" step="0.01" id="pay-paid-amount" class="form-control" placeholder="0.00">
         </div>
         <div class="form-group">
           <label>Ödeme Tarihi (GG.AA.YYYY)</label>
-          <input type="date" id="pay-date" class="form-control">
+          <input aria-label="pay-date" title="pay-date" type="date" id="pay-date" class="form-control">
         </div>
       </div>
       <div class="form-group">
         <label>Banka / Dekont No / Açıklama Notu</label>
-        <input type="text" id="pay-note" class="form-control" placeholder="Örn: Garanti BBVA EFT / Havale dekontu işlendi">
+        <input aria-label="Örn: Garanti BBVA EFT / Havale dekontu işlendi" title="Örn: Garanti BBVA EFT / Havale dekontu işlendi" type="text" id="pay-note" class="form-control" placeholder="Örn: Garanti BBVA EFT / Havale dekontu işlendi">
       </div>
       <div style="display:flex; justify-content:flex-end; gap:0.65rem; margin-top:1.1rem;">
         <button class="btn btn-glass" onclick="closePaymentModal()">İptal</button>

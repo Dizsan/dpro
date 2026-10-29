@@ -487,8 +487,8 @@ header {
   letter-spacing: 0.5px;
   max-width: 160px;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-overflow: clip; white-space: normal; overflow-wrap: anywhere; word-break: break-word;
+  
 }
 
 .card-meta {
@@ -925,9 +925,7 @@ header {
   padding: 1px 3px;
   border-radius: 3px;
   color: white;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-overflow: clip; white-space: normal; overflow-wrap: anywhere; word-break: break-word;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
@@ -1095,6 +1093,8 @@ header {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Chart.js for data visualization -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="dizsan-realtime-responsive.css?v=20261029">
+    <script defer src="dizsan-realtime-socket.js?v=20261029"></script>
 </head>
 <body>
 
@@ -1211,9 +1211,9 @@ header {
           <div class="analytics-header">
             <h3 class="analytics-title"><i class="fa-solid fa-calendar-days" style="color: var(--warning)"></i> Aylık Ödeme Takvimi</h3>
             <div class="calendar-controls" style="display: flex; align-items: center; gap: 0.5rem;">
-              <button class="preset-btn" id="calendar-prev-btn" type="button"><i class="fa-solid fa-chevron-left"></i></button>
+              <button aria-label="calendar-prev-btn" class="preset-btn" id="calendar-prev-btn" type="button"><i class="fa-solid fa-chevron-left"></i></button>
               <span id="calendar-month-year" style="font-weight: 600; font-size: 0.95rem; min-width: 120px; text-align: center; display: inline-block;">Temmuz 2026</span>
-              <button class="preset-btn" id="calendar-next-btn" type="button"><i class="fa-solid fa-chevron-right"></i></button>
+              <button aria-label="calendar-next-btn" class="preset-btn" id="calendar-next-btn" type="button"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
           </div>
           <div class="calendar-wrapper" style="margin-top: 0.5rem; flex-grow: 1;">
@@ -1247,7 +1247,7 @@ header {
       <section class="quick-import-panel">
         <h3 class="analytics-title"><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--secondary)"></i> Ekstre Akıllı Okuma (Fast-Import)</h3>
         <p class="quick-import-desc">Banka mobil uygulamasından gelen SMS/Bildirim metinlerini veya ekstre e-postalarındaki borç satırlarını kopyalayıp buraya yapıştırarak kart borcunuzu anında güncelleyebilirsiniz.</p>
-        <textarea class="quick-import-textarea" id="import-text" placeholder="Örn: Garanti Bonus ekstre borcunuz 12,500.00 TL, Son ödeme tarihi: 15.07.2026. veya Axess kartınızın borcu 4,200 TL"></textarea>
+        <textarea aria-label="Örn: Garanti Bonus ekstre borcunuz 12,500.00 TL, Son ödeme tarihi: 15.07.2026. v" title="Örn: Garanti Bonus ekstre borcunuz 12,500.00 TL, Son ödeme tarihi: 15.07.2026. v" class="quick-import-textarea" id="import-text" placeholder="Örn: Garanti Bonus ekstre borcunuz 12,500.00 TL, Son ödeme tarihi: 15.07.2026. veya Axess kartınızın borcu 4,200 TL"></textarea>
         <div class="quick-import-actions">
           <div class="import-presets">
             <button class="preset-btn" onclick="setPresetText('garanti')">Garanti SMS Örneği</button>
@@ -1265,40 +1265,40 @@ header {
     <div class="modal-container">
       <div class="modal-header">
         <h3 class="modal-title" id="modal-title-text">Yeni Kredi Kartı Ekle</h3>
-        <button class="modal-close" id="modal-close-btn">&times;</button>
+        <button aria-label="modal-close-btn" class="modal-close" id="modal-close-btn">&times;</button>
       </div>
       <form id="card-form">
         <!-- Hidden input for edit mode -->
-        <input type="hidden" id="card-id">
+        <input aria-label="card-id" title="card-id" type="hidden" id="card-id">
 
         <div class="form-group">
           <label class="form-label" for="card-bank-input">Banka Adı</label>
-          <input class="form-control" type="text" id="card-bank-input" placeholder="Örn: Garanti BBVA, Akbank" required>
+          <input aria-label="Örn: Garanti BBVA, Akbank" title="Örn: Garanti BBVA, Akbank" class="form-control" type="text" id="card-bank-input" placeholder="Örn: Garanti BBVA, Akbank" required>
         </div>
 
         <div class="form-group">
           <label class="form-label" for="card-name-input">Kart Adı (Ürün Tipi)</label>
-          <input class="form-control" type="text" id="card-name-input" placeholder="Örn: Bonus, Axess, World" required>
+          <input aria-label="Örn: Bonus, Axess, World" title="Örn: Bonus, Axess, World" class="form-control" type="text" id="card-name-input" placeholder="Örn: Bonus, Axess, World" required>
         </div>
 
         <div class="form-group">
           <label class="form-label" for="card-holder-input">Kart Sahibi / Unvan</label>
-          <input class="form-control" type="text" id="card-holder-input" placeholder="Örn: Ömer Eren veya Akme Yazılım Ltd." required>
+          <input aria-label="Örn: Ömer Eren veya Akme Yazılım Ltd." title="Örn: Ömer Eren veya Akme Yazılım Ltd." class="form-control" type="text" id="card-holder-input" placeholder="Örn: Ömer Eren veya Akme Yazılım Ltd." required>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label class="form-label" for="card-number-input">Kart No (Son 4 Hane)</label>
-            <input class="form-control" type="text" id="card-number-input" placeholder="Örn: 5412" maxlength="4" required>
+            <input aria-label="Örn: 5412" title="Örn: 5412" class="form-control" type="text" id="card-number-input" placeholder="Örn: 5412" maxlength="4" required>
           </div>
           <div class="form-group">
             <label class="form-label">Kart Sahibi Türü</label>
             <div class="radio-group">
               <label class="radio-label">
-                <input type="radio" name="card-type" value="personal" class="radio-input" checked> Şahsi
+                <input aria-label="card-type" title="card-type" type="radio" name="card-type" value="personal" class="radio-input" checked> Şahsi
               </label>
               <label class="radio-label">
-                <input type="radio" name="card-type" value="corporate" class="radio-input"> Şirket
+                <input aria-label="card-type" title="card-type" type="radio" name="card-type" value="corporate" class="radio-input"> Şirket
               </label>
             </div>
           </div>
@@ -1307,22 +1307,22 @@ header {
         <div class="form-row">
           <div class="form-group">
             <label class="form-label" for="card-limit-input">Kredi Limiti (TL)</label>
-            <input class="form-control" type="number" id="card-limit-input" placeholder="0" min="0" required>
+            <input aria-label="card-limit-input" title="card-limit-input" class="form-control" type="number" id="card-limit-input" placeholder="0" min="0" required>
           </div>
           <div class="form-group">
             <label class="form-label" for="card-debt-input">Güncel Ekstre Borcu (TL)</label>
-            <input class="form-control" type="number" id="card-debt-input" placeholder="0" min="0" required>
+            <input aria-label="card-debt-input" title="card-debt-input" class="form-control" type="number" id="card-debt-input" placeholder="0" min="0" required>
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label class="form-label" for="card-cutoff-input">Hesap Kesim Günü (1-31)</label>
-            <input class="form-control" type="number" id="card-cutoff-input" placeholder="15" min="1" max="31" required>
+            <input aria-label="15" title="15" class="form-control" type="number" id="card-cutoff-input" placeholder="15" min="1" max="31" required>
           </div>
           <div class="form-group">
             <label class="form-label" for="card-due-offset-input">Son Ödeme Günü Payı (Gün)</label>
-            <input class="form-control" type="number" id="card-due-offset-input" placeholder="10" min="1" max="20" required>
+            <input aria-label="10" title="10" class="form-control" type="number" id="card-due-offset-input" placeholder="10" min="1" max="20" required>
             <span style="font-size: 0.7rem; color: var(--text-muted);">Kesim tarihinden kaç gün sonra?</span>
           </div>
         </div>
@@ -2935,7 +2935,7 @@ window.addEventListener('message', (ev) => {
                         <span>🚀</span>
                         <span>${APP_NAME} Sürüm Merkezi</span>
                     </div>
-                    <button type="button" id="dizsan-modal-close-btn" style="background:transparent; border:none; color:#94a3b8; font-size:1.4rem; cursor:pointer; line-height:1;">&times;</button>
+                    <button aria-label="dizsan-modal-close-btn" type="button" id="dizsan-modal-close-btn" style="background:transparent; border:none; color:#94a3b8; font-size:1.4rem; cursor:pointer; line-height:1;">&times;</button>
                 </div>
                 <div style="padding:1.25rem;">
                     <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:0.9rem; margin-bottom:1rem;">

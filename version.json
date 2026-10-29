@@ -1,9 +1,9 @@
 {
   "appId": "dpro",
   "appName": "Dizsan D-Pro Kurumsal Platform",
-  "version": "4.9.4",
-  "build": 494,
-  "releasedAt": "28.10.2026 21:52:00",
-  "releaseNotes": "Toplantı gündem maddelerinin altına Aksiyon Var tiki ve madde altı bütünleşik aksiyon yönetimi eklendi (v4.9.4)",
+  "version": "4.9.5",
+  "build": 495,
+  "releasedAt": "29.10.2026 21:15:00",
+  "releaseNotes": "Toplantı gündem maddelerinin altına Aksiyon Var tiki ve madde altı bütünleşik aksiyon yönetimi eklendi (v4.9.5) - Mobil Sıfır Kesilme & Canlı Senkronizasyon",
   "author": "Ömer Eren & DİZSAN"
 }

@@ -14,7 +14,7 @@
  * ==========================================================================
  */
 
-const CURRENT_APP_VERSION = "1.3.0";
+const CURRENT_APP_VERSION = "1.3.1";
 window.CURRENT_APP_VERSION = CURRENT_APP_VERSION;
 // 23.10.2026 17:34 öncesi yapılan tüm demo/test kayıtlarını tüm cihazların önbelleğinden kalıcı olarak temizleyen milat eşiği
 const PRODUCTION_CUTOFF_RESET_MS = 1792766040000;
@@ -705,8 +705,8 @@ function calculateDayMetrics(targetDateISO) {
 
 // ==================== 7. CANLI GITHUB BULUT & YEREL SUNUCU ÇİFT YÖNLÜ SENKRONİZASYON MOTORU ====================
 const KASA_CLOUD_KEY_CODES = [106, 107, 115, 98, 91, 123, 91, 82, 116, 68, 73, 89, 125, 119, 57, 84, 112, 75, 86, 86, 109, 86, 112, 72, 103, 80, 116, 87, 117, 111, 113, 57, 125, 80, 53, 105, 76, 60, 120, 79];
-const KASA_CLOUD_API_DPRO = "https://api.github.com/repos/Dizsan/dpro/contents/apps/gunluk-kasa/shared_state.json";
-const KASA_CLOUD_API_MASTER = "https://api.github.com/repos/Dizsan/TUM-CALISMALAR/contents/Dizsan%20Kasa/shared_state.json";
+const KASA_CLOUD_API_DPRO = "/api/kasa-state";
+const KASA_CLOUD_API_MASTER = "/api/kasa-state";
 
 let isKasaCloudPutInFlight = false;
 let hasPendingKasaCloudPut = false;
@@ -1275,12 +1275,14 @@ async function pushKasaToSingleGitHubRepo(apiUrl, shaKey, isRetry = false) {
 
 async function pushStateToGitHubCloud() {
     try {
-        const okDpro = await pushKasaToSingleGitHubRepo(KASA_CLOUD_API_DPRO, "dpro", false);
-        pushKasaToSingleGitHubRepo(KASA_CLOUD_API_MASTER, "master", false).catch(() => {});
-        if (okDpro) {
-            setSyncBadge("cloud_ok");
-        }
-        return okDpro;
+        const res = await fetch("/api/kasa-state", {
+            method: "POST",
+            keepalive: true,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(appState)
+        });
+        if (res.ok) setSyncBadge("cloud_ok");
+        return res.ok;
     } catch (e) {
         return false;
     }
@@ -4116,7 +4118,7 @@ function renderSidebarCalendarWidget(precomputedAllMetrics = null) {
                 <div class="scw-month-card ${isCurrentM ? "active" : ""}" onclick="selectCalendarMonthFromYearView(${y}, ${m})" title="${TR_MONTH_NAMES[m - 1]} ${y}\nNakit Giren: +${formatMoneyTR(mIn)}\nNakit Çıkan: -${formatMoneyTR(mOut)}\nAy Sonu Devir: ${formatMoneyTR(mEndCarry)}">
                     <div style="font-size:0.68rem; font-weight:800; color:#fff;">${TR_MONTH_SHORT[m - 1]}</div>
                     <div style="font-size:0.58rem; color:${mEntries > 0 ? "#34d399" : "#64748b"}; font-weight:700;">${mEntries > 0 ? `${mEntries} kayıt` : "0 kayıt"}</div>
-                    <div style="font-size:0.58rem; color:#38bdf8; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${formatNumberTR(mEndCarry)} ₺</div>
+                    <div style="font-size:0.58rem; color:#38bdf8; font-weight:700; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; word-break: break-word;">${formatNumberTR(mEndCarry)} ₺</div>
                 </div>
             `;
         }

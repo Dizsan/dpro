@@ -5,8 +5,9 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Dizsan Kredi Ödemeleri Takip</title>
+    <meta name="description" content="Dizsan Otomotiv Kurumsal Yönetim, ERP, Finans, Saha ve Servis Platformu — PC, Tablet ve Mobil Uyumlu Gerçek Zamanlı Sistem.">
 
     <!-- PWA & Mobile Web App Meta Tags (Tam Ekran Mobil Uygulama Modu) -->
     <meta name="theme-color" content="#070a13">
@@ -1469,8 +1470,8 @@
             border-radius: 4px;
             max-width: 120px;
             overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            text-overflow: clip; white-space: normal; overflow-wrap: anywhere; word-break: break-word;
+            
             cursor: pointer;
         }
 
@@ -2393,9 +2394,7 @@
             padding: 3px 5px;
             border-radius: 6px;
             line-height: 1.25;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            text-overflow: clip; white-space: normal; overflow-wrap: anywhere; word-break: break-word;
             display: flex;
             flex-direction: column;
         }
@@ -2489,6 +2488,8 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="dizsan-realtime-responsive.css?v=20261029">
+    <script defer src="dizsan-realtime-socket.js?v=20261029"></script>
 </head>
 <body>
 
@@ -2546,7 +2547,7 @@
                 <button type="button" onclick="triggerDirectPhoneInstall()" style="background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; border: none; padding: 10px 16px; border-radius: 10px; font-size: 12.5px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);">
                     📲 Mobil Uygulamayı Hemen Kur
                 </button>
-                <button type="button" onclick="document.getElementById('in-app-install-banner').style.display='none'" style="background: rgba(255,255,255,0.06); color: var(--text-muted); border: 1px solid var(--border-color); padding: 8px 10px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer;" title="Gizle">
+                <button aria-label="Gizle" type="button" onclick="document.getElementById('in-app-install-banner').style.display='none'" style="background: rgba(255,255,255,0.06); color: var(--text-muted); border: 1px solid var(--border-color); padding: 8px 10px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer;" title="Gizle">
                     ✕
                 </button>
             </div>
@@ -2678,13 +2679,13 @@
                         <button class="filter-btn" data-filter="unpaid">Kalanlar</button>
                     </div>
                     
-                    <select class="filter-select" id="track-year-select">
+                    <select aria-label="track-year-select" title="track-year-select" class="filter-select" id="track-year-select">
                         <option value="all">Tüm Yıllar</option>
                         <!-- Populated dynamically -->
                     </select>
                 </div>
 
-                <input type="text" class="search-input" id="track-search-input" placeholder="Tarih, not veya tutar ara...">
+                <input aria-label="Tarih, not veya tutar ara..." title="Tarih, not veya tutar ara..." type="text" class="search-input" id="track-search-input" placeholder="Tarih, not veya tutar ara...">
             </div>
 
             <!-- Responsive Table -->
@@ -2721,8 +2722,8 @@
                 </h2>
                 
                 <div style="margin-bottom: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
-                    <input type="text" class="search-input" id="logs-search-input" style="flex: 1; min-width: 250px;" placeholder="Notlarda, bankada veya kaynakta ara...">
-                    <select class="filter-select" id="logs-bank-select">
+                    <input aria-label="Notlarda, bankada veya kaynakta ara..." title="Notlarda, bankada veya kaynakta ara..." type="text" class="search-input" id="logs-search-input" style="flex: 1; min-width: 250px;" placeholder="Notlarda, bankada veya kaynakta ara...">
+                    <select aria-label="logs-bank-select" title="logs-bank-select" class="filter-select" id="logs-bank-select">
                         <!-- Filled dynamically -->
                     </select>
                 </div>
@@ -2763,21 +2764,21 @@
 
                     <div class="form-group">
                         <label class="form-label">Simüle Edilecek Banka Kredisi</label>
-                        <select class="form-input" id="sim-bank-select">
+                        <select aria-label="sim-bank-select" title="sim-bank-select" class="form-input" id="sim-bank-select">
                             <!-- Filled dynamically -->
                         </select>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Erken Kapama Yapılacak Sonraki Taksit No</label>
-                        <select class="form-input" id="sim-taksit-select">
+                        <select aria-label="sim-taksit-select" title="sim-taksit-select" class="form-input" id="sim-taksit-select">
                             <!-- Filled dynamically by JS -->
                         </select>
                     </div>
 
                     <div class="form-group" id="sim-commission-group">
                         <label class="form-label">Erken Ödeme Komisyon Oranı (%)</label>
-                        <input type="number" class="form-input" id="sim-commission-rate" value="3.0" step="0.5" min="0">
+                        <input aria-label="sim-commission-rate" title="sim-commission-rate" type="number" class="form-input" id="sim-commission-rate" value="3.0" step="0.5" min="0">
                         <p style="font-size: 11px; color: var(--text-dimmed); margin-top: 4px;">
                             Ticari kredilerde vadesi 36 ayı aşmayan kredilerde yasal sınır genellikle %3 civarıdır.
                         </p>
@@ -2837,27 +2838,27 @@
                 <div class="loan-form-grid">
                     <div class="form-group">
                         <label class="form-label" for="add-loan-name">Banka / Kredi Adı</label>
-                        <input type="text" class="form-input" id="add-loan-name" placeholder="örn. Akbank Ticari Kredisi">
+                        <input aria-label="örn. Akbank Ticari Kredisi" title="örn. Akbank Ticari Kredisi" type="text" class="form-input" id="add-loan-name" placeholder="örn. Akbank Ticari Kredisi">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" for="add-loan-principal">Çekilen Kredi Tutarı (TRY)</label>
-                        <input type="number" class="form-input" id="add-loan-principal" placeholder="örn. 1500000">
+                        <input aria-label="örn. 1500000" title="örn. 1500000" type="number" class="form-input" id="add-loan-principal" placeholder="örn. 1500000">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" for="add-loan-months">Toplam Vade / Taksit Sayısı (Ay)</label>
-                        <input type="number" class="form-input" id="add-loan-months" value="36" min="1" max="120">
+                        <input aria-label="add-loan-months" title="add-loan-months" type="number" class="form-input" id="add-loan-months" value="36" min="1" max="120">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" for="add-loan-rate">Aylık Faiz Oranı (%)</label>
-                        <input type="number" class="form-input" id="add-loan-rate" placeholder="örn. 3.32" step="0.01">
+                        <input aria-label="örn. 3.32" title="örn. 3.32" type="number" class="form-input" id="add-loan-rate" placeholder="örn. 3.32" step="0.01">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" for="add-loan-grace">Ödemesiz Dönem (Ay)</label>
-                        <input type="number" class="form-input" id="add-loan-grace" value="0" min="0">
+                        <input aria-label="add-loan-grace" title="add-loan-grace" type="number" class="form-input" id="add-loan-grace" value="0" min="0">
                         <p style="font-size: 11px; color: var(--text-dimmed); margin-top: 3px;">
                             İlk kaç ay anapara ödenmeyip sadece faiz/vergi ödeneceğini belirtir.
                         </p>
@@ -2865,17 +2866,17 @@
 
                     <div class="form-group">
                         <label class="form-label" for="add-loan-first-date">İlk Taksit Ödeme Tarihi</label>
-                        <input type="date" class="form-input" id="add-loan-first-date">
+                        <input aria-label="add-loan-first-date" title="add-loan-first-date" type="date" class="form-input" id="add-loan-first-date">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" for="add-loan-bsmv">BSMV Vergi Oranı (%)</label>
-                        <input type="number" class="form-input" id="add-loan-bsmv" value="5.0" step="0.5">
+                        <input aria-label="add-loan-bsmv" title="add-loan-bsmv" type="number" class="form-input" id="add-loan-bsmv" value="5.0" step="0.5">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" for="add-loan-kkdf">KKDF Vergi Oranı (%)</label>
-                        <input type="number" class="form-input" id="add-loan-kkdf" value="0.0" step="0.5">
+                        <input aria-label="add-loan-kkdf" title="add-loan-kkdf" type="number" class="form-input" id="add-loan-kkdf" value="0.0" step="0.5">
                     </div>
                 </div>
 
@@ -2910,7 +2911,7 @@
                             <svg viewBox="0 0 24 24" style="fill: currentColor; width: 18px; height: 18px;"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM12 9l5 5h-3v4h-4v-4H7l5-5z"/></svg>
                             Verileri İçe Aktar (.json)
                         </button>
-                        <input type="file" id="import-file-input" style="display: none;" accept=".json">
+                        <input aria-label="import-file-input" title="import-file-input" type="file" id="import-file-input" style="display: none;" accept=".json">
 
                         <button class="btn-action" id="btn-clear-data" style="width: 100%; color: var(--danger-color); margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 8px;">
                             Tüm Planları & Tikleri Temizle
@@ -2931,7 +2932,7 @@
                         <div style="display: flex; flex-direction: column; gap: 5px;">
                             <label style="font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.3px;">CANLI GITHUB SENKRON KANALI:</label>
                             <div style="display: flex; gap: 8px;">
-                                <input type="text" id="sync-key-input" readonly style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: #34d399; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: monospace; outline: none;" value="https://dizsan.github.io/kredi/">
+                                <input aria-label="sync-key-input" title="sync-key-input" type="text" id="sync-key-input" readonly style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: #34d399; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: monospace; outline: none;" value="https://dizsan.github.io/kredi/">
                                 <button class="btn-edit-note" id="btn-copy-sync-key" style="padding: 0 12px; font-size: 12px; border-radius: 8px;">Linki Kopyala</button>
                             </div>
                         </div>
@@ -2939,7 +2940,7 @@
                         <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.25); padding: 10px 12px; border-radius: 8px; margin-top: 5px;">
                             <span style="font-size: 12px; font-weight: 600; color: var(--text-main);">Anlık Otomatik GitHub Senkronizasyonu (Açık)</span>
                             <label class="custom-checkbox-container">
-                                <input type="checkbox" id="sync-auto-checkbox" checked>
+                                <input aria-label="sync-auto-checkbox" title="sync-auto-checkbox" type="checkbox" id="sync-auto-checkbox" checked>
                                 <div class="checkbox-box"></div>
                             </label>
                         </div>
@@ -2995,7 +2996,7 @@
                     <svg viewBox="0 0 24 24"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>
                     Mobil Uygulama Kurulumu
                 </h3>
-                <button class="modal-close" onclick="closeMobileInstallModal()">
+                <button aria-label="Buton closeMobileInstallModal" class="modal-close" onclick="closeMobileInstallModal()">
                     <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
                 </button>
             </div>
@@ -3039,7 +3040,7 @@
                     <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
                     Taksit Ödeme Girişi
                 </h3>
-                <button class="modal-close" id="btn-modal-close">
+                <button aria-label="btn-modal-close" class="modal-close" id="btn-modal-close">
                     <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
                 </button>
             </div>
@@ -3063,17 +3064,17 @@
                 </div>
             </div>
 
-            <input type="hidden" id="modal-hidden-bank">
-            <input type="hidden" id="modal-hidden-taksit">
+            <input aria-label="modal-hidden-bank" title="modal-hidden-bank" type="hidden" id="modal-hidden-bank">
+            <input aria-label="modal-hidden-taksit" title="modal-hidden-taksit" type="hidden" id="modal-hidden-taksit">
 
             <div class="form-group">
                 <label class="form-label" for="ipt-pay-date">Ödeme Tarihi</label>
-                <input type="date" class="form-input" id="ipt-pay-date">
+                <input aria-label="ipt-pay-date" title="ipt-pay-date" type="date" class="form-input" id="ipt-pay-date">
             </div>
 
             <div class="form-group">
                 <label class="form-label" for="ipt-pay-source">Ödenen Paranın Kaynağı</label>
-                <input type="text" class="form-input" id="ipt-pay-source" list="pay-sources" placeholder="örn. Merkez Kasa, İş Bankası Vadesiz Hesabı...">
+                <input aria-label="örn. Merkez Kasa, İş Bankası Vadesiz Hesabı..." title="örn. Merkez Kasa, İş Bankası Vadesiz Hesabı..." type="text" class="form-input" id="ipt-pay-source" list="pay-sources" placeholder="örn. Merkez Kasa, İş Bankası Vadesiz Hesabı...">
                 <datalist id="pay-sources">
                     <option value="Merkez Kasa">
                     <option value="İş Bankası Ticari Vadesiz">
@@ -3086,13 +3087,13 @@
 
             <div class="form-group">
                 <label class="form-label" for="ipt-pay-notes">Açıklama / Notlar</label>
-                <textarea class="form-input" id="ipt-pay-notes" rows="3" style="resize: none;" placeholder="Ekstra ödeme açıklaması..."></textarea>
+                <textarea aria-label="Ekstra ödeme açıklaması..." title="Ekstra ödeme açıklaması..." class="form-input" id="ipt-pay-notes" rows="3" style="resize: none;" placeholder="Ekstra ödeme açıklaması..."></textarea>
             </div>
 
             <div class="modal-actions">
                 <button class="btn btn-cancel" id="btn-modal-cancel">Vazgeç</button>
                 <button class="btn btn-save" id="btn-modal-save">Ödendi Olarak Kaydet</button>
-                <button class="btn btn-danger" id="btn-modal-delete" title="Ödemeyi İptal Et (Ödenmedi Yap)">
+                <button aria-label="Ödemeyi İptal Et (Ödenmedi Yap)" class="btn btn-danger" id="btn-modal-delete" title="Ödemeyi İptal Et (Ödenmedi Yap)">
                     <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1-1H5v2h14V4z"/></svg>
                 </button>
             </div>
@@ -4056,8 +4057,8 @@
         // ==================== LIVE GITHUB & PORTAL CLOUD SYNC ====================
         const SYNC_AUTO_STORAGE = 'dizsan_kredi_sync_auto';
         const SYNC_TS_STORAGE = 'dizsan_kredi_last_updated';
-        const CLOUD_API_URL = 'https://api.github.com/repos/Dizsan/kredi/contents/kredi_shared_state.json';
-        const CLOUD_RAW_URL = 'https://raw.githubusercontent.com/Dizsan/kredi/main/kredi_shared_state.json';
+        const CLOUD_API_URL = '/api/kredi-state';
+        const CLOUD_RAW_URL = '/api/kredi-state';
         const LOCAL_API_URL = '/api/kredi-state';
         const CLOUD_KEY_CODES = [106, 107, 115, 98, 91, 123, 91, 82, 116, 68, 73, 89, 125, 119, 57, 84, 112, 75, 86, 86, 109, 86, 112, 72, 103, 80, 116, 87, 117, 111, 113, 57, 125, 80, 53, 105, 76, 60, 120, 79];
         let isSyncInProgress = false;
@@ -5773,7 +5774,7 @@
                         <td class="td-no" data-label="Taksit No">#${inst.taksit_no}</td>
                         <td data-label="Durum">
                             <label class="custom-checkbox-container">
-                                <input type="checkbox" ${state.is_paid ? 'checked' : ''} 
+                                <input aria-label="Seçim / Giriş Alanı" title="Seçim / Giriş Alanı" type="checkbox" ${state.is_paid ? 'checked' : ''} 
                                     onchange="toggleInstallment('${bankKey}', ${inst.taksit_no}, this.checked)">
                                 <div class="checkbox-box"></div>
                             </label>
